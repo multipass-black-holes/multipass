@@ -93,3 +93,16 @@ def load_gw(base='../all_posterior_samples/', v=2, cm=True):
 
     return np.column_stack((m1, m2, rs, ce)), np.array(offsets)
 
+
+
+def convert_gw(fo='data.rec', base='../all_posterior_samples/', cm=True):
+    d1, o1 = load_gw(base, v=1, cm=cm)
+    d2, o2 = load_gw(base, v=2, cm=cm)
+
+    o2 += len(d1)
+    d = np.concatenate((d1,d2))
+    o = np.concatenate((o1,o2))
+
+    with open(fo, 'wb') as fp:
+        write_record(fp, 'i', o)
+        write_record(fp, 'd', d)
