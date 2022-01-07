@@ -2,6 +2,13 @@ import h5py
 import numpy as np
 import struct
 import os
+from astropy.cosmology import Planck18_arXiv_v2 as cosmo
+import scipy
+
+
+z_table = np.linspace(0, 15, 3000)
+d_L_table = cosmo.luminosity_distance(z_table)
+zfunc = scipy.interpolate.interp1d(d_L_table, z_table)
 
 
 def write_record(fp, typ, content):
@@ -34,7 +41,9 @@ def convert_injection(fi='../o3a_bbhpop_inj_info.hdf', fo='inj.rec'):
 
 
 def load_gw(base='../all_posterior_samples/', v=2, cm=True):
-    if v == 2:
+    if v == 1:
+        pat = re.compile('GW([\d_]*)_GWTC-1.hdf5')
+    elif v == 2:
         pat = re.compile('GW([\d_]*)_comoving.h5')
 
     files = [pat.match(i) for i in os.listdir(base)]
@@ -47,9 +56,33 @@ def load_gw(base='../all_posterior_samples/', v=2, cm=True):
 
     offsets = []
 
+    if v == 1:
+        files = [files[0]]
+
     for fn in files:
         with h5py.File(fn, 'r') as f:
-            if v == 2:
+            if v == 1:
+                d = f['Overall_posterior']
+
+                rsi = zfunc(d['luminosity_distance_Mpc'])
+                m1i = d['m1_detector_frame_Msun']
+                m2i = d['m2_detector_frame_Msun']
+
+                if cm:
+                    m1i /= (1+rsi)
+                    m2i /= (1+rsi)
+
+                m1 = np.concatenate((m1, m1i))
+                m2 = np.concatenate((m2, m2i))
+                rs = np.concatenate((rs, rsi))
+                ce = np.concatenate((ce,
+                    (
+                        d['spin1'] * m1i * d['costilt1']
+                       +d['spin2'] * m2i * d['costilt2']
+                    ) / (m1 + m2)
+                ))
+
+            elif v == 2:
                 d = f['PublicationSamples/posterior_samples']
                 m1 = np.concatenate((m1, d['mass_1_source']))
                 m2 = np.concatenate((m2, d['mass_2_source']))
