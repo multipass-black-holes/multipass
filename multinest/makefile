@@ -23,6 +23,11 @@ MultiNest/lib/libmultinest.a: MultiNest/build/Makefile
 	$(FC) $(FFLAGS) -c $<
 
 models.o: functions.mod
+test.o: models.mod
+
+test: test.o $(OBJ)
+	$(LD) $(LFLAGS) -o $@ $^
+
 
 clean:
 	rm -f *.o *.mod

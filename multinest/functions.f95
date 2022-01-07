@@ -31,7 +31,7 @@ contains
   real(kind=prec), intent(in) :: mu, sig
   real(kind=prec) :: gauss(size(m))
 
-  gauss = exp( (m-mu)*(m-mu) / sig / sig ) / sig / sqrt(2*pi)
+  gauss = exp( -0.5*(m-mu)*(m-mu) / sig / sig ) / sig / sqrt(2*pi)
 
   END FUNCTION GAUSS
 
@@ -45,10 +45,10 @@ contains
 
   smooth = 0.
 
-  where ((m < mi) .and. (m < mi + dm)) &
+  where ((mi < m) .and. (m < mi + dm)) &
     smooth = exp( dm / (m-mi) + dm / (m - mi - dm)) + 1
 
-  where (m < mi + dm) &
+  where (m > mi + dm) &
     smooth = 1.
 
   END FUNCTION SMOOTH
@@ -66,7 +66,7 @@ contains
 
   stargx2 = 2 * (m-mi) / dm - 1
 
-  where ((m < mi) .and. (m < mi + dm)) &
+  where ((mi < m) .and. (m < mi + dm)) &
     smooth_tanh = 0.5 * (1+tanh(2*stargx2 / (1-stargx2*stargx2)))
 
   END FUNCTION SMOOTH_TANH

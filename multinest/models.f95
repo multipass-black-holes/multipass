@@ -16,8 +16,8 @@ contains
   plp_mf = 0.
   where ((mmin < mBH) .and. (mBH < mmax)) &
     plp_mf = ( (1-lp) * powerlaw(mbh, -alpha, mmin, mmax) &
-              + lp * gauss(mBH, mum, sm) ) &
-            * smooth(mBH, mmin, dm)
+              +   lp  * gauss(mBH, mum, sm) ) &
+            * smooth_tanh(mBH, mmin, dm)
 
   END FUNCTION PLP_MF
 
