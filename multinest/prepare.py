@@ -42,9 +42,9 @@ def convert_injection(fi='../o3a_bbhpop_inj_info.hdf', fo='inj.rec'):
 
 def load_gw(base='../all_posterior_samples/', v=2, cm=True):
     if v == 1:
-        pat = re.compile('GW([\d_]*)_GWTC-1.hdf5')
+        pat = re.compile(r'GW([\d_]*)_GWTC-1.hdf5')
     elif v == 2:
-        pat = re.compile('GW([\d_]*)_comoving.h5')
+        pat = re.compile(r'GW([\d_]*)_comoving.h5')
 
     files = [pat.match(i) for i in os.listdir(base)]
     files = [base + i.group(0) for i in files if i]
@@ -75,10 +75,11 @@ def load_gw(base='../all_posterior_samples/', v=2, cm=True):
                 m1 = np.concatenate((m1, m1i))
                 m2 = np.concatenate((m2, m2i))
                 rs = np.concatenate((rs, rsi))
-                ce = np.concatenate((ce,
+                ce = np.concatenate((
+                    ce,
                     (
                         d['spin1'] * m1i * d['costilt1']
-                       +d['spin2'] * m2i * d['costilt2']
+                        + d['spin2'] * m2i * d['costilt2']
                     ) / (m1 + m2)
                 ))
 
@@ -94,15 +95,19 @@ def load_gw(base='../all_posterior_samples/', v=2, cm=True):
     return np.column_stack((m1, m2, rs, ce)), np.array(offsets)
 
 
-
 def convert_gw(fo='data.rec', base='../all_posterior_samples/', cm=True):
     d1, o1 = load_gw(base, v=1, cm=cm)
     d2, o2 = load_gw(base, v=2, cm=cm)
 
     o2 += len(d1)
-    d = np.concatenate((d1,d2))
-    o = np.concatenate((o1,o2))
+    d = np.concatenate((d1, d2))
+    o = np.concatenate((o1, o2))
 
     with open(fo, 'wb') as fp:
         write_record(fp, 'i', o)
         write_record(fp, 'd', d)
+
+
+if __name__ == '__main__':
+    convert_injection()
+    convert_gw()
