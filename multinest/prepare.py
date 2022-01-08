@@ -113,7 +113,7 @@ def convert_gw(fo='data.rec', base='../all_posterior_samples/', cm=True):
     o = np.concatenate((o1, o2))
 
     with open(fo, 'wb') as fp:
-        write_record(fp, 'i', [len(d)])
+        write_record(fp, 'i', [len(d), len(o)])
         write_record(fp, 'i', o)
         write_record(fp, 'd', d)
 
