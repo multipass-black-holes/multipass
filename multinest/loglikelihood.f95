@@ -17,7 +17,7 @@ contains
 
   ! This builds the likelihood array for an event but *does not*
   ! average it
-  FUNCTION AV_LIKELIHOOD(dat, args)
+  PURE FUNCTION AV_LIKELIHOOD(dat, args)
   real(kind=prec), intent(in) :: dat(:, :), args(:)
   real(kind=prec) :: av_likelihood(size(dat,1))
   integer i
@@ -30,6 +30,36 @@ contains
   av_likelihood = av_likelihood * smooth_tanh(dat(:,2), args(6), args(7))
 
   END FUNCTION AV_LIKELIHOOD
+
+
+  PURE FUNCTION LL(ARGS)
+  real(kind=prec), intent(in) :: args(:)
+  real(kind=prec) :: ll
+  real(kind=prec) :: avg(size(dat,1)), inj(size(injections,1))
+  real(kind=prec) :: tmp, acc, Nlxi
+  integer i
+
+  avg = av_likelihood(dat, args)
+
+  inj = av_likelihood(injections, args)
+  inj = inj / injections(:,1)**(-4.35)
+  inj = inj / injections(:,2)**2
+
+  ! We need to average the avg for each event file as delimited by offsets
+  do i=1,size(offsets)-1
+    tmp = mean(avg(offsets(i):offsets(i+1)-1))
+    if(tmp <= 0) then
+      tmp = -1e6
+    else
+      tmp = log(tmp)
+    endif
+    acc = acc + tmp
+  enddo
+
+  Nlxi = (size(offsets) - 1) * log(mean(inj))
+
+  ll = -Nlxi + acc
+  END FUNCTION LL
 
 
   SUBROUTINE LOAD_INJ(FN)
@@ -75,6 +105,9 @@ contains
 
   ans = mean(av_likelihood(injections, para))
   print*, ans / 0.005397037082072583 - 1
+
+  ans = ll(para)
+  print*,ans / -3000396.124014442 - 1
 
   END SUBROUTINE TEST
 
