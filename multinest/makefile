@@ -3,7 +3,7 @@ FFLAGS=
 LD=gfortran
 LFLAGS=
 
-OBJ=models.o functions.o
+OBJ=models.o functions.o loglikelihood.o
 
 lib: MultiNest/modules/nested.mod MultiNest/lib/libmultinest.a
 
@@ -23,7 +23,7 @@ MultiNest/lib/libmultinest.a: MultiNest/build/Makefile
 	$(FC) $(FFLAGS) -c $<
 
 models.o: functions.mod
-test.o: models.mod
+test.o: models.mod loglikelihood.mod
 
 test: test.o $(OBJ)
 	$(LD) $(LFLAGS) -o $@ $^
