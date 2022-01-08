@@ -8,7 +8,7 @@ OBJ=models.o functions.o loglikelihood.o
 lib: MultiNest/modules/nested.mod MultiNest/lib/libmultinest.a
 
 FFLAGS+=-IMultiNest/modules/
-LFLAGS+= MultiNest/lib/libmultinest.a
+LFLAGS+=-llapack -lblas
 
 MultiNest/build/Makefile:
 	cd MultiNest/build && cmake ..
@@ -24,8 +24,11 @@ MultiNest/lib/libmultinest.a: MultiNest/build/Makefile
 
 models.o: functions.mod
 test.o: models.mod loglikelihood.mod
+main.o: loglikelihood.mod
 
 test: test.o $(OBJ)
+	$(LD) $(LFLAGS) -o $@ $^
+main: main.o $(OBJ) MultiNest/lib/libmultinest.a
 	$(LD) $(LFLAGS) -o $@ $^
 
 
