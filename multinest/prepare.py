@@ -4,6 +4,7 @@ import struct
 import os
 from astropy.cosmology import Planck18_arXiv_v2 as cosmo
 import scipy
+import re
 
 
 z_table = np.linspace(0, 15, 3000)
@@ -23,17 +24,24 @@ def write_record(fp, typ, content):
     fp.write(struct.pack('<I', len(body)))
 
 
-def convert_injection(fi='../o3a_bbhpop_inj_info.hdf', fo='inj.rec'):
+def convert_injection(ifar_find=1, fi='../o3a_bbhpop_inj_info.hdf', fo='inj.rec'):
     with h5py.File(fi, 'r') as f:
+        mask = (
+            np.array(f['injections/ifar_gstlal']) > ifar_find
+        ) & (
+            np.array(f['injections/ifar_pycbc_full']) > ifar_find
+        ) & (
+            np.array(f['injections/ifar_pycbc_bbh']) > ifar_find
+        )
+        m1 = f['injections/mass1_source'][mask]
+        m2 = f['injections/mass2_source'][mask]
+        rs = f['injections/redshift'][mask]
+        s1 = f['injections/spin1z'][mask]
+        s2 = f['injections/spin2z'][mask]
+
         dat = np.column_stack((
-            f['injections/ifar_gstlal'],
-            f['injections/ifar_pycbc_full'],
-            f['injections/ifar_pycbc_bbh'],
-            f['injections/mass1_source'],
-            f['injections/mass2_source'],
-            f['injections/spin1z'],
-            f['injections/spin2z'],
-            f['injections/redshift']
+            m1, m2, rs,
+            (m1*s1+m2*s2)/(m1+m2)
         ))
 
     with open(fo, 'wb') as fp:
