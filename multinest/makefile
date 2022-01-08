@@ -33,4 +33,4 @@ main: main.o $(OBJ) MultiNest/lib/libmultinest.a
 
 
 clean:
-	rm -f *.o *.mod
+	rm -f *.o *.mod test main
