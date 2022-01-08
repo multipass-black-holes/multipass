@@ -45,6 +45,7 @@ def convert_injection(ifar_find=1, fi='../o3a_bbhpop_inj_info.hdf', fo='inj.rec'
         ))
 
     with open(fo, 'wb') as fp:
+        write_record(fp, 'i', [len(dat)])
         write_record(fp, 'd', dat)
 
 
@@ -112,6 +113,7 @@ def convert_gw(fo='data.rec', base='../all_posterior_samples/', cm=True):
     o = np.concatenate((o1, o2))
 
     with open(fo, 'wb') as fp:
+        write_record(fp, 'i', [len(d)])
         write_record(fp, 'i', o)
         write_record(fp, 'd', d)
 
