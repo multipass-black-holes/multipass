@@ -72,6 +72,19 @@ contains
   END FUNCTION SMOOTH_TANH
 
 
+  PURE FUNCTION SMOOTH_EXP(m, mi, dm)
+  implicit none
+  real(kind=prec), intent(in) :: m(:)
+  real(kind=prec), intent(in) :: mi, dm
+  real(kind=prec) :: smooth_exp(size(m))
+
+  smooth_exp = 0.
+
+  where ((mi < m) .and. (m < mi + dm)) &
+    smooth_exp = 1/(exp(dm/(m-mi) + (dm/(m-mi-dm))) + 1)
+
+  END FUNCTION SMOOTH_EXP
+
                           !!!!!!!!!!!!!!!!!!!!!!
                             END MODULE functions
                           !!!!!!!!!!!!!!!!!!!!!!

@@ -88,6 +88,14 @@ contains
   trivial = 1.
   END FUNCTION TRIVIAL
 
+
+                   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                   !!                             !!
+                   !!     POWER LAW + PEAK        !!
+                   !!                             !!
+                   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
   PURE FUNCTION FLATM(M1, M2, P)
   real(kind=prec), intent(in) :: m1(:), m2(:)
   type(para), intent(in) :: p
@@ -146,6 +154,39 @@ contains
   p%k    = v(8)
   END FUNCTION R2P_PLP_POW
 
+
+                   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                   !!                             !!
+                   !!     PULS. PAIR. INST. SN    !!
+                   !!                             !!
+                   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  PURE FUNCTION PPISN_MF1G(M, P)
+  real(kind=prec), intent(in) :: m(:)
+  type(para), intent(in) :: p
+  real(kind=prec), parameter :: mfudge = 0.99
+  real(kind=prec), parameter :: mpiv   = 30
+  real(kind=prec) :: ppisn_mf1g(size(m))
+
+  ppisn_mf1g = 0.
+
+  where ((p%mmin < m) .and. (m < p%mgap * mfudge)) &
+    ppisn_mf1g = m**p%b*&
+      (1+2*p%a*p%a*sqrt(m/p%mgap)*(1-m/p%mgap)**(p%a-1))
+
+  where ((p%mmin < m) .and. (m < p%mmin + p%dm)) &
+    ppisn_mf1g = ppisn_mf1g * p%sf(m, p%mmin, p%dm)
+
+  END FUNCTION PPISN_MF1G
+
+
+
+                   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                   !!                             !!
+                   !!            TOOLS            !!
+                   !!                             !!
+                   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
   FUNCTION GETMODEL(mods) result(m)
   character(len=*), intent(in) :: mods
   type(model) :: m
@@ -175,6 +216,19 @@ contains
   real(kind=prec) :: diff
 
   mtest = (/ 1.,11., 20., 30., 40., 100. /)
+  ans = (/0._prec,  0.010459028944395847_prec, &
+        0.0035206207261596584_prec,  0.0017915249285508827_prec, &
+        0.0012500000000000002_prec,  0._prec /)
+
+  print*,sum(abs(ans - ppisn_mf1g(mtest, &
+                para(mgap = 50._prec, &
+                     a    =  .5_prec, &
+                     b    = -2._prec, &
+                     d    = -3._prec, &
+                     mmin =  5._prec, &
+                     dm   =  5._prec, &
+                     sf   = smooth_exp)))) / 6.
+
   ans = (/ 0., 0.03674262, 0.01327075, 0.02089596, 0.00493742, 0. /)
 
   diff = sum(abs(ans - plp_mf(mtest, &
