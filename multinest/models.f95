@@ -93,6 +93,7 @@ contains
   type(para), intent(in) :: p
   real(kind=prec) :: flatm(size(m1))
   flatm = 1/(m1-p%mmin)
+  flatm = flatm * p%sf(m2, p%mmin, p%dm)
   END FUNCTION FLATM
 
   PURE FUNCTION POWM(M1, M2, P)
@@ -101,6 +102,7 @@ contains
   real(kind=prec) :: powm(size(m1))
 
   powm = (m2 / m1) ** p%k
+  powm = powm * p%sf(m2, p%mmin, p%dm)
   END FUNCTION POWM
 
   ! This implements the power-law + peak model (PLP) for the primary mass of the

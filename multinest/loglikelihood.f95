@@ -24,10 +24,10 @@ contains
   real(kind=prec) :: av_likelihood(size(dat,1))
   integer i
 
-  av_likelihood = m%primary(dat(:, 1), p)
-
-  av_likelihood = av_likelihood * ( dat(:, 2) / dat(:,1) ) ** p%k
-  av_likelihood = av_likelihood * p%sf(dat(:,2), p%mmin, p%dm)
+  av_likelihood = m%primary(dat(:, 1), p)  &
+                * m%secondary(dat(:,1), dat(:,2), p) &
+                * m%redshift(dat(:,3), p) &
+                * m%spin(dat(:,4), p)
 
   END FUNCTION AV_LIKELIHOOD
 
