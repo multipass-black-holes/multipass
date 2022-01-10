@@ -65,9 +65,6 @@ def load_gw(base='../all_posterior_samples/', v=2, cm=True):
 
     offsets = []
 
-    if v == 1:
-        files = [files[0]]
-
     for fn in files:
         with h5py.File(fn, 'r') as f:
             if v == 1:
@@ -89,7 +86,7 @@ def load_gw(base='../all_posterior_samples/', v=2, cm=True):
                     (
                         d['spin1'] * m1i * d['costilt1']
                         + d['spin2'] * m2i * d['costilt2']
-                    ) / (m1 + m2)
+                    ) / (m1i + m2i)
                 ))
 
             elif v == 2:
