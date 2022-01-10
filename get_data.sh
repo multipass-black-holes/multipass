@@ -18,3 +18,9 @@ else
     rm all_posterior_samples.tar
 fi
 
+if [ -f GWTC-1_sample_release.tar.gz ]; then
+    echo "Found GWTC-1_sample_release.tar.gz"
+else
+    wget https://dcc.ligo.org/public/0157/P1800370/005/GWTC-1_sample_release.tar.gz
+    tar xf GWTC-1_sample_release.tar.gz -C all_posterior_samples/ --strip 1
+fi
