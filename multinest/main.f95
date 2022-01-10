@@ -32,8 +32,12 @@
     max_val = (/100._prec, 50._prec, 10._prec, 12._prec, 1._prec, 10._prec, 10._prec, 10._prec/)
   character(len=1000), parameter :: root = "testrun/"
 
+  type(model) :: the_model
+
   call load_inj("inj.rec")
   call load_data("data.rec")
+
+  the_model = getmodel('plp+pow+trivial+trivial')
 
   call nestrun(IS, modal, ceff, np, tol, efr, &
       ndim, npara, nparaMode, maxmode, feedbackn, &
@@ -46,16 +50,12 @@ contains
   integer :: ndim, npar, context
   real(kind=prec) :: cube(ndim)
   real(kind=prec) :: lnew
-  real(kind=prec) :: para(npara)
-  para = min_val + cube * (max_val - min_val)
-  lnew = ll(real2model(mmax = para(1), &
-                       mum  = para(2), &
-                       sm   = para(3), &
-                       alpha= para(4), &
-                       lp   = para(5), &
-                       mmin = para(6), &
-                       dm   = para(7), &
-                       k    = para(8)))
+  type(para) :: p
+
+  p = the_model%r2p(min_val + cube * (max_val - min_val))
+  p%sf => the_model%smooth
+
+  lnew = ll(the_model, p)
   END SUBROUTINE SLIKELIHOOD
 
   SUBROUTINE DUMPER(nSamples, nlive, nPar, physLive, posterior, &
