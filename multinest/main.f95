@@ -48,7 +48,14 @@ contains
   real(kind=prec) :: lnew
   real(kind=prec) :: para(npara)
   para = min_val + cube * (max_val - min_val)
-  lnew = ll(para)
+  lnew = ll(real2model(mmax = para(1), &
+                       mum  = para(2), &
+                       sm   = para(3), &
+                       alpha= para(4), &
+                       lp   = para(5), &
+                       mmin = para(6), &
+                       dm   = para(7), &
+                       k    = para(8)))
   END SUBROUTINE SLIKELIHOOD
 
   SUBROUTINE DUMPER(nSamples, nlive, nPar, physLive, posterior, &

@@ -27,7 +27,72 @@
   END TYPE PARA
 
 
+  ABSTRACT INTERFACE
+    PURE FUNCTION MASS1FN(M, P)
+      use functions, only: prec
+      import para
+      real(kind=prec), intent(in) :: m(:)
+      type(para), intent(in) :: p
+      real(kind=prec) :: mass1fn(size(m))
+    END FUNCTION MASS1FN
+
+    PURE FUNCTION MASS2FN(M1, M2, P)
+      use functions, only: prec
+      import para
+      real(kind=prec), intent(in) :: m1(:), m2(:)
+      type(para), intent(in) :: p
+      real(kind=prec) :: mass2fn(size(m1))
+    END FUNCTION MASS2FN
+
+    PURE FUNCTION REDSHIFTFN(Z, P)
+      use functions, only: prec
+      import para
+      real(kind=prec), intent(in) :: z(:)
+      type(para), intent(in) :: p
+      real(kind=prec) :: redshiftfn(size(z))
+    END FUNCTION REDSHIFTFN
+
+    PURE FUNCTION SPINFN(chieff, P)
+      use functions, only: prec
+      import para
+      real(kind=prec), intent(in) :: chieff(:)
+      type(para), intent(in) :: p
+      real(kind=prec) :: spinfn(size(chieff))
+    END FUNCTION SPINFN
+  END INTERFACE
+
+
+  TYPE MODEL
+    type(para) :: p
+    procedure(mass1fn), pointer, nopass :: primary
+    procedure(mass2fn), pointer, nopass :: secondary
+    procedure(redshiftFn), pointer, nopass :: redshift
+    procedure(spinFn), pointer, nopass :: spin
+  END TYPE MODEL
+
 contains
+
+  PURE FUNCTION TRIVIAL(M, P)
+  real(kind=prec), intent(in) :: m(:)
+  type(para), intent(in) :: p
+  real(kind=prec) :: trivial(size(m))
+  trivial = 1.
+  END FUNCTION TRIVIAL
+
+  PURE FUNCTION FLATM(M1, M2, P)
+  real(kind=prec), intent(in) :: m1(:), m2(:)
+  type(para), intent(in) :: p
+  real(kind=prec) :: flatm(size(m1))
+  flatm = 1/(m1-p%mmin)
+  END FUNCTION FLATM
+
+  PURE FUNCTION POWM(M1, M2, P)
+  real(kind=prec), intent(in) :: m1(:), m2(:)
+  type(para), intent(in) :: p
+  real(kind=prec) :: powm(size(m1))
+
+  powm = (m2 / m1) ** p%k
+  END FUNCTION POWM
 
   ! This implements the power-law + peak model (PLP) for the primary mass of the
   ! 1st generation. The model is specified in B2 of [2010.14533]
@@ -43,6 +108,56 @@ contains
             * p%sf(mBH, p%mmin, p%dm)
 
   END FUNCTION PLP_MF
+
+
+  PURE FUNCTION REAL2MODEL(mmin, dm, &
+                           mmax, mum, sm, alpha, lp, &
+                           k, &
+                           mgap, a, b, d, &
+                           sf) result(m)
+
+  ! Needed for all
+  real(kind=prec), intent(in), optional :: mmin, dm
+  ! Needed for PLP
+  real(kind=prec), intent(in), optional :: mmax, mum, sm, alpha, lp
+  ! Needed for PLP_POW
+  real(kind=prec), intent(in), optional :: k
+  ! Needed for PPISN
+  real(kind=prec), intent(in), optional :: mgap, a, b, d
+  ! Smooth function
+  procedure(smooth_func), intent(in), optional, pointer :: sf
+  type(model) :: m
+
+  m%p%mmin = mmin
+  m%p%dm = dm
+
+  if(present(mmax)) then
+    m%p%mmax = mmax
+    m%p%mum = mum
+    m%p%sm = sm
+    m%p%alpha = alpha
+    m%p%lp = lp
+
+    m%primary => plp_mf
+    if(present(k)) then
+      m%p%k = k
+      m%secondary => powm
+    else
+      m%secondary => flatm
+    endif
+  elseif(present(mgap)) then
+    m%p%mgap = mgap
+    m%p%a = a
+    m%p%b = b
+    m%p%d = d
+  endif
+
+  if(present(sf)) then
+    m%p%sf => sf
+  else
+    m%p%sf => smooth_tanh
+  endif
+  END FUNCTION REAL2MODEL
 
 
   SUBROUTINE TEST
