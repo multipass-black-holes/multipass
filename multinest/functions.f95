@@ -72,6 +72,7 @@ contains
   END FUNCTION SMOOTH_TANH
 
 
+  ! This implements (4) of [2104.02685]
   PURE FUNCTION SMOOTH_EXP(m, mi, dm)
   implicit none
   real(kind=prec), intent(in) :: m(:)

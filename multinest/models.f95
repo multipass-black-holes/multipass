@@ -161,6 +161,7 @@ contains
                    !!                             !!
                    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
+  ! This implements (3) of [2104.02685]
   PURE FUNCTION PPISN_MF1G(M, P)
   real(kind=prec), intent(in) :: m(:)
   type(para), intent(in) :: p
@@ -179,6 +180,24 @@ contains
 
   END FUNCTION PPISN_MF1G
 
+
+  ! This implements (6) of [2104.02685]
+  PURE FUNCTION PPISN_MF2G(M, P)
+  real(kind=prec), intent(in) :: m(:)
+  type(para), intent(in) :: p
+  real(kind=prec), parameter :: mfudge = 0.99
+  real(kind=prec), parameter :: mpiv   = 30
+  real(kind=prec) :: ppisn_mf2g(size(m))
+
+  ppisn_mf2g = 1.
+  where (m < p%mmin) ppisn_mf2g = 0.
+  where ((p%mmin < m) .and. (m < p%mmin + p%dm)) &
+    ppisn_mf2g = ppisn_mf2g * p%sf(m, p%mmin, p%dm)
+  where (p%mgap+ p%mmin + p%dm/2 < m) &
+    ppisn_mf2g = (m / (p%mgap + p%mmin + p%dm/2)) ** p%d
+
+  ppisn_mf2g = ppisn_mf2g * mpiv**p%b
+  END FUNCTION PPISN_MF2G
 
 
                    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -221,6 +240,17 @@ contains
         0.0012500000000000002_prec,  0._prec /)
 
   print*,sum(abs(ans - ppisn_mf1g(mtest, &
+                para(mgap = 50._prec, &
+                     a    =  .5_prec, &
+                     b    = -2._prec, &
+                     d    = -3._prec, &
+                     mmin =  5._prec, &
+                     dm   =  5._prec, &
+                     sf   = smooth_exp)))) / 6.
+
+  ans = (/ 0._prec, 1/900._prec, 1/900._prec, &
+           1/900._prec, 1/900._prec, 0.00021123263888888892_prec/)
+  print*,sum(abs(ans - ppisn_mf2g(mtest, &
                 para(mgap = 50._prec, &
                      a    =  .5_prec, &
                      b    = -2._prec, &
