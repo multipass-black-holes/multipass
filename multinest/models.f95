@@ -5,11 +5,11 @@
   implicit none
 
   ABSTRACT INTERFACE
-    PURE FUNCTION SMOOTH_FUNC(M, MI, DM)
+    PURE FUNCTION SMOOTHFN(M, MI, DM)
       use functions, only: prec
       real(kind=prec), intent(in) :: m(:), mi, dm
-      real(kind=prec) :: smooth_func(size(m))
-    END FUNCTION SMOOTH_FUNC
+      real(kind=prec) :: smoothfn(size(m))
+    END FUNCTION SMOOTHFN
   END INTERFACE
 
   TYPE PARA
@@ -23,7 +23,7 @@
     real(kind=prec) :: mgap=0, a=0, b=0, d=0
 
     ! Smooth function
-    procedure(smooth_func), pointer, nopass :: sf
+    procedure(smoothfn), pointer, nopass :: sf
   END TYPE PARA
 
 
@@ -59,15 +59,24 @@
       type(para), intent(in) :: p
       real(kind=prec) :: spinfn(size(chieff))
     END FUNCTION SPINFN
+
+    PURE FUNCTION PARAFN(V)
+      use functions, only: prec
+      import para
+      real(kind=prec), intent(in) :: v(:)
+      type(para) :: parafn
+    END FUNCTION PARAFN
   END INTERFACE
 
 
   TYPE MODEL
-    type(para) :: p
     procedure(mass1fn), pointer, nopass :: primary
     procedure(mass2fn), pointer, nopass :: secondary
     procedure(redshiftFn), pointer, nopass :: redshift
     procedure(spinFn), pointer, nopass :: spin
+    procedure(paraFn), pointer, nopass :: r2p
+    procedure(smoothFn), pointer, nopass :: smooth
+
   END TYPE MODEL
 
 contains
@@ -110,55 +119,54 @@ contains
   END FUNCTION PLP_MF
 
 
-  PURE FUNCTION REAL2MODEL(mmin, dm, &
-                           mmax, mum, sm, alpha, lp, &
-                           k, &
-                           mgap, a, b, d, &
-                           sf) result(m)
+  PURE FUNCTION R2P_PLP_FLAT(V) result(p)
+  real(kind=prec), intent(in) :: v(:)
+  type(para) :: p
+  p%mmin = v(1)
+  p%dm   = v(2)
+  p%mmax = v(3)
+  p%mum  = v(4)
+  p%sm   = v(5)
+  p%alpha= v(6)
+  p%lp   = v(7)
+  END FUNCTION R2P_PLP_FLAT
 
-  ! Needed for all
-  real(kind=prec), intent(in), optional :: mmin, dm
-  ! Needed for PLP
-  real(kind=prec), intent(in), optional :: mmax, mum, sm, alpha, lp
-  ! Needed for PLP_POW
-  real(kind=prec), intent(in), optional :: k
-  ! Needed for PPISN
-  real(kind=prec), intent(in), optional :: mgap, a, b, d
-  ! Smooth function
-  procedure(smooth_func), intent(in), optional, pointer :: sf
+  PURE FUNCTION R2P_PLP_POW(V) result(p)
+  real(kind=prec), intent(in) :: v(:)
+  type(para) :: p
+  p%mmin = v(1)
+  p%dm   = v(2)
+  p%mmax = v(3)
+  p%mum  = v(4)
+  p%sm   = v(5)
+  p%alpha= v(6)
+  p%lp   = v(7)
+  p%k    = v(8)
+  END FUNCTION R2P_PLP_POW
+
+  FUNCTION GETMODEL(mods) result(m)
+  character(len=*), intent(in) :: mods
   type(model) :: m
 
-  m%p%mmin = mmin
-  m%p%dm = dm
-
-  if(present(mmax)) then
-    m%p%mmax = mmax
-    m%p%mum = mum
-    m%p%sm = sm
-    m%p%alpha = alpha
-    m%p%lp = lp
-
-    m%primary => plp_mf
-    if(present(k)) then
-      m%p%k = k
-      m%secondary => powm
-    else
+  select case(mods)
+    case('plp+flat+trivial+trivial')
+      m%primary => plp_mf
       m%secondary => flatm
-    endif
-  elseif(present(mgap)) then
-    m%p%mgap = mgap
-    m%p%a = a
-    m%p%b = b
-    m%p%d = d
-  endif
-
-  if(present(sf)) then
-    m%p%sf => sf
-  else
-    m%p%sf => smooth_tanh
-  endif
-  END FUNCTION REAL2MODEL
-
+      m%redshift => trivial
+      m%spin => trivial
+      m%r2p => r2p_plp_flat
+      m%smooth => smooth_tanh
+    case('plp+pow+trivial+trivial')
+      m%primary => plp_mf
+      m%secondary => powm
+      m%redshift => trivial
+      m%spin => trivial
+      m%r2p => r2p_plp_pow
+      m%smooth => smooth_tanh
+    case default
+      stop 9
+  end select
+  END FUNCTION GETMODEL
 
   SUBROUTINE TEST
   real(kind=prec), dimension(6) :: mtest, ans
