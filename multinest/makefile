@@ -23,6 +23,7 @@ MultiNest/lib/libmultinest.a: MultiNest/build/Makefile
 	$(FC) $(FFLAGS) -c $<
 
 models.o: functions.mod
+loglikelihood.o: models.mod
 test.o: models.mod loglikelihood.mod
 main.o: loglikelihood.mod
 

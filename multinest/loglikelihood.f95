@@ -2,7 +2,7 @@
                            MODULE LOGLIKELIHOOD
                           !!!!!!!!!!!!!!!!!!!!!!
   use functions
-  use models, only: plp_mf
+  use models, only: plp_mf, para
   implicit none
   real(kind=prec), allocatable, dimension(:,:) :: injections, dat
   integer, allocatable, dimension(:) :: offsets
@@ -17,31 +17,30 @@ contains
 
   ! This builds the likelihood array for an event but *does not*
   ! average it
-  PURE FUNCTION AV_LIKELIHOOD(dat, args)
-  real(kind=prec), intent(in) :: dat(:, :), args(:)
+  PURE FUNCTION AV_LIKELIHOOD(dat, p)
+  real(kind=prec), intent(in) :: dat(:, :)
+  type(para), intent(in) :: p
   real(kind=prec) :: av_likelihood(size(dat,1))
   integer i
 
-  av_likelihood = plp_mf(dat(:, 1), &
-    args(1), args(2), args(3), args(4), &
-    args(5), args(6), args(7))
+  av_likelihood = plp_mf(dat(:, 1), p)
 
-  av_likelihood = av_likelihood * ( dat(:, 2) / dat(:,1) ) ** args(8)
-  av_likelihood = av_likelihood * smooth_tanh(dat(:,2), args(6), args(7))
+  av_likelihood = av_likelihood * ( dat(:, 2) / dat(:,1) ) ** p%k
+  av_likelihood = av_likelihood * p%sf(dat(:,2), p%mmin, p%dm)
 
   END FUNCTION AV_LIKELIHOOD
 
 
-  PURE FUNCTION LL(ARGS)
-  real(kind=prec), intent(in) :: args(:)
+  PURE FUNCTION LL(P)
+  type(para), intent(in) :: p
   real(kind=prec) :: ll
   real(kind=prec) :: avg(size(dat,1)), inj(size(injections,1))
   real(kind=prec) :: tmp, acc, Nlxi
   integer i
 
-  avg = av_likelihood(dat, args)
+  avg = av_likelihood(dat, p)
 
-  inj = av_likelihood(injections, args)
+  inj = av_likelihood(injections, p)
   inj = inj / injections(:,1)**(-4.35)
   inj = inj / injections(:,2)**2
 
@@ -93,20 +92,28 @@ contains
   END SUBROUTINE LOAD_DATA
 
   SUBROUTINE TEST
-  real(kind=prec) :: para(8), ans
+  real(kind=prec) :: ans
+  type(para) :: p
   call load_inj("inj.rec")
   call load_data("data.rec")
 
-  para = (/ 39.3856_prec, 44.7844_prec, 6.06597_prec, -1.71307_prec, &
-           0.394535_prec, 2.61592_prec, 8.54510_prec,  4.40876_prec /)
+  p = para(mmax = 39.3856_prec,&
+           mum  = 44.7844_prec,&
+           sm   = 6.06597_prec,&
+           alpha= -1.71307_prec,&
+           lp   = 0.394535_prec,&
+           mmin = 2.61592_prec,&
+           dm   = 8.54510_prec,&
+           k    = 4.40876_prec, &
+           sf   = smooth_tanh)
 
-  ans = mean(av_likelihood(dat(offsets(37):offsets(38)-1,:), para))
+  ans = mean(av_likelihood(dat(offsets(37):offsets(38)-1,:), p))
   print*, ans / 0.0048440957269826265 - 1
 
-  ans = mean(av_likelihood(injections, para))
+  ans = mean(av_likelihood(injections, p))
   print*, ans / 0.005397037082072583 - 1
 
-  ans = ll(para)
+  ans = ll(p)
   print*,ans / -3000396.124014442 - 1
 
   END SUBROUTINE TEST
