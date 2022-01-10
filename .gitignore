@@ -1,6 +1,8 @@
 o3a_bbhpop_inj_info.hdf
 all_posterior_samples
 
+*.tar.gz
+
 # Created by https://www.toptal.com/developers/gitignore/api/macos,linux,vim,python,c,xcode,c++
 # Edit at https://www.toptal.com/developers/gitignore?templates=macos,linux,vim,python,c,xcode,c++
 
