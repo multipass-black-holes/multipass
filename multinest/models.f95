@@ -201,6 +201,45 @@ contains
   END FUNCTION PPISN_MF2G
 
 
+  ! returns the integral from mmin to m1 of mf_1g for all m1 in lm1;
+  ! this is the denominator of the conditional probability for m2
+  ! given the assumption that m1 is in 1g, i.e. (1.12)
+  FUNCTION PPISN_PM2M1DEN_M11G(M, P)
+  real(kind=prec), intent(in) :: m(:)
+  type(para), intent(in) :: p
+  real(kind=prec) :: ppisn_pm2m1den_m11g(size(m))
+  real(kind=prec) :: x(size(m))
+  real(kind=prec) :: sLVC(2)
+  real(kind=prec), parameter :: erf2 = erf(2._prec)
+  real(kind=prec), parameter :: ep = 1e-8
+
+  ! the part from Mmin + dm -- m1
+  x = m/p%mgap
+  ppisn_pm2m1den_m11g = p%mgap**(p%b-1) * &
+      (2*p%a*p%a*Btilde(p%b+1.5_prec, p%a, x) + x**(p%b+1) / (p%b+1))
+  x = (p%mmin+p%dm)/p%mgap
+  ppisn_pm2m1den_m11g = ppisn_pm2m1den_m11g - p%mgap**(p%b-1) * &
+      (2*p%a*p%a*Btilde(p%b+1.5_prec, p%a, x) + x**(p%b+1) / (p%b+1))
+
+  select case(p%sf_c)
+    case('exp')
+      sLVC = p%sf((/p%mmin+p%dm+ep, p%mmin+ep /), p%mmin, p%dm)
+
+      ppisn_pm2m1den_m11g = ppisn_pm2m1den_m11g + &
+        sLVC(1) * ((p%mmin+p%dm+ep)+0.5*p%dm)**(p%b+1) / (p%b+1) &
+       -sLVC(2) * ((p%mmin+     ep)+0.5*p%dm)**(p%b+1) / (p%b+1)
+
+    case('erf')
+      ppisn_pm2m1den_m11g = ppisn_pm2m1den_m11g + &
+        erf2 * ( - (2*p%mmin+p%dm) * (0.5*p%dm + p%mmin)**p%b &
+                   + p%mmin**(p%b+1) ) / 2 / (p%b + 1) &
+      - (-1-erf2) * (p%dm + p%mmin)**(p%b+1) + p%mmin**(p%b+1) &
+                   / 2 / (p%b + 1)
+  end select
+
+  END FUNCTION PPISN_PM2M1DEN_M11G
+
+
                    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                    !!                             !!
                    !!            TOOLS            !!

@@ -35,6 +35,29 @@ contains
 
   END FUNCTION GAUSS
 
+  PURE FUNCTION BTILDE(A, B, Z)
+  real(kind=prec), intent(in) :: a, b
+  real(kind=prec), intent(in) :: z(:)
+  real(kind=prec) :: btilde(size(z))
+  integer, parameter :: N = 10
+  integer k, kfac
+  real(kind=prec) :: gb, zk(size(z))
+
+  gb = gamma(1-b)
+
+  kfac = 1
+  zk = 1
+  Btilde = 1._prec / a
+  do k=1,n
+    kfac = kfac * k
+    zk = zk * z
+    Btilde = Btilde + gamma(1+k-b) * zk / (a+k) / gb / kfac
+  enddo
+
+  Btilde = z**a * Btilde - gamma(a)*gamma(b)/gamma(a+b)
+  END FUNCTION BTILDE
+
+
   ! This implements the smooth function (B6) of [2010.14533] or (4) of
   ! [2104.02685]
   PURE FUNCTION SMOOTH_EXP(M, MI, DM)
@@ -71,6 +94,14 @@ contains
 
   END FUNCTION SMOOTH_TANH
 
+  ! This implements (1.17)
+  PURE FUNCTION SMOOTH_ERF(m, mi, dm)
+  implicit none
+  real(kind=prec), intent(in) :: m(:)
+  real(kind=prec), intent(in) :: mi, dm
+  real(kind=prec) :: smooth_erf(size(m))
+  smooth_erf = 0.5 * erf( 4 * (m-mi-dm/2) / dm ) + 0.5
+  END FUNCTION SMOOTH_ERF
 
                           !!!!!!!!!!!!!!!!!!!!!!
                             END MODULE functions
