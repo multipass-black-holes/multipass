@@ -207,7 +207,7 @@ contains
   ! returns the integral from mmin to m1 of mf_1g for all m1 in lm1;
   ! this is the denominator of the conditional probability for m2
   ! given the assumption that m1 is in 1g, i.e. (1.12)
-  FUNCTION PPISN_PM2M1DEN_M11G(M, P)
+  PURE FUNCTION PPISN_PM2M1DEN_M11G(M, P)
   real(kind=prec), intent(in) :: m(:)
   type(para), intent(in) :: p
   real(kind=prec) :: ppisn_pm2m1den_m11g(size(m))
@@ -246,7 +246,7 @@ contains
   ! returns the integral from mmin to m1 of mf_2g for all m1 in lm1;
   ! this is the denominator of the conditional probability for m2
   ! given the assumption that m1 is in 2g
-  FUNCTION PPISN_PM2M1DEN_M12G(M, P)
+  PURE FUNCTION PPISN_PM2M1DEN_M12G(M, P)
   real(kind=prec), intent(in) :: m(:)
   type(para), intent(in) :: p
   real(kind=prec) :: ppisn_pm2m1den_m12g(size(m))
@@ -263,6 +263,15 @@ contains
 
   END FUNCTION PPISN_PM2M1DEN_M12G
 
+
+  PURE FUNCTION PPISN_M2_PHYS(M1, M2, P)
+  real(kind=prec), intent(in) :: m1(:), m2(:)
+  type(para), intent(in) :: p
+  real(kind=prec) :: ppisn_m2_phys(size(m1))
+
+  ppisn_m2_phys = ppisn_mf1g(m2, p) / ppisn_pm2m1den_m11g(m1, p)
+
+  END FUNCTION PPISN_M2_PHYS
                    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                    !!                             !!
                    !!            TOOLS            !!
