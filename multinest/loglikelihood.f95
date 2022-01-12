@@ -109,6 +109,7 @@ contains
            mmin = 2.61592_prec,&
            dm   = 8.54510_prec,&
            k    = 4.40876_prec,&
+           sf_c = 'tan',&
            sf   = smooth_tanh)
 
   m = getmodel('plp+pow+trivial+trivial')

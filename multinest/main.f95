@@ -54,6 +54,7 @@ contains
 
   p = the_model%r2p(min_val + cube * (max_val - min_val))
   p%sf => the_model%smooth
+  p%sf_c = the_model%smooth_c
 
   lnew = ll(the_model, p)
   END SUBROUTINE SLIKELIHOOD

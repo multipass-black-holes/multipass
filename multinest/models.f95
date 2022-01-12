@@ -24,6 +24,7 @@
 
     ! Smooth function
     procedure(smoothfn), pointer, nopass :: sf
+    character(len=3) :: sf_c
   END TYPE PARA
 
 
@@ -76,7 +77,7 @@
     procedure(spinFn), pointer, nopass :: spin
     procedure(paraFn), pointer, nopass :: r2p
     procedure(smoothFn), pointer, nopass :: smooth
-
+    character(len=3) :: smooth_c
   END TYPE MODEL
 
 contains
@@ -218,6 +219,7 @@ contains
       m%spin => trivial
       m%r2p => r2p_plp_flat
       m%smooth => smooth_tanh
+      m%smooth_c = "tan"
     case('plp+pow+trivial+trivial')
       m%primary => plp_mf
       m%secondary => powm
@@ -225,6 +227,7 @@ contains
       m%spin => trivial
       m%r2p => r2p_plp_pow
       m%smooth => smooth_tanh
+      m%smooth_c = "tan"
     case default
       stop 9
   end select
@@ -246,6 +249,7 @@ contains
                      d    = -3._prec, &
                      mmin =  5._prec, &
                      dm   =  5._prec, &
+                     sf_c = 'exp'   , &
                      sf   = smooth_exp)))) / 6.
 
   ans = (/ 0._prec, 1/900._prec, 1/900._prec, &
@@ -257,6 +261,7 @@ contains
                      d    = -3._prec, &
                      mmin =  5._prec, &
                      dm   =  5._prec, &
+                     sf_c = 'exp'   , &
                      sf   = smooth_exp)))) / 6.
 
   ans = (/ 0., 0.03674262, 0.01327075, 0.02089596, 0.00493742, 0. /)
@@ -269,6 +274,7 @@ contains
                      lp   = 0.2_prec, &
                      mmin = 5._prec, &
                      dm   = 5._prec, &
+                     sf_c = 'tan'   , &
                      sf   = smooth_tanh)))) / 6.
   print*,diff
 
@@ -284,6 +290,7 @@ contains
                      lp   = 0.394535_prec,&
                      mmin = 2.61592_prec,&
                      dm   = 8.5451_prec,&
+                     sf_c = 'tan'   , &
                      sf   = smooth_tanh)))) / 6.
 
   print*,diff
