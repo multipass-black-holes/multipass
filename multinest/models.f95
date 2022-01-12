@@ -240,6 +240,26 @@ contains
   END FUNCTION PPISN_PM2M1DEN_M11G
 
 
+  ! returns the integral from mmin to m1 of mf_2g for all m1 in lm1;
+  ! this is the denominator of the conditional probability for m2
+  ! given the assumption that m1 is in 2g
+  FUNCTION PPISN_PM2M1DEN_M12G(M, P)
+  real(kind=prec), intent(in) :: m(:)
+  type(para), intent(in) :: p
+  real(kind=prec) :: ppisn_pm2m1den_m12g(size(m))
+
+  ppisn_pm2m1den_m12g = 1._prec
+
+  where( (p%mmin < m).and.(m < p%mmin+p%dm) ) &
+    ppisn_pm2m1den_m12g = 0.5 * (m - p%mmin)  ! TODO
+  where( (p%mmin+p%dm < m).and.(m < p%mmax) ) &
+    ppisn_pm2m1den_m12g = (0.5*p%dm) + m
+  where( (p%mmax < m) ) &
+    ppisn_pm2m1den_m12g = (0.5*p%dm) + p%mmax + &
+        ((m/p%mmax)**(1+p%d) - 1)*p%mmax/(1+p%d)
+
+  END FUNCTION PPISN_PM2M1DEN_M12G
+
                    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                    !!                             !!
                    !!            TOOLS            !!
