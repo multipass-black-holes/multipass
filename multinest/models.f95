@@ -69,12 +69,15 @@
     END FUNCTION PARAFN
   END INTERFACE
 
+  TYPE SPINFNS
+    procedure(spinFn), pointer, nopass :: f
+  END TYPE SPINFNS
 
   TYPE MODEL
     procedure(mass1fn), pointer, nopass :: primary
     procedure(mass2fn), pointer, nopass :: secondary
     procedure(redshiftFn), pointer, nopass :: redshift
-    procedure(spinFn), pointer, nopass :: spin
+    type(spinFns), dimension(2,2) :: spin
     procedure(paraFn), pointer, nopass :: r2p
     procedure(smoothFn), pointer, nopass :: smooth
     character(len=3) :: smooth_c
@@ -275,7 +278,10 @@ contains
       m%primary => plp_mf
       m%secondary => flatm
       m%redshift => trivial
-      m%spin => trivial
+      m%spin(1,1)%f => trivial
+      m%spin(1,2)%f => trivial
+      m%spin(2,1)%f => trivial
+      m%spin(2,2)%f => trivial
       m%r2p => r2p_plp_flat
       m%smooth => smooth_tanh
       m%smooth_c = "tan"
@@ -283,7 +289,10 @@ contains
       m%primary => plp_mf
       m%secondary => powm
       m%redshift => trivial
-      m%spin => trivial
+      m%spin(1,1)%f => trivial
+      m%spin(1,2)%f => trivial
+      m%spin(2,1)%f => trivial
+      m%spin(2,2)%f => trivial
       m%r2p => r2p_plp_pow
       m%smooth => smooth_exp
       m%smooth_c = "tan"

@@ -27,7 +27,7 @@ contains
   av_likelihood = m%primary(dat(:, 1), p)  &
                 * m%secondary(dat(:,1), dat(:,2), p) &
                 * m%redshift(dat(:,3), p) &
-                * m%spin(dat(:,4), p)
+                * m%spin(1,1)%f(dat(:,4), p)
 
   END FUNCTION AV_LIKELIHOOD
 
