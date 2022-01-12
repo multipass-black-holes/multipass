@@ -1,5 +1,7 @@
 o3a_bbhpop_inj_info.hdf
 all_posterior_samples
+*.hdf5
+*.hdf
 
 *.tar.gz
 
