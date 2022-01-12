@@ -24,3 +24,9 @@ else
     wget https://dcc.ligo.org/public/0157/P1800370/005/GWTC-1_sample_release.tar.gz
     tar xf GWTC-1_sample_release.tar.gz -C all_posterior_samples/ --strip 1
 fi
+
+if [ -f endo3_mixture-LIGO-T2100113-v12.hdf5 ]; then
+    echo "Found O3 injection, skipping"
+else
+    wget https://zenodo.org/record/5546676/files/endo3_mixture-LIGO-T2100113-v12.hdf5?download=1 -O endo3_mixture-LIGO-T2100113-v12.hdf5
+fi
