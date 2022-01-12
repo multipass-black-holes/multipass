@@ -25,6 +25,8 @@
     ! Smooth function
     procedure(smoothfn), pointer, nopass :: sf
     character(len=3) :: sf_c
+
+    real(kind=prec) :: lam21, lam12, lam22
   END TYPE PARA
 
 
@@ -75,12 +77,15 @@
 
   TYPE MODEL
     procedure(mass1fn), pointer, nopass :: primary
+    procedure(mass1fn), pointer, nopass :: primaryM2
     procedure(mass2fn), pointer, nopass :: secondary
     procedure(redshiftFn), pointer, nopass :: redshift
     type(spinFns), dimension(2,2) :: spin
     procedure(paraFn), pointer, nopass :: r2p
     procedure(smoothFn), pointer, nopass :: smooth
     character(len=3) :: smooth_c
+    character(len=4) :: secondary_c
+    logical :: norms
   END TYPE MODEL
 
 contains
@@ -272,6 +277,38 @@ contains
   ppisn_m2_phys = ppisn_mf1g(m2, p) / ppisn_pm2m1den_m11g(m1, p)
 
   END FUNCTION PPISN_M2_PHYS
+
+
+  ! This calculates the correction term (1.9) with
+  ! norms = (/lam21, lam12, lam22)
+  PURE FUNCTION PPISN_NORMS(M1, M2, CHI, Z, M, P)
+  real(kind=prec), intent(in) :: m1(:), m2(:), chi(:), z(:)
+  type(model), intent(in) :: m
+  type(para), intent(in) :: p
+  real(kind=prec) :: ppisn_norms(size(m1))
+
+  real(kind=prec), dimension(size(m1)) :: L21, L12, L22
+  real(kind=prec) :: lam21, lam12, lam22
+
+  L21 = p%lam21 * m%primaryM2(m1,p)*m%spin(2,1)%f(chi,p)*m%redshift(z,p)
+  L12 = p%lam12 * m%primary  (m1,p)*m%spin(1,2)%f(chi,p)*m%redshift(z,p)
+  L22 = p%lam22 * m%primaryM2(m1,p)*m%spin(2,2)%f(chi,p)*m%redshift(z,p)
+
+  select case(m%secondary_c)
+    case('phys')
+      L21 = L21 * m%primary  (m2,p) / ppisn_pm2m1den_m12g(m1, p)
+      L12 = L12 * m%primaryM2(m2,p) / ppisn_pm2m1den_m11g(m1, p)
+      L22 = L22 * m%primaryM2(m2,p) / ppisn_pm2m1den_m12g(m1, p)
+    case('flat')
+      L21 = L21 / (m1 - p%mmin)
+      L12 = L12 / (m1 - p%mmin)
+      L22 = L22 / (m1 - p%mmin)
+  end select
+
+  ppisn_norms = L21+L12+L22
+
+  END FUNCTION PPISN_NORMS
+
                    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                    !!                             !!
                    !!            TOOLS            !!
@@ -294,6 +331,7 @@ contains
       m%r2p => r2p_plp_flat
       m%smooth => smooth_tanh
       m%smooth_c = "tan"
+      m%norms = .false.
     case('plp+pow+trivial+trivial')
       m%primary => plp_mf
       m%secondary => powm
@@ -305,6 +343,7 @@ contains
       m%r2p => r2p_plp_pow
       m%smooth => smooth_exp
       m%smooth_c = "tan"
+      m%norms = .false.
     case default
       stop 9
   end select
@@ -326,6 +365,9 @@ contains
                      d    = -3._prec, &
                      mmin =  5._prec, &
                      dm   =  5._prec, &
+                     lam12=  0._prec, &
+                     lam21=  0._prec, &
+                     lam22=  0._prec, &
                      sf_c = 'exp'   , &
                      sf   = smooth_exp)))) / 6.
 
@@ -338,6 +380,9 @@ contains
                      d    = -3._prec, &
                      mmin =  5._prec, &
                      dm   =  5._prec, &
+                     lam12=  0._prec, &
+                     lam21=  0._prec, &
+                     lam22=  0._prec, &
                      sf_c = 'exp'   , &
                      sf   = smooth_exp)))) / 6.
 
@@ -351,6 +396,9 @@ contains
                      lp   = 0.2_prec, &
                      mmin = 5._prec, &
                      dm   = 5._prec, &
+                     lam12=  0._prec, &
+                     lam21=  0._prec, &
+                     lam22=  0._prec, &
                      sf_c = 'tan'   , &
                      sf   = smooth_tanh)))) / 6.
   print*,diff
@@ -367,6 +415,9 @@ contains
                      lp   = 0.394535_prec,&
                      mmin = 2.61592_prec,&
                      dm   = 8.5451_prec,&
+                     lam12=  0._prec, &
+                     lam21=  0._prec, &
+                     lam22=  0._prec, &
                      sf_c = 'tan'   , &
                      sf   = smooth_tanh)))) / 6.
 

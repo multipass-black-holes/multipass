@@ -2,7 +2,7 @@
                            MODULE LOGLIKELIHOOD
                           !!!!!!!!!!!!!!!!!!!!!!
   use functions
-  use models, only: plp_mf, model, para, getmodel
+  use models, only: plp_mf, model, para, getmodel, ppisn_norms
   implicit none
   real(kind=prec), allocatable, dimension(:,:) :: injections, dat
   integer, allocatable, dimension(:) :: offsets
@@ -28,6 +28,11 @@ contains
                 * m%secondary(dat(:,1), dat(:,2), p) &
                 * m%redshift(dat(:,3), p) &
                 * m%spin(1,1)%f(dat(:,4), p)
+
+  if(m%norms) then
+    av_likelihood = av_likelihood + &
+        ppisn_norms(dat(:,1), dat(:,2), dat(:,3), dat(:,4), m, p)
+  endif
 
   END FUNCTION AV_LIKELIHOOD
 
@@ -110,6 +115,9 @@ contains
            dm   = 8.54510_prec,&
            k    = 4.40876_prec,&
            sf_c = 'tan',&
+           lam12=  0._prec, &
+           lam21=  0._prec, &
+           lam22=  0._prec, &
            sf   = smooth_tanh)
 
   m = getmodel('plp+pow+trivial+trivial')
