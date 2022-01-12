@@ -24,15 +24,17 @@ def write_record(fp, typ, content):
     fp.write(struct.pack('<I', len(body)))
 
 
-def convert_injection(ifar_find=1, fi='../o3a_bbhpop_inj_info.hdf', fo='inj.rec'):
+def convert_injection(ifar_find=1, fi='../endo3_mixture-LIGO-T2100113-v12.hdf5', fo='inj.rec'):
     with h5py.File(fi, 'r') as f:
-        mask = (
-            np.array(f['injections/ifar_gstlal']) > ifar_find
-        ) & (
-            np.array(f['injections/ifar_pycbc_full']) > ifar_find
-        ) & (
+        mask = [
+            np.array(f['injections/ifar_gstlal']) > ifar_find,
             np.array(f['injections/ifar_pycbc_bbh']) > ifar_find
-        )
+        ]
+        if 'injections/ifar_pycbc_full' in f:
+            mask.append(
+                np.array(f['injections/ifar_pycbc_full']) > ifar_find
+            )
+        mask = np.all(mask, axis=0)
         m1 = f['injections/mass1_source'][mask]
         m2 = f['injections/mass2_source'][mask]
         rs = f['injections/redshift'][mask]
