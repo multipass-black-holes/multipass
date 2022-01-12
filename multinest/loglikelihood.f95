@@ -47,9 +47,10 @@ contains
   inj = inj / injections(:,2)**2
 
   ! We need to average the avg for each event file as delimited by offsets
+  acc = 0.
   do i=1,size(offsets)-1
     tmp = mean(avg(offsets(i):offsets(i+1)-1))
-    if(tmp <= 0) then
+    if(tmp <= 1e-10) then
       tmp = -1e6
     else
       tmp = log(tmp)
