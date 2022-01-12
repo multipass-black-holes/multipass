@@ -35,23 +35,23 @@ contains
 
   END FUNCTION GAUSS
 
-
-  ! This implements the smooth function (B6)
-  PURE FUNCTION SMOOTH(M, MI, DM)
+  ! This implements the smooth function (B6) of [2010.14533] or (4) of
+  ! [2104.02685]
+  PURE FUNCTION SMOOTH_EXP(M, MI, DM)
   implicit none
   real(kind=prec), intent(in) :: m(:)
   real(kind=prec), intent(in) :: mi, dm
-  real(kind=prec) :: smooth(size(m))
+  real(kind=prec) :: smooth_exp(size(m))
 
-  smooth = 0.
+  smooth_exp = 0.
 
   where ((mi < m) .and. (m < mi + dm)) &
-    smooth = exp( dm / (m-mi) + dm / (m - mi - dm)) + 1
+    smooth_exp = 1/(exp( dm / (m-mi) + dm / (m - mi - dm)) + 1)
 
   where (m > mi + dm) &
-    smooth = 1.
+    smooth_exp = 1.
 
-  END FUNCTION SMOOTH
+  END FUNCTION SMOOTH_EXP
 
 
   ! This implements the alternative smooth function using tanh
@@ -71,20 +71,6 @@ contains
 
   END FUNCTION SMOOTH_TANH
 
-
-  ! This implements (4) of [2104.02685]
-  PURE FUNCTION SMOOTH_EXP(m, mi, dm)
-  implicit none
-  real(kind=prec), intent(in) :: m(:)
-  real(kind=prec), intent(in) :: mi, dm
-  real(kind=prec) :: smooth_exp(size(m))
-
-  smooth_exp = 0.
-
-  where ((mi < m) .and. (m < mi + dm)) &
-    smooth_exp = 1/(exp(dm/(m-mi) + (dm/(m-mi-dm))) + 1)
-
-  END FUNCTION SMOOTH_EXP
 
                           !!!!!!!!!!!!!!!!!!!!!!
                             END MODULE functions

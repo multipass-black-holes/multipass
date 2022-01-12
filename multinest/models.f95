@@ -226,7 +226,7 @@ contains
       m%redshift => trivial
       m%spin => trivial
       m%r2p => r2p_plp_pow
-      m%smooth => smooth_tanh
+      m%smooth => smooth_exp
       m%smooth_c = "tan"
     case default
       stop 9
