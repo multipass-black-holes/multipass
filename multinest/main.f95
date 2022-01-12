@@ -27,10 +27,10 @@
   integer :: context
 
   real(kind=prec), parameter, dimension(npara) :: &
-    min_val = (/30._prec, 20._prec, 1._prec, -4._prec, 0._prec, 2._prec, 0._prec, 0._prec /)
+    min_val = (/ 2._prec,  0._prec,  30._prec, 20._prec,  1._prec, -4._prec, 0._prec,  0._prec /)
   real(kind=prec), parameter, dimension(npara) :: &
-    max_val = (/100._prec, 50._prec, 10._prec, 12._prec, 1._prec, 10._prec, 10._prec, 10._prec/)
-  character(len=1000), parameter :: root = "testrun/"
+    max_val = (/10._prec, 10._prec, 100._prec, 50._prec, 10._prec, 12._prec, 1._prec, 10._prec/)
+  character(len=1000), parameter :: root = "testrun/test-"
 
   type(model) :: the_model
 
