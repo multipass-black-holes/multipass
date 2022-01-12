@@ -3,7 +3,7 @@ import numpy as np
 import struct
 import os
 from astropy.cosmology import Planck18_arXiv_v2 as cosmo
-import scipy
+import scipy.interpolate
 import re
 
 
