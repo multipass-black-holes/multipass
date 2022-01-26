@@ -122,7 +122,7 @@ contains
 
   m = getmodel('plp+pow+trivial+trivial')
 
-  ans = mean(av_likelihood(dat(offsets(37):offsets(38)-1,:), m, p))
+  ans = mean(av_likelihood(dat(offsets(47):offsets(48)-1,:), m, p))
   print*, ans / 0.0048440957269826265 - 1
 
   ans = mean(av_likelihood(injections, m, p))
