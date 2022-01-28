@@ -103,6 +103,13 @@ contains
   real(kind=prec) :: ans
   type(model) :: m
   type(para) :: p
+  type(model) :: the_model
+  real(kind=prec), parameter, dimension(8) :: &
+    min_val = (/ 2._prec,  0._prec,  30._prec, 20._prec,  1._prec, -4._prec, 0._prec,  0._prec /)
+  real(kind=prec), parameter, dimension(8) :: &
+    max_val = (/10._prec, 10._prec, 100._prec, 50._prec, 10._prec, 12._prec, 1._prec, 10._prec/)
+  real(kind=prec) :: cube(8)
+
   call load_inj("inj.rec")
   call load_data("data.rec")
 
@@ -130,6 +137,23 @@ contains
 
   ans = ll(m, p)
   print*,ans / -3000396.124014442 - 1
+
+  cube = (/0.6720379591,0.0260769129,0.3415273428,0.1477759480,0.4869252443,0.7336550355,0.9522889853,0.4295404553/)
+  the_model = getmodel('plp+pow+trivial+trivial')
+  p = the_model%r2p(min_val + cube((/6, 7, 1, 2, 3, 4, 5, 8/)) * (max_val - min_val))
+  p%sf => the_model%smooth
+  p%sf_c = the_model%smooth_c
+
+  ans = ll(the_model, p) / -1000421.514
+  print*,'ans',ans
+
+  cube = (/0.6293965578,0.4330928922,0.3437212706,0.4545528889,0.8079833388,0.0935372710,0.2308301330,0.9758238792/)
+  p = the_model%r2p(min_val + cube((/6, 7, 1, 2, 3, 4, 5, 8/)) * (max_val - min_val))
+  p%sf => the_model%smooth
+  p%sf_c = the_model%smooth_c
+
+  ans = ll(the_model, p) / -449.972
+  print*,'ans',ans
 
   END SUBROUTINE TEST
 
