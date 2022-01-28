@@ -116,10 +116,15 @@ contains
   PURE FUNCTION POWM(M1, M2, P)
   real(kind=prec), intent(in) :: m1(:), m2(:)
   type(para), intent(in) :: p
-  real(kind=prec) :: powm(size(m1))
+  real(kind=prec) :: powm(size(m1)), stargx2(size(m1))
 
   powm = (m2 / m1) ** p%k
-  powm = powm * p%sf(m2, p%mmin, p%dm)
+  !powm = powm * p%sf(m2, p%mmin, p%dm)
+
+  stargx2 = 2 * (m2 - p%mmin) / p%dm - 1
+  where ((p%mmin < m2).and.(m2 < p%mmin+p%dm)) &
+    powm = powm * 0.5 * (1+tanh(2*stargx2 / (1-stargx2*stargx2)))
+
   END FUNCTION POWM
 
   ! This implements the power-law + peak model (PLP) for the primary mass of the
