@@ -55,7 +55,7 @@ contains
   acc = 0.
   do i=1,size(offsets)-1
     tmp = mean(avg(offsets(i):offsets(i+1)-1))
-    if(tmp <= 1e-20) then
+    if(tmp <= 0) then
       tmp = -1e6
     else
       tmp = log(tmp)
