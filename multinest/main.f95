@@ -52,7 +52,8 @@ contains
   real(kind=prec) :: lnew
   type(para) :: p
 
-  p = the_model%r2p(min_val + cube * (max_val - min_val))
+  cube = min_val + cube * (max_val - min_val)
+  p = the_model%r2p(cube)
   p%sf => the_model%smooth
   p%sf_c = the_model%smooth_c
 
