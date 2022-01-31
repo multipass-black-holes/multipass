@@ -1,10 +1,13 @@
 FC=gfortran
-FFLAGS=
+FFLAGS=-g -fPIC
 LD=gfortran
 LFLAGS=
 
 MPI=/usr/lib64/openmpi3
 CMAKE=cmake3
+F2PY=f2py
+
+EXT_SUFFIX := $(shell python3-config --extension-suffix)
 
 OBJ=models.o functions.o loglikelihood.o
 
@@ -45,6 +48,8 @@ test: test.o $(OBJ)
 main: main.o $(OBJ) MultiNest/lib/libmultinest$(MPISUFFIX).a
 	$(LD)  -o $@ $^ $(LFLAGS)
 
+interface$(EXT_SUFFIX): interface.f95 loglikelihood.o
+	$(F2PY) -m interface -c models.o functions.o loglikelihood.o $<
 
 clean:
-	rm -fr *.o *.mod test main MultiNest/build/{CMake*,cmake*,Makefile,src}
+	rm -fr *.o *.mod test main MultiNest/build/{CMake*,cmake*,Makefile,src} *.so
