@@ -117,8 +117,8 @@ def convert_gw(fo='data.rec', base='../all_posterior_samples/', cm=True):
         "190719_215514",
         "190426_152155"
     ]
-    d1, o1 = load_gw(veto, base, v=1, cm=cm)
-    d2, o2 = load_gw(veto, base, v=2, cm=cm)
+    d1, o1 = load_gw(veto2104, base, v=1, cm=cm)
+    d2, o2 = load_gw(veto2104, base, v=2, cm=cm)
 
     o2 += len(d1)
     d = np.concatenate((d1, d2))
