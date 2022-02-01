@@ -60,8 +60,19 @@ def plot_bestfit_m1(samples, model="plp+pow+trivial+trivial"):
     x = np.linspace(0, 100, n)
     y = interface.pyinterface(model, 'm1', bestfit, x)
 
+    J = np.zeros((n, len(plots)))
+
+    mat = (1 + h * np.identity(len(plots))) * bestfit
+    for i in range(len(plots)):
+        yy = interface.pyinterface(model, 'm1', mat[i], x)
+        J[:, i] = (yy - y) / h / bestfit[i]
+
+    tot = J @ samples.cov() @ J.T
+    err = np.sqrt(tot.diagonal())
+
     fig = figure()
     plot(x, y)
+    fill_between(x, y-err/2, y+err/2, alpha=0.2)
 
 
 if __name__ == "__main__":
@@ -70,4 +81,3 @@ if __name__ == "__main__":
 
     fig = triangle_plot(samples)
     fig.savefig(root + "triangle.pdf")
-
