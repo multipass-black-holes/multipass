@@ -24,6 +24,8 @@
   real(kind=prec), parameter :: Ztol    = -1e30 ! all the modes with logZ < Ztol are ignored
   real(kind=prec), parameter :: logZero = -1e30 ! logZero
 
+  real(kind=prec) :: start, finish
+
   integer :: context
 
   real(kind=prec), parameter, dimension(npara) :: &
@@ -34,16 +36,29 @@
 
   type(model) :: the_model
 
+  call system("date > " // trim(root) // ".timing")
+  call system("git diff >> " // trim(root) // ".timing")
+
+  open(unit=9, file=trim(root) // ".timing", action="write", access="append")
+
+
   call load_inj("inj.rec")
   call load_data("data.rec")
 
   the_model = getmodel('plp+pow+trivial+trivial')
 
+  call cpu_time(start)
   call nestrun(IS, modal, ceff, np, tol, efr, &
       ndim, npara, nparaMode, maxmode, feedbackn, &
       Ztol, root, seed, pWrap, fstdout, resume, &
       outfile, MPIinit, logZero, maxiter, &
       slikelihood, dumper, context)
+
+  call cpu_time(finish)
+  write(9, *) "Complete, took", finish-start, "s"
+  close(unit=9)
+
+
 contains
 
   SUBROUTINE SLIKELIHOOD(CUBE, NDIM, NPAR, LNEW, CONTEXT)
@@ -68,7 +83,10 @@ contains
   real(kind=prec), pointer, dimension(:) :: paramConstr
   real(kind=prec) :: maxLogLike, logZ, INSLogZ, logZerr
 
-  print*,nSamples
+  print*, "nSamples = ",nSamples, " time = ", finish - start, "s"
+  call cpu_time(finish)
+  write(9, *) "nSamples = ",nSamples, " time = ", finish - start, "s"
+  call flush(9)
 
   END SUBROUTINE DUMPER
 
