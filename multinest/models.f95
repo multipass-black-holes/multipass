@@ -205,8 +205,8 @@ contains
 
   ppisn_mf2g = 1.
   where (m < p%mmin) ppisn_mf2g = 0.
-  where ((p%mmin < m) .and. (m < p%mmin + p%dm)) &
-    ppisn_mf2g = ppisn_mf2g * p%sf(m, p%mmin, p%dm)
+  where ((p%mmin < m) .and. (m < p%mgap+ p%mmin + p%dm/2)) &
+    ppisn_mf2g = p%sf(m, p%mmin, p%dm)
   where (p%mgap+ p%mmin + p%dm/2 < m) &
     ppisn_mf2g = (m / (p%mgap + p%mmin + p%dm/2)) ** p%d
 
@@ -221,18 +221,18 @@ contains
   real(kind=prec), intent(in) :: m(:)
   type(para), intent(in) :: p
   real(kind=prec) :: ppisn_pm2m1den_m11g(size(m))
-  real(kind=prec) :: x(size(m))
+  real(kind=prec) :: BT(0:size(m))
   real(kind=prec) :: sLVC(2)
   real(kind=prec), parameter :: erf2 = erf(2._prec)
   real(kind=prec), parameter :: ep = 1e-8
 
   ! the part from Mmin + dm -- m1
-  x = m/p%mgap
-  ppisn_pm2m1den_m11g = p%mgap**(p%b-1) * &
-      (2*p%a*p%a*Btilde(p%b+1.5_prec, p%a, x) + x**(p%b+1) / (p%b+1))
-  x = (p%mmin+p%dm)/p%mgap
-  ppisn_pm2m1den_m11g = ppisn_pm2m1den_m11g - p%mgap**(p%b-1) * &
-      (2*p%a*p%a*Btilde(p%b+1.5_prec, p%a, x) + x**(p%b+1) / (p%b+1))
+  BT = Btilde(1.5_prec+p%b, p%a, [p%mmin+p%dm, m]/p%mgap)
+
+  where((m > p%mmin + p%dm)) &
+    ppisn_pm2m1den_m11g = &
+        (m**(1+p%b) - (p%mmin+p%dm)**(1+p%b)) / (1+p%b) &
+        + 2*p%a**2*p%mgap**(1+p%b) * (BT(1:size(m)) - BT(0))
 
   select case(p%sf_c)
     case('exp')
@@ -246,7 +246,7 @@ contains
       ppisn_pm2m1den_m11g = ppisn_pm2m1den_m11g + &
         erf2 * ( - (2*p%mmin+p%dm) * (0.5*p%dm + p%mmin)**p%b &
                    + p%mmin**(p%b+1) ) / 2 / (p%b + 1) &
-      - (-1-erf2) * (p%dm + p%mmin)**(p%b+1) + p%mmin**(p%b+1) &
+      - ((-1-erf2) * (p%dm + p%mmin)**(p%b+1) + p%mmin**(p%b+1)) &
                    / 2 / (p%b + 1)
   end select
 
