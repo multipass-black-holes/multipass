@@ -357,6 +357,7 @@ contains
   SUBROUTINE TEST
   real(kind=prec), dimension(6) :: mtest, ans
   real(kind=prec) :: diff
+  type(para) :: p
 
   mtest = (/ 1.,11., 20., 30., 40., 100. /)
   ans = (/0._prec,  0.010459028944395847_prec, &
@@ -427,6 +428,36 @@ contains
                      sf   = smooth_tanh)))) / 6.
 
   print*,diff
+
+  mtest = (/ 2., 4., 10., 20., 25., 35. /)
+  p = para(mmin = 2.61592_prec,&
+           dm   = 8.5451_prec,&
+           mgap = 34._prec, &
+           a    = 0.23_prec, &
+           b    = -2.34_prec, &
+           d    = -7.63_prec, &
+           lam21 = 0._prec, &
+           lam22 = 0._prec, &
+           lam12 = 0._prec, &
+           sf   = smooth_erf, &
+           sf_c = 'erf')
+
+  ans = (/0._prec, 0.0011329932907377792_prec, &
+          0.004816986990970342_prec, 0.001047864239495318_prec,&
+          0.0006707850448342742_prec, 0._prec /)
+  print*, sum(abs(ans-ppisn_mf1g(mtest, p)))
+
+  ans = (/ 0._prec, 0.0008369386215617741_prec, &
+        0.028895302280797192_prec, 0.05158740716028034_prec, &
+        0.0557564000458822_prec, 0.06248345537867879_prec /)
+  print*,ppisn_pm2m1den_m11g(mtest, p) / ans
+
+  mtest = (/ 3., 30., 35., 37., 40., 45. /)
+  ans = (/ 0.017562827691927917e-4_prec, 3.4957169791193885e-4_prec, &
+          3.4957169791193885e-4_prec, 3.4957169791193885e-4_prec, &
+          3.4957169791193885e-4_prec, 1.6828265142804126e-4_prec /)
+
+  print*, sum(abs(ans-ppisn_mf2g(mtest, p)))
   END SUBROUTINE TEST
 
                           !!!!!!!!!!!!!!!!!!!!!!
