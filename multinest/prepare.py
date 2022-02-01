@@ -108,7 +108,10 @@ def load_gw(veto, base='../all_posterior_samples/', v=2, cm=True):
 
 
 def convert_gw(fo='data.rec', base='../all_posterior_samples/', cm=True):
-    veto2104 = [
+    veto = set()
+
+    # From 2104.02685
+    veto.update([
         "170817",
         "190521",
         "190425",
@@ -116,9 +119,39 @@ def convert_gw(fo='data.rec', base='../all_posterior_samples/', cm=True):
         "190909_114149",
         "190719_215514",
         "190426_152155"
-    ]
-    d1, o1 = load_gw(veto2104, base, v=1, cm=cm)
-    d2, o2 = load_gw(veto2104, base, v=2, cm=cm)
+    ])
+
+    # 2108.01045
+    veto.update([
+        "190425_081805",
+        "190707_093326",
+        "190720_000836",
+        "190725_174728",
+        "190728_064510",
+        "190814_211039",
+        "190924_021846",
+        "190930_133541"
+    ])
+
+    # 2111.03634
+    veto.update([
+        "200105_162426",
+        "200115_042309",
+        "190426_152155"
+    ])
+
+    # 2111.03634
+    veto.update([
+        "170817",
+        "190425",
+        "200105",
+        "200115",
+        "190426",
+        "190917"
+    ])
+
+    d1, o1 = load_gw(veto, base, v=1, cm=cm)
+    d2, o2 = load_gw(veto, base, v=2, cm=cm)
 
     o2 += len(d1)
     d = np.concatenate((d1, d2))
