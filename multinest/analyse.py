@@ -8,6 +8,8 @@ except ImportError:
     import getdist.plots
 import numpy as np
 from matplotlib.pyplot import *
+import interface
+
 rc('text', usetex=True)
 
 
@@ -25,12 +27,14 @@ plots = [
 
 def loadMC(root):
     dat = np.loadtxt(root + '.txt')
-    return getdist.MCSamples(
+    samples = getdist.MCSamples(
         samples=dat[:, 2:],
         weights=dat[:, 0],
         names=[j for _, _, j in plots],
         labels=[j for _, j, _ in plots]
     )
+    samples.dat = dat
+    return samples
 
 
 def triangle_plot(samples):
@@ -41,6 +45,24 @@ def triangle_plot(samples):
         filled=True
     )
     return gcf()
+
+
+def best_fit(samples):
+    return samples.dat[samples.dat[:, 1].argmin(), 2:]
+
+
+def plot_bestfit_m1(samples, model="plp+pow+trivial+trivial"):
+    h = 1e-6
+    n = 1000
+
+    bestfit = best_fit(samples)
+
+    x = np.linspace(0, 100, n)
+    y = interface.pyinterface(model, 'm1', bestfit, x)
+
+    fig = figure()
+    plot(x, y)
+
 
 if __name__ == "__main__":
     root = sys.argv[1] + "/test-"
