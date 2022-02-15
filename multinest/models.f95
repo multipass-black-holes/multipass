@@ -221,34 +221,39 @@ contains
   real(kind=prec), intent(in) :: m(:)
   type(para), intent(in) :: p
   real(kind=prec) :: ppisn_pm2m1den_m11g(size(m))
+
+  integer, parameter :: Nsamples = 10000
   real(kind=prec) :: BT(0:size(m))
   real(kind=prec) :: sLVC(2)
+  integer i, cut
+  real(kind=prec), save :: linspace(0:Nsamples) = -1
+  real(kind=prec), dimension(0:Nsamples) :: Msample, int
   real(kind=prec), parameter :: erf2 = erf(2._prec)
   real(kind=prec), parameter :: ep = 1e-8
+
+  if(linspace(1) < 0) then
+    do i=0,Nsamples
+      linspace(i) = i
+    enddo
+    linspace = linspace / Nsamples
+  endif
+
+  Msample = p%mmin + linspace * p%dm
+  int = ppisn_mf1g(Msample, p) * p%dm / Nsamples
+
+  do i=1, size(m)
+    if(m(i) > p%mgap) cycle
+    cut = findloc(Msample > m(i), .false., dim=1, back=.true.)
+    ppisn_pm2m1den_m11g(i) =  sum(int(0:cut))
+  enddo
 
   ! the part from Mmin + dm -- m1
   BT = Btilde(1.5_prec+p%b, p%a, [p%mmin+p%dm, m]/p%mgap)
 
-  where((m > p%mmin + p%dm)) &
-    ppisn_pm2m1den_m11g = &
+  where((p%mgap > m) .and. (m > p%mmin + p%dm)) &
+    ppisn_pm2m1den_m11g = ppisn_pm2m1den_m11g + &
         (m**(1+p%b) - (p%mmin+p%dm)**(1+p%b)) / (1+p%b) &
         + 2*p%a**2*p%mgap**(1+p%b) * (BT(1:size(m)) - BT(0))
-
-  select case(p%sf_c)
-    case('exp')
-      sLVC = p%sf((/p%mmin+p%dm+ep, p%mmin+ep /), p%mmin, p%dm)
-
-      ppisn_pm2m1den_m11g = ppisn_pm2m1den_m11g + &
-        sLVC(1) * ((p%mmin+p%dm+ep)+0.5*p%dm)**(p%b+1) / (p%b+1) &
-       -sLVC(2) * ((p%mmin+     ep)+0.5*p%dm)**(p%b+1) / (p%b+1)
-
-    case('erf')
-      ppisn_pm2m1den_m11g = ppisn_pm2m1den_m11g + &
-        erf2 * ( - (2*p%mmin+p%dm) * (0.5*p%dm + p%mmin)**p%b &
-                   + p%mmin**(p%b+1) ) / 2 / (p%b + 1) &
-      - ((-1-erf2) * (p%dm + p%mmin)**(p%b+1) + p%mmin**(p%b+1)) &
-                   / 2 / (p%b + 1)
-  end select
 
   END FUNCTION PPISN_PM2M1DEN_M11G
 
@@ -449,8 +454,8 @@ contains
 
   ans = (/ 0._prec, 0.0008369386215617741_prec, &
         0.028895302280797192_prec, 0.05158740716028034_prec, &
-        0.0557564000458822_prec, 0.06248345537867879_prec /)
-  print*,ppisn_pm2m1den_m11g(mtest, p) / ans
+        0.0557564000458822_prec, 0.0_prec /)
+  print*, sum((ppisn_pm2m1den_m11g(mtest, p) - ans) / (ans + 1e-15))
 
   mtest = (/ 3., 30., 35., 37., 40., 45. /)
   ans = (/ 0.017562827691927917e-4_prec, 3.4957169791193885e-4_prec, &
