@@ -41,7 +41,7 @@ def triangle_plot(samples):
     g = getdist.plots.get_subplot_plotter()
     g.triangle_plot(
         samples,
-        param_limits={i: j for j,_,i in plots},
+        #param_limits={i: j for j, _, i in plots},
         filled=True
     )
     return gcf()
@@ -73,7 +73,13 @@ def plot_bestfit_m1(samples, model="plp+pow+trivial+trivial"):
     fig = figure()
     plot(x, y)
     fill_between(x, y-err/2, y+err/2, alpha=0.2)
+    yscale('log')
 
+    ylabel(r"${\rm d}R/{\rm d}m_1$")
+    xlabel("$m_1/M_\odot$")
+    xlim(0,65)
+    ylim(3e-4, 1)
+    return fig
 
 if __name__ == "__main__":
     root = sys.argv[1] + "/test-"
@@ -81,3 +87,6 @@ if __name__ == "__main__":
 
     fig = triangle_plot(samples)
     fig.savefig(root + "triangle.pdf")
+
+    fig = plot_bestfit_m1(samples)
+    fig.savefig(root + "fitm1.pdf")
