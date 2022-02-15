@@ -221,7 +221,7 @@ contains
   real(kind=prec) :: BT(0:size(m))
   real(kind=prec) :: sLVC(2)
   integer i, cut
-  real(kind=prec), parameter :: linspace(0:Nsamples) = [(i/Nsamples, i=0,Nsamples)]
+  real(kind=prec), parameter :: linspace(0:Nsamples) = [(i / real(Nsamples), i=0,Nsamples)]
   real(kind=prec), dimension(0:Nsamples) :: Msample, int
   real(kind=prec), parameter :: erf2 = erf(2._prec)
   real(kind=prec), parameter :: ep = 1e-8
