@@ -38,9 +38,9 @@ contains
   PURE FUNCTION BTILDE(A, B, Z)
   real(kind=prec), intent(in) :: a, b
   real(kind=prec), intent(in) :: z(:)
-  real(kind=prec) :: btilde(size(z))
-  integer, parameter :: N = 10
-  integer k, kfac
+  real(kind=prec) :: btilde(size(z)), kfac
+  integer, parameter :: N = 20
+  integer k
   real(kind=prec) :: gb, zk(size(z))
 
   gb = gamma(1-b)
