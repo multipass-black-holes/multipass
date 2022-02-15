@@ -362,7 +362,7 @@ contains
         0.0035206207261596584_prec,  0.0017915249285508827_prec, &
         0.0012500000000000002_prec,  0._prec /)
 
-  print*,sum(abs(ans - ppisn_mf1g(mtest, &
+  diff = sum(abs(ans - ppisn_mf1g(mtest, &
                 para(mgap = 50._prec, &
                      a    =  .5_prec, &
                      b    = -2._prec, &
@@ -374,10 +374,11 @@ contains
                      lam22=  0._prec, &
                      sf_c = 'exp'   , &
                      sf   = smooth_exp)))) / 6.
+  print*, "ppisn_mf1g", diff
 
   ans = (/ 0._prec, 1/900._prec, 1/900._prec, &
            1/900._prec, 1/900._prec, 0.00021123263888888892_prec/)
-  print*,sum(abs(ans - ppisn_mf2g(mtest, &
+  diff = sum(abs(ans - ppisn_mf2g(mtest, &
                 para(mgap = 50._prec, &
                      a    =  .5_prec, &
                      b    = -2._prec, &
@@ -389,6 +390,7 @@ contains
                      lam22=  0._prec, &
                      sf_c = 'exp'   , &
                      sf   = smooth_exp)))) / 6.
+  print*, "ppisn_mf2g", diff
 
   ans = (/ 0., 0.03674262, 0.01327075, 0.02089596, 0.00493742, 0. /)
 
@@ -405,7 +407,7 @@ contains
                      lam22=  0._prec, &
                      sf_c = 'tan'   , &
                      sf   = smooth_tanh)))) / 6.
-  print*,diff
+  print*,"plp_mf", diff
 
   mtest = (/ 2., 3., 4., 5., 10., 20. /)
   ans = (/ 0., 3.14309363e-13, 5.66146660e-06, &
@@ -425,7 +427,7 @@ contains
                      sf_c = 'tan'   , &
                      sf   = smooth_tanh)))) / 6.
 
-  print*,diff
+  print*,"plp_mf", diff
 
   mtest = (/ 2., 4., 10., 20., 25., 35. /)
   p = para(mmin = 2.61592_prec,&
@@ -443,19 +445,22 @@ contains
   ans = (/0._prec, 0.0011329932907377792_prec, &
           0.004816986990970342_prec, 0.001047864239495318_prec,&
           0.0006707850448342742_prec, 0._prec /)
-  print*, sum(abs(ans-ppisn_mf1g(mtest, p)))
+  diff = sum(abs(ans-ppisn_mf1g(mtest, p))) / 6.
+  print*, "ppisn_mf1g", diff
 
   ans = (/ 0._prec, 0.0008369386215617741_prec, &
         0.028895302280797192_prec, 0.05158740716028034_prec, &
         0.0557564000458822_prec, 0.0_prec /)
-  print*, sum((ppisn_pm2m1den_m11g(mtest, p) - ans) / (ans + 1e-15))
+  diff = sum((ppisn_pm2m1den_m11g(mtest, p) - ans) / (ans + 1e-15))/ 6.
+  print*, "ppisn_pm2m1den_m11g", diff
 
   mtest = (/ 3., 30., 35., 37., 40., 45. /)
   ans = (/ 0.017562827691927917e-4_prec, 3.4957169791193885e-4_prec, &
           3.4957169791193885e-4_prec, 3.4957169791193885e-4_prec, &
           3.4957169791193885e-4_prec, 1.6828265142804126e-4_prec /)
 
-  print*, sum(abs(ans-ppisn_mf2g(mtest, p)))
+  diff = sum(abs(ans-ppisn_mf2g(mtest, p))) / 6.
+  print*, "ppisn_mf2g", diff
   END SUBROUTINE TEST
 
                           !!!!!!!!!!!!!!!!!!!!!!
