@@ -15,13 +15,13 @@ FFLAGS+=-IMultiNest/modules/
 LFLAGS+=-llapack -lblas
 
 ifeq ($(MPI),)
-MPISUFFIX=""
+MPISUFFIX=
 else
 MPISUFFIX=_mpi
 LFLAGS+= -L$(MPI)/lib/ -lmpi_mpifh -lmpi
 endif
 
-all: test main
+all: test main interface$(EXT_SUFFIX)
 
 lib: MultiNest/modules/nested.mod MultiNest/lib/libmultinest$(MPISUFFIX).a
 
