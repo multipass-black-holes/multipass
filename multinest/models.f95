@@ -226,17 +226,10 @@ contains
   real(kind=prec) :: BT(0:size(m))
   real(kind=prec) :: sLVC(2)
   integer i, cut
-  real(kind=prec), save :: linspace(0:Nsamples) = -1
+  real(kind=prec), parameter :: linspace(0:Nsamples) = [(i/Nsamples, i=0,Nsamples)]
   real(kind=prec), dimension(0:Nsamples) :: Msample, int
   real(kind=prec), parameter :: erf2 = erf(2._prec)
   real(kind=prec), parameter :: ep = 1e-8
-
-  if(linspace(1) < 0) then
-    do i=0,Nsamples
-      linspace(i) = i
-    enddo
-    linspace = linspace / Nsamples
-  endif
 
   Msample = p%mmin + linspace * p%dm
   int = ppisn_mf1g(Msample, p) * p%dm / Nsamples
