@@ -51,14 +51,18 @@ def convert_injection(ifar_find=1, fi='../endo3_mixture-LIGO-T2100113-v12.hdf5',
         write_record(fp, 'd', dat)
 
 
-def load_gw(base='../all_posterior_samples/', v=2, cm=True):
+def load_gw(veto, base='../all_posterior_samples/', v=2, cm=True):
     if v == 1:
         pat = re.compile(r'GW([\d_]*)_GWTC-1.hdf5')
     elif v == 2:
         pat = re.compile(r'GW([\d_]*)_comoving.h5')
 
     files = [pat.match(i) for i in os.listdir(base)]
-    files = [base + i.group(0) for i in files if i]
+    files = [
+        base + i.group(0)
+        for i in files
+        if i and i.group(1) not in veto
+    ]
 
     m1 = np.array([])
     m2 = np.array([])
@@ -104,8 +108,50 @@ def load_gw(base='../all_posterior_samples/', v=2, cm=True):
 
 
 def convert_gw(fo='data.rec', base='../all_posterior_samples/', cm=True):
-    d1, o1 = load_gw(base, v=1, cm=cm)
-    d2, o2 = load_gw(base, v=2, cm=cm)
+    veto = set()
+
+    # From 2104.02685
+    veto.update([
+        "170817",
+        "190521",
+        "190425",
+        "190814",
+        "190909_114149",
+        "190719_215514",
+        "190426_152155"
+    ])
+
+    # 2108.01045
+    veto.update([
+        "190425_081805",
+        "190707_093326",
+        "190720_000836",
+        "190725_174728",
+        "190728_064510",
+        "190814_211039",
+        "190924_021846",
+        "190930_133541"
+    ])
+
+    # 2111.03634
+    veto.update([
+        "200105_162426",
+        "200115_042309",
+        "190426_152155"
+    ])
+
+    # 2111.03634
+    veto.update([
+        "170817",
+        "190425",
+        "200105",
+        "200115",
+        "190426",
+        "190917"
+    ])
+
+    d1, o1 = load_gw(veto, base, v=1, cm=cm)
+    d2, o2 = load_gw(veto, base, v=2, cm=cm)
 
     o2 += len(d1)
     d = np.concatenate((d1, d2))
