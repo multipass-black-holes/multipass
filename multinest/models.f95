@@ -3,6 +3,8 @@
                           !!!!!!!!!!!!!!!!!!!!!!
   use functions
   implicit none
+  ! This just controls the overall normalisation
+  real(kind=prec), parameter :: mpiv   = 30
 
   ABSTRACT INTERFACE
     PURE FUNCTION SMOOTHFN(M, MI, DM)
@@ -175,7 +177,6 @@ contains
   real(kind=prec), intent(in) :: m(:)
   type(para), intent(in) :: p
   real(kind=prec), parameter :: mfudge = 0.99
-  real(kind=prec), parameter :: mpiv   = 30
   real(kind=prec) :: ppisn_mf1g(size(m))
 
   ppisn_mf1g = 0.
@@ -195,7 +196,6 @@ contains
   real(kind=prec), intent(in) :: m(:)
   type(para), intent(in) :: p
   real(kind=prec), parameter :: mfudge = 0.99
-  real(kind=prec), parameter :: mpiv   = 30
   real(kind=prec) :: ppisn_mf2g(size(m))
 
   ppisn_mf2g = 1.
