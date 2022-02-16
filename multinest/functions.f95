@@ -163,7 +163,24 @@ contains
 
   END FUNCTION LVC_INT
 
+  PURE FUNCTION ERF_INT(X)
+  ! This returns
+  !  /\ y                         /\ y     1  +-              -+
+  !  |    dx  Serf(mmin+x dm) =   |    dx --- |  1 - Erf(2-4x) |
+  ! \/  0                        \/  0     2  +-              -+
+  !
+  real(kind=prec), intent(in) :: x(:)
+  real(kind=prec) :: erf_int(size(x))
+  real(kind=prec), parameter :: e4 = exp(-4.)
+  real(kind=prec), parameter :: erf2 = 2*erf(2.)
+  real(kind=prec), parameter :: sqpi = 1/sqrt(pi)
 
+
+  erf_int = (-e4 + exp(-4 * (1-2*x)**2 )) * sqpi &
+          + 4 * x - erf2 + (2-4*x) * erf(2-4*x)
+  erf_int = erf_int / 8
+
+  END FUNCTION ERF_INT
                           !!!!!!!!!!!!!!!!!!!!!!
                             END MODULE functions
                           !!!!!!!!!!!!!!!!!!!!!!
