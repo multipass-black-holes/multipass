@@ -257,10 +257,10 @@ contains
 
   mmax = p%mgap + p%mmin + p%dm/2
 
-  ppisn_pm2m1den_m12g = 1._prec
+  ppisn_pm2m1den_m12g = 0._prec
 
   where( (p%mmin < m).and.(m < p%mmin+p%dm) ) &
-    ppisn_pm2m1den_m12g = 0.5 * (m - p%mmin)  ! TODO
+    ppisn_pm2m1den_m12g = p%sfInt(m, p%mmin, p%dm)
   where( (p%mmin+p%dm < m).and.(m < mmax) ) &
     ppisn_pm2m1den_m12g = -0.5*p%dm - p%mmin + m
   where( (mmax < m) ) &
@@ -469,6 +469,14 @@ contains
 
   diff = sum(abs(ans-ppisn_mf2g(mtest, p))) / 6.
   print*, "ppisn_mf2g", diff
+
+  mtest = (/ 2._prec, 4._prec, 10._prec, 20._prec, 25._prec, 35._prec /)
+  ans = (/0._prec, 5.290164443318091e-6_prec, &
+          0.0010911514507551488_prec, 0.004583419804323329_prec, &
+          0.006331278293883026_prec, 0.009826995273002417_prec/)
+
+  diff = sum(abs((ppisn_pm2m1den_m12g(mtest, p)+1e-15) / (ans+1e-15) - 1)) / 6.
+  print*, "ppisn_pm2m1den_m12g", diff
   END SUBROUTINE TEST
 
                           !!!!!!!!!!!!!!!!!!!!!!
