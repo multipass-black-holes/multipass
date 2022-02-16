@@ -181,6 +181,26 @@ contains
   erf_int = erf_int / 8
 
   END FUNCTION ERF_INT
+
+
+  PURE FUNCTION SMOOTH_EXPint(M, MI, DM)
+  implicit none
+  real(kind=prec), intent(in) :: m(:)
+  real(kind=prec), intent(in) :: mi, dm
+  real(kind=prec) :: smooth_expint(size(m))
+  smooth_expint = dm * lvc_int((m - mi)/dm)
+  END FUNCTION SMOOTH_EXPINT
+
+
+  PURE FUNCTION SMOOTH_ERFint(M, MI, DM)
+  implicit none
+  real(kind=prec), intent(in) :: m(:)
+  real(kind=prec), intent(in) :: mi, dm
+  real(kind=prec) :: smooth_erfint(size(m))
+  smooth_erfint = dm * erf_int((m - mi)/dm)
+  END FUNCTION SMOOTH_ERFINT
+
+
                           !!!!!!!!!!!!!!!!!!!!!!
                             END MODULE functions
                           !!!!!!!!!!!!!!!!!!!!!!

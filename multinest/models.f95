@@ -25,7 +25,7 @@
     real(kind=prec) :: mgap=0, a=0, b=0, d=0
 
     ! Smooth function
-    procedure(smoothfn), pointer, nopass :: sf
+    procedure(smoothfn), pointer, nopass :: sf, sfint
     character(len=3) :: sf_c
 
     real(kind=prec) :: lam21, lam12, lam22
@@ -84,7 +84,7 @@
     procedure(redshiftFn), pointer, nopass :: redshift
     type(spinFns), dimension(2,2) :: spin
     procedure(paraFn), pointer, nopass :: r2p
-    procedure(smoothFn), pointer, nopass :: smooth
+    procedure(smoothFn), pointer, nopass :: smooth, smoothInt
     character(len=3) :: smooth_c
     character(len=4) :: secondary_c
     logical :: norms
@@ -334,6 +334,7 @@ contains
       m%spin(2,2)%f => trivial
       m%r2p => r2p_plp_flat
       m%smooth => smooth_tanh
+      m%smoothint => smooth_expint
       m%smooth_c = "tan"
       m%norms = .false.
     case('plp+pow+trivial+trivial')
@@ -346,6 +347,7 @@ contains
       m%spin(2,2)%f => trivial
       m%r2p => r2p_plp_pow
       m%smooth => smooth_exp
+      m%smoothint => smooth_expint
       m%smooth_c = "tan"
       m%norms = .false.
     case default
@@ -374,6 +376,7 @@ contains
                      lam21=  0._prec, &
                      lam22=  0._prec, &
                      sf_c = 'exp'   , &
+                     sfint= smooth_expint, &
                      sf   = smooth_exp)))) / 6.
   print*, "ppisn_mf1g", diff
 
@@ -390,6 +393,7 @@ contains
                      lam21=  0._prec, &
                      lam22=  0._prec, &
                      sf_c = 'exp'   , &
+                     sfint= smooth_expint, &
                      sf   = smooth_exp)))) / 6.
   print*, "ppisn_mf2g", diff
 
@@ -407,6 +411,7 @@ contains
                      lam21=  0._prec, &
                      lam22=  0._prec, &
                      sf_c = 'tan'   , &
+                     sfint= smooth_expint, &
                      sf   = smooth_tanh)))) / 6.
   print*,"plp_mf", diff
 
@@ -426,6 +431,7 @@ contains
                      lam21=  0._prec, &
                      lam22=  0._prec, &
                      sf_c = 'tan'   , &
+                     sfint= smooth_expint, &
                      sf   = smooth_tanh)))) / 6.
 
   print*,"plp_mf", diff
@@ -441,6 +447,7 @@ contains
            lam22 = 0._prec, &
            lam12 = 0._prec, &
            sf   = smooth_erf, &
+           sfint= smooth_erfint, &
            sf_c = 'erf')
 
   ans = (/0._prec, 0.0011329932907377792_prec, &

@@ -70,6 +70,7 @@ contains
   cube = min_val + cube * (max_val - min_val)
   p = the_model%r2p(cube)
   p%sf => the_model%smooth
+  p%sfint => the_model%smoothint
   p%sf_c = the_model%smooth_c
 
   lnew = ll(the_model, p)
