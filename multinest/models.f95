@@ -253,16 +253,22 @@ contains
   real(kind=prec), intent(in) :: m(:)
   type(para), intent(in) :: p
   real(kind=prec) :: ppisn_pm2m1den_m12g(size(m))
+  real(kind=prec) :: mmax
+
+  mmax = p%mgap + p%mmin + p%dm/2
 
   ppisn_pm2m1den_m12g = 1._prec
 
   where( (p%mmin < m).and.(m < p%mmin+p%dm) ) &
     ppisn_pm2m1den_m12g = 0.5 * (m - p%mmin)  ! TODO
-  where( (p%mmin+p%dm < m).and.(m < p%mmax) ) &
-    ppisn_pm2m1den_m12g = (0.5*p%dm) + m
-  where( (p%mmax < m) ) &
-    ppisn_pm2m1den_m12g = (0.5*p%dm) + p%mmax + &
-        ((m/p%mmax)**(1+p%d) - 1)*p%mmax/(1+p%d)
+  where( (p%mmin+p%dm < m).and.(m < mmax) ) &
+    ppisn_pm2m1den_m12g = -0.5*p%dm - p%mmin + m
+  where( (mmax < m) ) &
+    ppisn_pm2m1den_m12g = -0.5*p%dm - p%mmin + mmax + &
+        ((m/mmax)**(1+p%d) - 1)*mmax/(1+p%d)
+
+
+  ppisn_pm2m1den_m12g = ppisn_pm2m1den_m12g * mpiv**p%b
 
   END FUNCTION PPISN_PM2M1DEN_M12G
 
