@@ -103,6 +103,67 @@ contains
   smooth_erf = 0.5 * erf( 4 * (m-mi-dm/2) / dm ) + 0.5
   END FUNCTION SMOOTH_ERF
 
+
+  PURE FUNCTION LVC_INT(X)
+  ! This returns
+  !  /\ y                         /\ y                1
+  !  |    dx  Slvc(mmin+x dm) =   |    dx -------------------------
+  ! \/  0                        \/  0     1 - exp((1-2x)/(x-x^2))
+  !
+  real(kind=prec), intent(in) :: x(:)
+  real(kind=prec) :: lvc_int(size(x))
+
+  real(kind=prec) :: y(size(x))
+  integer, parameter :: n = 31
+  real(kind=prec) :: d(size(x), n)
+  integer j
+  real(kind=prec), parameter :: tab(n) = (/ &
+    0.16790870845090712667_prec,  &
+    0.24999999999999999714_prec,  &
+    0.090025770283039018322_prec,  &
+    0._prec,  &
+    -0.0086900366867500027511_prec,  &
+    0._prec,  &
+    0.00060381235790050824993_prec,  &
+    0._prec,  &
+    0.00022998828036085831279_prec,  &
+    0._prec,  &
+    -0.000078972992026240712111_prec,  &
+    0._prec,  &
+    -5.3118908386568023622e-6_prec,  &
+    0._prec,  &
+    6.0803996989299871997e-6_prec,  &
+    0._prec,  &
+    5.0847562954713294469e-7_prec,  &
+    0._prec,  &
+    -4.4499957697981702844e-7_prec,  &
+    0._prec,  &
+    -1.4537309204451550916e-7_prec,  &
+    0._prec,  &
+    1.175946802213709722e-8_prec,  &
+    0._prec,  &
+    2.8726825067562003393e-8_prec,  &
+    0._prec,  &
+    8.3072230051403210069e-9_prec,  &
+    0._prec,  &
+    -2.9478257498685722721e-9_prec,  &
+    0._prec,  &
+    -2.2149737143110270241e-9_prec /)
+
+  do j=1,size(x)
+    d(j, :) = tab
+  enddo
+  y = -1+2*x
+
+  do j = n, 3, -1
+    d(:, j-1) = d(:, j-1) + 2*y(:)*d(:, j)
+    d(:, j-2) = d(:, j-2) - d(:, j)
+  end do
+  lvc_int = d(:, 1)+y(:)*d(:, 2)
+
+  END FUNCTION LVC_INT
+
+
                           !!!!!!!!!!!!!!!!!!!!!!
                             END MODULE functions
                           !!!!!!!!!!!!!!!!!!!!!!
