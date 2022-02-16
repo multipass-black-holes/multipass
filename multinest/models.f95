@@ -313,6 +313,18 @@ contains
 
   END FUNCTION PPISN_NORMS
 
+
+  PURE FUNCTION R2P_PPISN(V) result(p)
+  real(kind=prec), intent(in) :: v(:)
+  type(para) :: p
+  p%mmin = v(1)
+  p%dm   = v(2)
+  p%a    = v(3)
+  p%b    = v(4)
+  p%d    = v(5)
+  END FUNCTION R2P_PPISN
+
+
                    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                    !!                             !!
                    !!            TOOLS            !!
@@ -350,6 +362,19 @@ contains
       m%smoothint => smooth_expint
       m%smooth_c = "tan"
       m%norms = .false.
+    case("ppisn+trivial+trivial")
+      m%primary => ppisn_mf1g
+      m%secondary => ppisn_m2_phys
+      m%redshift => trivial
+      m%spin(1,1)%f => trivial
+      m%spin(1,2)%f => trivial
+      m%spin(2,1)%f => trivial
+      m%spin(2,2)%f => trivial
+      m%r2p => r2p_ppisn
+      m%smooth => smooth_exp
+      m%smoothint => smooth_expint
+      m%smooth_c = "tan"
+      m%norms = .true.
     case default
       stop 9
   end select
