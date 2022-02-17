@@ -368,6 +368,7 @@ contains
       m%norms = .false.
     case("ppisn+flat+trivial+trivial")
       m%primary => ppisn_mf1g
+      m%primaryM2 => ppisn_mf2g
       m%secondary => flatm
       m%secondary_c = "flat"
       m%redshift => trivial
@@ -382,6 +383,7 @@ contains
       m%norms = .true.
     case("ppisn+trivial+trivial")
       m%primary => ppisn_mf1g
+      m%primaryM2 => ppisn_mf2g
       m%secondary => ppisn_m2_phys
       m%secondary_c = "phys"
       m%redshift => trivial
