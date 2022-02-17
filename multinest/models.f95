@@ -362,9 +362,24 @@ contains
       m%smoothint => smooth_expint
       m%smooth_c = "tan"
       m%norms = .false.
+    case("ppisn+flat+trivial+trivial")
+      m%primary => ppisn_mf1g
+      m%secondary => flatm
+      m%secondary_c = "flat"
+      m%redshift => trivial
+      m%spin(1,1)%f => trivial
+      m%spin(1,2)%f => trivial
+      m%spin(2,1)%f => trivial
+      m%spin(2,2)%f => trivial
+      m%r2p => r2p_ppisn
+      m%smooth => smooth_exp
+      m%smoothint => smooth_expint
+      m%smooth_c = "tan"
+      m%norms = .true.
     case("ppisn+trivial+trivial")
       m%primary => ppisn_mf1g
       m%secondary => ppisn_m2_phys
+      m%secondary_c = "phys"
       m%redshift => trivial
       m%spin(1,1)%f => trivial
       m%spin(1,2)%f => trivial
