@@ -319,9 +319,13 @@ contains
   type(para) :: p
   p%mmin = v(1)
   p%dm   = v(2)
-  p%a    = v(3)
-  p%b    = v(4)
-  p%d    = v(5)
+  p%mgap = v(3)
+  p%a    = v(4)
+  p%b    = v(5)
+  p%d    = v(6)
+  p%lam21= 10**v(7)
+  p%lam12= 10**v(8)
+  p%lam22= 10**v(9)
   END FUNCTION R2P_PPISN
 
 
