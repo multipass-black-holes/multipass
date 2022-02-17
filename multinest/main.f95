@@ -10,7 +10,7 @@
   logical, parameter :: outfile   = .true. ! write output files
   logical, parameter :: MPIinit   = .true. ! do MPI init
 
-  integer, parameter :: np        = 1000   ! number of live points
+  integer, parameter :: np        = 10000  ! number of live points
   integer, parameter :: ndim      = 8      ! ndim = 8
   integer, parameter :: npara     = ndim   ! no. of parameters
   integer, parameter :: nparaMode = ndim   ! no. of parameters with mode
@@ -19,8 +19,8 @@
   integer, parameter :: seed      = 1234   ! seed
   integer, parameter :: maxiter   = 0      ! maxiter
   integer, parameter :: pWrap(ndim) = 0
-  real(kind=prec), parameter :: tol     = 5.5   ! tol, defines stopping
-  real(kind=prec), parameter :: efr     = 0.8   ! efr, requried effiecny
+  real(kind=prec), parameter :: tol     = 0.5   ! tol, defines stopping
+  real(kind=prec), parameter :: efr     = 0.3   ! efr, requried effiecny
   real(kind=prec), parameter :: Ztol    = -1e30 ! all the modes with logZ < Ztol are ignored
   real(kind=prec), parameter :: logZero = -1e30 ! logZero
 
