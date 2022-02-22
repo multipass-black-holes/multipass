@@ -3,6 +3,8 @@
                           !!!!!!!!!!!!!!!!!!!!!!
   use functions
   implicit none
+  ! This just controls the overall normalisation
+  real(kind=prec), parameter :: mpiv   = 30
 
   ABSTRACT INTERFACE
     PURE FUNCTION SMOOTHFN(M, MI, DM)
@@ -23,7 +25,7 @@
     real(kind=prec) :: mgap=0, a=0, b=0, d=0
 
     ! Smooth function
-    procedure(smoothfn), pointer, nopass :: sf
+    procedure(smoothfn), pointer, nopass :: sf, sfint
     character(len=3) :: sf_c
 
     real(kind=prec) :: lam21, lam12, lam22
@@ -82,7 +84,7 @@
     procedure(redshiftFn), pointer, nopass :: redshift
     type(spinFns), dimension(2,2) :: spin
     procedure(paraFn), pointer, nopass :: r2p
-    procedure(smoothFn), pointer, nopass :: smooth
+    procedure(smoothFn), pointer, nopass :: smooth, smoothInt
     character(len=3) :: smooth_c
     character(len=4) :: secondary_c
     logical :: norms
@@ -175,7 +177,6 @@ contains
   real(kind=prec), intent(in) :: m(:)
   type(para), intent(in) :: p
   real(kind=prec), parameter :: mfudge = 0.99
-  real(kind=prec), parameter :: mpiv   = 30
   real(kind=prec) :: ppisn_mf1g(size(m))
 
   ppisn_mf1g = 0.
@@ -195,13 +196,12 @@ contains
   real(kind=prec), intent(in) :: m(:)
   type(para), intent(in) :: p
   real(kind=prec), parameter :: mfudge = 0.99
-  real(kind=prec), parameter :: mpiv   = 30
   real(kind=prec) :: ppisn_mf2g(size(m))
 
   ppisn_mf2g = 1.
   where (m < p%mmin) ppisn_mf2g = 0.
-  where ((p%mmin < m) .and. (m < p%mmin + p%dm)) &
-    ppisn_mf2g = ppisn_mf2g * p%sf(m, p%mmin, p%dm)
+  where ((p%mmin < m) .and. (m < p%mgap+ p%mmin + p%dm/2)) &
+    ppisn_mf2g = p%sf(m, p%mmin, p%dm)
   where (p%mgap+ p%mmin + p%dm/2 < m) &
     ppisn_mf2g = (m / (p%mgap + p%mmin + p%dm/2)) ** p%d
 
@@ -216,34 +216,32 @@ contains
   real(kind=prec), intent(in) :: m(:)
   type(para), intent(in) :: p
   real(kind=prec) :: ppisn_pm2m1den_m11g(size(m))
-  real(kind=prec) :: x(size(m))
+
+  integer, parameter :: Nsamples = 10000
+  real(kind=prec) :: BT(0:size(m))
   real(kind=prec) :: sLVC(2)
+  integer i, cut
+  real(kind=prec), parameter :: linspace(0:Nsamples) = [(i / real(Nsamples), i=0,Nsamples)]
+  real(kind=prec), dimension(0:Nsamples) :: Msample, int
   real(kind=prec), parameter :: erf2 = erf(2._prec)
   real(kind=prec), parameter :: ep = 1e-8
 
+  Msample = p%mmin + linspace * p%dm
+  int = ppisn_mf1g(Msample, p) * p%dm / Nsamples
+
+  do i=1, size(m)
+    if(m(i) > p%mgap) cycle
+    cut = findloc(Msample > m(i), .false., dim=1, back=.true.)
+    ppisn_pm2m1den_m11g(i) =  sum(int(0:cut))
+  enddo
+
   ! the part from Mmin + dm -- m1
-  x = m/p%mgap
-  ppisn_pm2m1den_m11g = p%mgap**(p%b-1) * &
-      (2*p%a*p%a*Btilde(p%b+1.5_prec, p%a, x) + x**(p%b+1) / (p%b+1))
-  x = (p%mmin+p%dm)/p%mgap
-  ppisn_pm2m1den_m11g = ppisn_pm2m1den_m11g - p%mgap**(p%b-1) * &
-      (2*p%a*p%a*Btilde(p%b+1.5_prec, p%a, x) + x**(p%b+1) / (p%b+1))
+  BT = Btilde(1.5_prec+p%b, p%a, [p%mmin+p%dm, m]/p%mgap)
 
-  select case(p%sf_c)
-    case('exp')
-      sLVC = p%sf((/p%mmin+p%dm+ep, p%mmin+ep /), p%mmin, p%dm)
-
-      ppisn_pm2m1den_m11g = ppisn_pm2m1den_m11g + &
-        sLVC(1) * ((p%mmin+p%dm+ep)+0.5*p%dm)**(p%b+1) / (p%b+1) &
-       -sLVC(2) * ((p%mmin+     ep)+0.5*p%dm)**(p%b+1) / (p%b+1)
-
-    case('erf')
-      ppisn_pm2m1den_m11g = ppisn_pm2m1den_m11g + &
-        erf2 * ( - (2*p%mmin+p%dm) * (0.5*p%dm + p%mmin)**p%b &
-                   + p%mmin**(p%b+1) ) / 2 / (p%b + 1) &
-      - (-1-erf2) * (p%dm + p%mmin)**(p%b+1) + p%mmin**(p%b+1) &
-                   / 2 / (p%b + 1)
-  end select
+  where((p%mgap > m) .and. (m > p%mmin + p%dm)) &
+    ppisn_pm2m1den_m11g = ppisn_pm2m1den_m11g + &
+        (m**(1+p%b) - (p%mmin+p%dm)**(1+p%b)) / (1+p%b) &
+        + 2*p%a**2*p%mgap**(1+p%b) * (BT(1:size(m)) - BT(0))
 
   END FUNCTION PPISN_PM2M1DEN_M11G
 
@@ -255,16 +253,22 @@ contains
   real(kind=prec), intent(in) :: m(:)
   type(para), intent(in) :: p
   real(kind=prec) :: ppisn_pm2m1den_m12g(size(m))
+  real(kind=prec) :: mmax
 
-  ppisn_pm2m1den_m12g = 1._prec
+  mmax = p%mgap + p%mmin + p%dm/2
+
+  ppisn_pm2m1den_m12g = 0._prec
 
   where( (p%mmin < m).and.(m < p%mmin+p%dm) ) &
-    ppisn_pm2m1den_m12g = 0.5 * (m - p%mmin)  ! TODO
-  where( (p%mmin+p%dm < m).and.(m < p%mmax) ) &
-    ppisn_pm2m1den_m12g = (0.5*p%dm) + m
-  where( (p%mmax < m) ) &
-    ppisn_pm2m1den_m12g = (0.5*p%dm) + p%mmax + &
-        ((m/p%mmax)**(1+p%d) - 1)*p%mmax/(1+p%d)
+    ppisn_pm2m1den_m12g = p%sfInt(m, p%mmin, p%dm)
+  where( (p%mmin+p%dm < m).and.(m < mmax) ) &
+    ppisn_pm2m1den_m12g = -0.5*p%dm - p%mmin + m
+  where( (mmax < m) ) &
+    ppisn_pm2m1den_m12g = -0.5*p%dm - p%mmin + mmax + &
+        ((m/mmax)**(1+p%d) - 1)*mmax/(1+p%d)
+
+
+  ppisn_pm2m1den_m12g = ppisn_pm2m1den_m12g * mpiv**p%b
 
   END FUNCTION PPISN_PM2M1DEN_M12G
 
@@ -309,6 +313,22 @@ contains
 
   END FUNCTION PPISN_NORMS
 
+
+  PURE FUNCTION R2P_PPISN(V) result(p)
+  real(kind=prec), intent(in) :: v(:)
+  type(para) :: p
+  p%mmin = v(1)
+  p%dm   = v(2)
+  p%mgap = v(3)
+  p%a    = v(4)
+  p%b    = v(5)
+  p%d    = v(6)
+  p%lam21= 10**v(7)
+  p%lam12= 10**v(8)
+  p%lam22= 10**v(9)
+  END FUNCTION R2P_PPISN
+
+
                    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                    !!                             !!
                    !!            TOOLS            !!
@@ -330,6 +350,7 @@ contains
       m%spin(2,2)%f => trivial
       m%r2p => r2p_plp_flat
       m%smooth => smooth_tanh
+      m%smoothint => smooth_expint
       m%smooth_c = "tan"
       m%norms = .false.
     case('plp+pow+trivial+trivial')
@@ -342,8 +363,39 @@ contains
       m%spin(2,2)%f => trivial
       m%r2p => r2p_plp_pow
       m%smooth => smooth_exp
+      m%smoothint => smooth_expint
       m%smooth_c = "tan"
       m%norms = .false.
+    case("ppisn+flat+trivial+trivial")
+      m%primary => ppisn_mf1g
+      m%primaryM2 => ppisn_mf2g
+      m%secondary => flatm
+      m%secondary_c = "flat"
+      m%redshift => trivial
+      m%spin(1,1)%f => trivial
+      m%spin(1,2)%f => trivial
+      m%spin(2,1)%f => trivial
+      m%spin(2,2)%f => trivial
+      m%r2p => r2p_ppisn
+      m%smooth => smooth_exp
+      m%smoothint => smooth_expint
+      m%smooth_c = "tan"
+      m%norms = .true.
+    case("ppisn+trivial+trivial")
+      m%primary => ppisn_mf1g
+      m%primaryM2 => ppisn_mf2g
+      m%secondary => ppisn_m2_phys
+      m%secondary_c = "phys"
+      m%redshift => trivial
+      m%spin(1,1)%f => trivial
+      m%spin(1,2)%f => trivial
+      m%spin(2,1)%f => trivial
+      m%spin(2,2)%f => trivial
+      m%r2p => r2p_ppisn
+      m%smooth => smooth_exp
+      m%smoothint => smooth_expint
+      m%smooth_c = "tan"
+      m%norms = .true.
     case default
       stop 9
   end select
@@ -352,13 +404,14 @@ contains
   SUBROUTINE TEST
   real(kind=prec), dimension(6) :: mtest, ans
   real(kind=prec) :: diff
+  type(para) :: p
 
   mtest = (/ 1.,11., 20., 30., 40., 100. /)
   ans = (/0._prec,  0.010459028944395847_prec, &
         0.0035206207261596584_prec,  0.0017915249285508827_prec, &
         0.0012500000000000002_prec,  0._prec /)
 
-  print*,sum(abs(ans - ppisn_mf1g(mtest, &
+  diff = sum(abs(ans - ppisn_mf1g(mtest, &
                 para(mgap = 50._prec, &
                      a    =  .5_prec, &
                      b    = -2._prec, &
@@ -369,11 +422,13 @@ contains
                      lam21=  0._prec, &
                      lam22=  0._prec, &
                      sf_c = 'exp'   , &
+                     sfint= smooth_expint, &
                      sf   = smooth_exp)))) / 6.
+  print*, "ppisn_mf1g", diff
 
   ans = (/ 0._prec, 1/900._prec, 1/900._prec, &
            1/900._prec, 1/900._prec, 0.00021123263888888892_prec/)
-  print*,sum(abs(ans - ppisn_mf2g(mtest, &
+  diff = sum(abs(ans - ppisn_mf2g(mtest, &
                 para(mgap = 50._prec, &
                      a    =  .5_prec, &
                      b    = -2._prec, &
@@ -384,7 +439,9 @@ contains
                      lam21=  0._prec, &
                      lam22=  0._prec, &
                      sf_c = 'exp'   , &
+                     sfint= smooth_expint, &
                      sf   = smooth_exp)))) / 6.
+  print*, "ppisn_mf2g", diff
 
   ans = (/ 0., 0.03674262, 0.01327075, 0.02089596, 0.00493742, 0. /)
 
@@ -400,8 +457,9 @@ contains
                      lam21=  0._prec, &
                      lam22=  0._prec, &
                      sf_c = 'tan'   , &
+                     sfint= smooth_expint, &
                      sf   = smooth_tanh)))) / 6.
-  print*,diff
+  print*,"plp_mf", diff
 
   mtest = (/ 2., 3., 4., 5., 10., 20. /)
   ans = (/ 0., 3.14309363e-13, 5.66146660e-06, &
@@ -419,9 +477,52 @@ contains
                      lam21=  0._prec, &
                      lam22=  0._prec, &
                      sf_c = 'tan'   , &
+                     sfint= smooth_expint, &
                      sf   = smooth_tanh)))) / 6.
 
-  print*,diff
+  print*,"plp_mf", diff
+
+  mtest = (/ 2., 4., 10., 20., 25., 35. /)
+  p = para(mmin = 2.61592_prec,&
+           dm   = 8.5451_prec,&
+           mgap = 34._prec, &
+           a    = 0.23_prec, &
+           b    = -2.34_prec, &
+           d    = -7.63_prec, &
+           lam21 = 0._prec, &
+           lam22 = 0._prec, &
+           lam12 = 0._prec, &
+           sf   = smooth_erf, &
+           sfint= smooth_erfint, &
+           sf_c = 'erf')
+
+  ans = (/0._prec, 0.0011329932907377792_prec, &
+          0.004816986990970342_prec, 0.001047864239495318_prec,&
+          0.0006707850448342742_prec, 0._prec /)
+  diff = sum(abs(ans-ppisn_mf1g(mtest, p))) / 6.
+  print*, "ppisn_mf1g", diff
+
+  ans = (/ 0._prec, 0.0008369386215617741_prec, &
+        0.028895302280797192_prec, 0.05158740716028034_prec, &
+        0.0557564000458822_prec, 0.0_prec /)
+  diff = sum((ppisn_pm2m1den_m11g(mtest, p) - ans) / (ans + 1e-15))/ 6.
+  print*, "ppisn_pm2m1den_m11g", diff
+
+  mtest = (/ 3., 30., 35., 37., 40., 45. /)
+  ans = (/ 0.017562827691927917e-4_prec, 3.4957169791193885e-4_prec, &
+          3.4957169791193885e-4_prec, 3.4957169791193885e-4_prec, &
+          3.4957169791193885e-4_prec, 1.6828265142804126e-4_prec /)
+
+  diff = sum(abs(ans-ppisn_mf2g(mtest, p))) / 6.
+  print*, "ppisn_mf2g", diff
+
+  mtest = (/ 2._prec, 4._prec, 10._prec, 20._prec, 25._prec, 35._prec /)
+  ans = (/0._prec, 5.290164443318091e-6_prec, &
+          0.0010911514507551488_prec, 0.004583419804323329_prec, &
+          0.006331278293883026_prec, 0.009826995273002417_prec/)
+
+  diff = sum(abs((ppisn_pm2m1den_m12g(mtest, p)+1e-15) / (ans+1e-15) - 1)) / 6.
+  print*, "ppisn_pm2m1den_m12g", diff
   END SUBROUTINE TEST
 
                           !!!!!!!!!!!!!!!!!!!!!!

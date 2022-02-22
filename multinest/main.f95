@@ -11,7 +11,7 @@
   logical, parameter :: MPIinit   = .true. ! do MPI init
 
   integer, parameter :: np        = 1000   ! number of live points
-  integer, parameter :: ndim      = 8      ! ndim = 8
+  integer, parameter :: ndim      = 9      ! ndim = 9
   integer, parameter :: npara     = ndim   ! no. of parameters
   integer, parameter :: nparaMode = ndim   ! no. of parameters with mode
   integer, parameter :: maxmode   = 100    ! max modes
@@ -28,10 +28,14 @@
 
   integer :: context
 
+  !real(kind=prec), parameter, dimension(npara) :: &
+  !  min_val = (/ 2._prec,  0._prec,  30._prec, 20._prec,  1._prec, -4._prec, 0._prec,  0._prec /)
+  !real(kind=prec), parameter, dimension(npara) :: &
+  !  max_val = (/10._prec, 10._prec, 100._prec, 50._prec, 10._prec, 12._prec, 1._prec, 10._prec/)
   real(kind=prec), parameter, dimension(npara) :: &
-    min_val = (/ 2._prec,  0._prec,  30._prec, 20._prec,  1._prec, -4._prec, 0._prec,  0._prec /)
+    min_val = (/ 2._prec,  0._prec,  20._prec,  0._prec,- 4._prec,-10._prec, -7._prec,  -7._prec, -7._prec /)
   real(kind=prec), parameter, dimension(npara) :: &
-    max_val = (/10._prec, 10._prec, 100._prec, 50._prec, 10._prec, 12._prec, 1._prec, 10._prec/)
+    max_val = (/10._prec, 10._prec, 120._prec, 0.5_prec,  0._prec,  0._prec, -0.3_prec, -0.3_prec, -0.3_prec /)
   character(len=1000), parameter :: root = "testrun/test-"
 
   type(model) :: the_model
@@ -45,7 +49,8 @@
   call load_inj("inj.rec")
   call load_data("data.rec")
 
-  the_model = getmodel('plp+pow+trivial+trivial')
+  !the_model = getmodel('plp+pow+trivial+trivial')
+  the_model = getmodel('ppisn+flat+trivial+trivial')
 
   call cpu_time(start)
   call nestrun(IS, modal, ceff, np, tol, efr, &
@@ -70,6 +75,7 @@ contains
   cube = min_val + cube * (max_val - min_val)
   p = the_model%r2p(cube)
   p%sf => the_model%smooth
+  p%sfint => the_model%smoothint
   p%sf_c = the_model%smooth_c
 
   lnew = ll(the_model, p)
