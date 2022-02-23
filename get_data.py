@@ -2,6 +2,8 @@ import requests
 import re
 import time
 import subprocess
+import tarfile
+import os
 
 
 def list_catalog(name):
@@ -46,6 +48,18 @@ def download_file(url):
     subprocess.Popen(['wget', url], cwd='tmp/').wait()
 
 
+def untar(fn):
+    t = tarfile.open(fn)
+    pat = re.compile(r'.*/(GW[\d_]*_comoving.h5)')
+    for i in t:
+        p = pat.match(i.name)
+        if p:
+            with open("tmp/" + p.group(1), "wb") as fp:
+                fp.write(t.extractfile(i).read())
+            return
+    raise KeyError
+
+
 if __name__ == "__main__":
     urls = []
     for k, url in list_catalog('all'):
@@ -57,3 +71,8 @@ if __name__ == "__main__":
             download_file(url)
         except:
             print(" failed!")
+    for i in os.listdir("tmp/"):
+        if i.endswith(".tar"):
+            print(f"Untarring {i}...", end="")
+            untar("tmp/" + i)
+            print(" done")
