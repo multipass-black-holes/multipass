@@ -71,6 +71,10 @@ if __name__ == "__main__":
             download_file(url)
         except:
             print(" failed!")
+
+    download_file("https://dcc.ligo.org/public/0169/P2000223/007/GW190424_180648.tar")
+    download_file("https://dcc.ligo.org/public/0169/P2000223/007/GW190909_114149.tar")
+
     for i in os.listdir("tmp/"):
         if i.endswith(".tar"):
             print(f"Untarring {i}...", end="")
