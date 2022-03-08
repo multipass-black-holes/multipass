@@ -78,6 +78,8 @@
   END TYPE SPINFNS
 
   TYPE MODEL
+    integer ndim
+    character(len=100) :: model_name
     procedure(mass1fn), pointer, nopass :: primary
     procedure(mass1fn), pointer, nopass :: primaryM2
     procedure(mass2fn), pointer, nopass :: secondary
@@ -340,8 +342,10 @@ contains
   character(len=*), intent(in) :: mods
   type(model) :: m
 
+  m%model_name = trim(mods)
   select case(mods)
     case('plp+flat+trivial+trivial')
+      m%ndim = 8
       m%primary => plp_mf
       m%secondary => flatm
       m%redshift => trivial
@@ -355,6 +359,7 @@ contains
       m%smooth_c = "tan"
       m%norms = .false.
     case('plp+pow+trivial+trivial')
+      m%ndim = 8
       m%primary => plp_mf
       m%secondary => powm
       m%redshift => trivial
@@ -368,6 +373,7 @@ contains
       m%smooth_c = "tan"
       m%norms = .false.
     case("ppisn+flat+trivial+trivial")
+      m%ndim = 9
       m%primary => ppisn_mf1g
       m%primaryM2 => ppisn_mf2g
       m%secondary => flatm
@@ -383,6 +389,7 @@ contains
       m%smooth_c = "tan"
       m%norms = .true.
     case("ppisn+trivial+trivial")
+      m%ndim = 9
       m%primary => ppisn_mf1g
       m%primaryM2 => ppisn_mf2g
       m%secondary => ppisn_m2_phys

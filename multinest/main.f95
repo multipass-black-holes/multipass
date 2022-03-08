@@ -10,17 +10,17 @@
   logical, parameter :: outfile   = .true. ! write output files
   logical, parameter :: MPIinit   = .true. ! do MPI init
 
-  integer, parameter :: np        = 1000   ! number of live points
-  integer, parameter :: ndim      = 9      ! ndim = 9
-  integer, parameter :: npara     = ndim   ! no. of parameters
-  integer, parameter :: nparaMode = ndim   ! no. of parameters with mode
+  integer            :: np        = 1000   ! number of live points
+  integer, parameter :: ndimmax   = 20
+  integer            :: npara              ! no. of parameters
+  integer            :: nparaMode          ! no. of parameters with mode
   integer, parameter :: maxmode   = 100    ! max modes
   integer, parameter :: feedbackn = 10     ! require feedback and update after no. it
   integer, parameter :: seed      = 1234   ! seed
   integer, parameter :: maxiter   = 0      ! maxiter
-  integer, parameter :: pWrap(ndim) = 0
-  real(kind=prec), parameter :: tol     = 0.5   ! tol, defines stopping
-  real(kind=prec), parameter :: efr     = 0.3   ! efr, requried effiecny
+  integer, parameter :: pWrap(ndimMax) = 0
+  real(kind=prec)            :: tol     = 5.5   ! tol, defines stopping
+  real(kind=prec)            :: efr     = 0.8   ! efr, requried effiecny
   real(kind=prec), parameter :: Ztol    = -1e30 ! all the modes with logZ < Ztol are ignored
   real(kind=prec), parameter :: logZero = -1e30 ! logZero
 
@@ -28,15 +28,8 @@
 
   integer :: context
 
-  !real(kind=prec), parameter, dimension(npara) :: &
-  !  min_val = (/ 2._prec,  0._prec,  30._prec, 20._prec,  1._prec, -4._prec, 0._prec,  0._prec /)
-  !real(kind=prec), parameter, dimension(npara) :: &
-  !  max_val = (/10._prec, 10._prec, 100._prec, 50._prec, 10._prec, 12._prec, 1._prec, 10._prec/)
-  real(kind=prec), parameter, dimension(npara) :: &
-    min_val = (/ 2._prec,  0._prec,  20._prec,  0._prec,- 4._prec,-10._prec, -7._prec,  -7._prec, -7._prec /)
-  real(kind=prec), parameter, dimension(npara) :: &
-    max_val = (/10._prec, 10._prec, 120._prec, 0.5_prec,  0._prec,  0._prec, -0.3_prec, -0.3_prec, -0.3_prec /)
-  character(len=1000), parameter :: root = "testrun/test-"
+  real(kind=prec), dimension(ndimMax) :: min_val, max_val
+  character(len=1000) :: arg, root = "testrun/test-"
 
   type(model) :: the_model
 
@@ -45,17 +38,22 @@
 
   open(unit=9, file=trim(root) // ".timing", action="write", access="append")
 
+  call get_command_argument(1, arg)
+  if(len_trim(arg) == 0) then
+    call userinterface(5, 9)
+  else
+    open(unit=15, file=trim(arg), action="read")
+    call userinterface(15, 9)
+    close(unit=15)
+  endif
 
   call load_inj("inj.rec")
   call load_data("data.rec")
 
-  !the_model = getmodel('plp+pow+trivial+trivial')
-  the_model = getmodel('ppisn+flat+trivial+trivial')
-
   call cpu_time(start)
   call nestrun(IS, modal, ceff, np, tol, efr, &
-      ndim, npara, nparaMode, maxmode, feedbackn, &
-      Ztol, root, seed, pWrap, fstdout, resume, &
+      the_model%ndim, npara, nparaMode, maxmode, feedbackn, &
+      Ztol, root, seed, pWrap(1:the_model%ndim), fstdout, resume, &
       outfile, MPIinit, logZero, maxiter, &
       slikelihood, dumper, context)
 
@@ -72,7 +70,7 @@ contains
   real(kind=prec) :: lnew
   type(para) :: p
 
-  cube = min_val + cube * (max_val - min_val)
+  cube = min_val(1:ndim) + cube * (max_val(1:ndim) - min_val(1:ndim))
   p = the_model%r2p(cube)
   p%sf => the_model%smooth
   p%sfint => the_model%smoothint
@@ -95,5 +93,62 @@ contains
   call flush(9)
 
   END SUBROUTINE DUMPER
+
+
+  SUBROUTINE USERINTERFACE(Uin, Uout)
+  implicit none
+  integer, intent(in) :: Uin, Uout
+  character(len=1) :: cmd, space
+  character(len=1000) :: buf
+
+  do while(cmd .ne. 's')
+    if(Uin==5) then
+      print*, "Available commands:"
+      print*, " * [m]odel: ", trim(the_model%model_name)
+      print*, "    - plp+flat+trivial+trivial"
+      print*, "    - plp+pow+trivial+trivial"
+      print*, " * [n]umber of live points: ", np
+      print*, " * [t]olerance (defines stopping)", tol
+      print*, " * [e]fr, require efficency", efr
+      print*, " * [p]rior range, lower bounds", min_val(1:the_model%ndim)
+      print*, " * [P]rior range, upper bounds", max_val(1:the_model%ndim)
+      print*, " * [o]utput prefix ", trim(root)
+      print*, " * [s]tart"
+    endif
+
+    read(unit=Uin, fmt='(A1, A1, A)') cmd, space, buf
+    if(space.ne. ' ') cycle
+
+    select case(cmd)
+      case('m')
+        the_model = getmodel(trim(buf))
+        npara     = the_model%ndim
+        nparaMode = the_model%ndim
+
+      case('p')
+        read(unit=buf, fmt=*) min_val(1:the_model%ndim)
+      case('P')
+        read(unit=buf, fmt=*) max_val(1:the_model%ndim)
+
+      case('n')
+        read(unit=buf, fmt=*) np
+      case('t')
+        read(unit=buf, fmt=*) tol
+      case('e')
+        read(unit=buf, fmt=*) efr
+      case('o')
+        root = trim(buf)
+    end select
+  enddo
+
+  write(Uout, *) " * model: ", trim(the_model%model_name)
+  write(Uout, *) " * number of live points: ", np
+  write(Uout, *) " * tolerance (defines stopping)", tol
+  write(Uout, *) " * efr, require efficency", efr
+  write(Uout, *) " * prior range, lower bounds", min_val(1:the_model%ndim)
+  write(Uout, *) " * Prior range, upper bounds", max_val(1:the_model%ndim)
+  write(Uout, *) " * output prefix ", trim(root)
+
+  END SUBROUTINE USERINTERFACE
 
   END PROGRAM MAIN
