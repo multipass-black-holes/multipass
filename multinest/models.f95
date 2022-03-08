@@ -121,6 +121,7 @@ contains
   real(kind=prec) :: powm(size(m1))
 
   powm = (m2 / m1) ** p%k
+  !powm = powm / (p%k + 1)
   powm = powm * p%sf(m2, p%mmin, p%dm)
   END FUNCTION POWM
 

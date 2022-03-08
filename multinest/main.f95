@@ -19,8 +19,8 @@
   integer, parameter :: seed      = 1234   ! seed
   integer, parameter :: maxiter   = 0      ! maxiter
   integer, parameter :: pWrap(ndim) = 0
-  real(kind=prec), parameter :: tol     = 5.5   ! tol, defines stopping
-  real(kind=prec), parameter :: efr     = 0.8   ! efr, requried effiecny
+  real(kind=prec), parameter :: tol     = 0.5   ! tol, defines stopping
+  real(kind=prec), parameter :: efr     = 0.3   ! efr, requried effiecny
   real(kind=prec), parameter :: Ztol    = -1e30 ! all the modes with logZ < Ztol are ignored
   real(kind=prec), parameter :: logZero = -1e30 ! logZero
 
