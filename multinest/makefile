@@ -3,7 +3,14 @@ FFLAGS=
 LD=gfortran
 LFLAGS=
 
+HOST=$(shell hostname)
+ifneq (,$(filter %.phyip3.dur.ac.uk,$(HOST)))
 MPI=/usr/lib64/openmpi3
+LFLAGS+=-L/scratch/yulrich/usr10/
+else
+MPI=
+endif
+
 CMAKE=cmake3
 
 OBJ=models.o functions.o loglikelihood.o
@@ -12,7 +19,7 @@ FFLAGS+=-IMultiNest/modules/
 LFLAGS+=-llapack -lblas
 
 ifeq ($(MPI),)
-MPISUFFIX=""
+MPISUFFIX=
 else
 MPISUFFIX=_mpi
 LFLAGS+= -L$(MPI)/lib/ -lmpi_mpifh -lmpi
