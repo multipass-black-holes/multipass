@@ -56,6 +56,8 @@ def load_gw(veto, base='../tmp/', v=2, cm=True):
         pat = re.compile(r'GW([\d_]*)_GWTC-1.hdf5')
     elif v == 2:
         pat = re.compile(r'GW([\d_]*)_comoving.h5')
+    elif v == 21:
+        pat = re.compile(r'IGWN-GWTC2p1-v\d*-GW([\d_]*)_PEDataRelease.h5')
     elif v == 3:
         pat = re.compile(r'IGWN-GWTC3p0-v\d*-GW([\d_]*)_PEDataRelease_mixed_cosmo.h5')
 
@@ -99,6 +101,12 @@ def load_gw(veto, base='../tmp/', v=2, cm=True):
 
             elif v == 2:
                 d = f['PublicationSamples/posterior_samples']
+                m1 = np.concatenate((m1, d['mass_1_source']))
+                m2 = np.concatenate((m2, d['mass_2_source']))
+                rs = np.concatenate((rs, d['redshift']))
+                ce = np.concatenate((ce, d['chi_eff']))
+            elif v == 21:
+                d = f['PrecessingSpinIMRHM/posterior_samples']
                 m1 = np.concatenate((m1, d['mass_1_source']))
                 m2 = np.concatenate((m2, d['mass_2_source']))
                 rs = np.concatenate((rs, d['redshift']))
@@ -163,11 +171,14 @@ def convert_gw(fo='data.rec', base='../tmp/', cm=True):
     d2, o2 = load_gw(veto, base, v=2, cm=cm)
     o2 += len(d1)
 
-    d3, o3 = load_gw(veto, base, v=3, cm=cm)
-    o3 += len(d1) + len(d2)
+    d21, o21 = load_gw(veto, base, v=21, cm=cm)
+    o21 += len(d1) + len(d2)
 
-    d = np.concatenate((d1, d2, d3))
-    o = np.concatenate((o1, o2, o3))
+    d3, o3 = load_gw(veto, base, v=3, cm=cm)
+    o3 += len(d1) + len(d2) + len(d21)
+
+    d = np.concatenate((d1, d2, d21, d3))
+    o = np.concatenate((o1, o2, o21, o3))
 
     with open(fo, 'wb') as fp:
         write_record(fp, 'i', [len(d), len(o)])
