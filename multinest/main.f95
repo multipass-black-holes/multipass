@@ -50,8 +50,6 @@
   call load_inj("inj.rec")
   call load_data("data.rec")
 
-  the_model = getmodel('plp+pow+trivial+trivial')
-
   call cpu_time(start)
   call nestrun(IS, modal, ceff, np, tol, efr, &
       the_model%ndim, npara, nparaMode, maxmode, feedbackn, &
