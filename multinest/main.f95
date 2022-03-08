@@ -33,11 +33,6 @@
 
   type(model) :: the_model
 
-  call system("date > " // trim(root) // ".timing")
-  call system("git diff >> " // trim(root) // ".timing")
-
-  open(unit=9, file=trim(root) // ".timing", action="write", access="append")
-
   call get_command_argument(1, arg)
   if(len_trim(arg) == 0) then
     call userinterface(5, 9)
@@ -143,6 +138,11 @@ contains
     end select
   enddo
 
+  call system("date > " // trim(root) // ".timing")
+  call system("git diff >> " // trim(root) // ".timing")
+
+  open(unit=Uout, file=trim(root) // ".timing", action="write", access="append")
+
   write(Uout, *) " * model: ", trim(the_model%model_name)
   write(Uout, *) " * number of live points: ", np
   write(Uout, *) " * tolerance (defines stopping)", tol
@@ -150,6 +150,8 @@ contains
   write(Uout, *) " * prior range, lower bounds", min_val(1:the_model%ndim)
   write(Uout, *) " * Prior range, upper bounds", max_val(1:the_model%ndim)
   write(Uout, *) " * output prefix ", trim(root)
+
+  flush(Uout)
 
   END SUBROUTINE USERINTERFACE
 
