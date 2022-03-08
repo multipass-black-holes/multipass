@@ -12,9 +12,8 @@
 
   integer            :: np        = 1000   ! number of live points
   integer, parameter :: ndimmax   = 20
-  integer, parameter :: ndim      = 8      ! ndim = 8
-  integer, parameter :: npara     = ndim   ! no. of parameters
-  integer, parameter :: nparaMode = ndim   ! no. of parameters with mode
+  integer            :: npara              ! no. of parameters
+  integer            :: nparaMode          ! no. of parameters with mode
   integer, parameter :: maxmode   = 100    ! max modes
   integer, parameter :: feedbackn = 10     ! require feedback and update after no. it
   integer, parameter :: seed      = 1234   ! seed
@@ -124,6 +123,8 @@ contains
     select case(cmd)
       case('m')
         the_model = getmodel(trim(buf))
+        npara     = the_model%ndim
+        nparaMode = the_model%ndim
 
       case('p')
         read(unit=buf, fmt=*) min_val(1:the_model%ndim)
