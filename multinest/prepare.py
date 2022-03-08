@@ -76,6 +76,7 @@ def load_gw(veto, base='../tmp/', v=2, cm=True):
     offsets = []
 
     for fn in files:
+        print(v, fn)
         with h5py.File(fn, 'r') as f:
             if v == 1:
                 d = f['Overall_posterior']
