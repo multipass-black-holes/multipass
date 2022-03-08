@@ -30,7 +30,7 @@
   integer :: context
 
   real(kind=prec), dimension(ndimMax) :: min_val, max_val
-  character(len=1000) :: root = "testrun/test-"
+  character(len=1000) :: arg, root = "testrun/test-"
 
   type(model) :: the_model
 
@@ -39,7 +39,14 @@
 
   open(unit=9, file=trim(root) // ".timing", action="write", access="append")
 
-  call userinterface(5, 9)
+  call get_command_argument(1, arg)
+  if(len_trim(arg) == 0) then
+    call userinterface(5, 9)
+  else
+    open(unit=15, file=trim(arg), action="read")
+    call userinterface(15, 9)
+    close(unit=15)
+  endif
 
   call load_inj("inj.rec")
   call load_data("data.rec")
