@@ -1,4 +1,5 @@
 import sys
+import re
 try:
     import getdist
     import getdist.plots
@@ -15,27 +16,49 @@ rc('text', usetex=True)
 
 parameters = {
     "plp+pow+trivial+trivial": [
-        ((2, 10), "m_{min}\\ [M_{\\odot}]", "mmin"),
-        ((0, 10), "\\delta_{m}\\ [M_{\\odot}]", "dm"),
-        ((30, 100), "m_{max}\\ [M_{\\odot}]", "mmax"),
-        ((20, 50), "\\mu_{m}\\ [M_{\\odot}]", "mu"),
-        ((1, 10), "\\sigma_{m}\\ [M_{\\odot}]", "sigma"),
-        ((-4, 12), "\\alpha", "alpha"),
-        ((0, 1), "\\lambda_{p}", "lp"),
-        ((0, 10), "k", "k")
+        ("m_{min}\\ [M_{\\odot}]", "mmin"),
+        ("\\delta_{m}\\ [M_{\\odot}]", "dm"),
+        ("m_{max}\\ [M_{\\odot}]", "mmax"),
+        ("\\mu_{m}\\ [M_{\\odot}]", "mu"),
+        ("\\sigma_{m}\\ [M_{\\odot}]", "sigma"),
+        ("\\alpha", "alpha"),
+        ("\\lambda_{p}", "lp"),
+        ("k", "k")
     ],
-    "ppisn+trivial+trivial": [
-        ((  2,  10.0), "m_{min}\\ [M_{\\odot}]", "mmin"),
-        ((  0,  10.0), "\\delta_{m}\\ [M_{\\odot}]", "dm"),
-        (( 20, 120.0), "m_{gap}\\ [M_{\\odot}]", "mgap"),
-        ((  0,   0.5), "a", "a"),
-        ((- 4,   0.0), "b", "b"),
-        ((-10,   0.0), "d", "d"),
-        ((- 7,  -0.3), "\\log_{10}\\lambda_{21}", "lam21"),
-        ((- 7,  -0.3), "\\log_{10}\\lambda_{12}", "lam12"),
-        ((- 7,  -0.3), "\\log_{10}\\lambda_{22}", "lam22")
+    "ppisn+flat+trivial+trivial": [
+        ("m_{min}\\ [M_{\\odot}]", "mmin"),
+        ("\\delta_{m}\\ [M_{\\odot}]", "dm"),
+        ("m_{gap}\\ [M_{\\odot}]", "mgap"),
+        ("a", "a"),
+        ("b", "b"),
+        ("d", "d"),
+        ("\\log_{10}\\lambda_{21}", "lam21"),
+        ("\\log_{10}\\lambda_{12}", "lam12"),
+        ("\\log_{10}\\lambda_{22}", "lam22")
     ]
 }
+
+def parseInfo(root):
+    with open(root + ".timing") as fp:
+        txt = fp.read()
+    model = re.findall("model: (.*)", txt)[0]
+    np = len(parameters[model])
+    lower = [
+        float(i)
+        for i in re.findall(
+            r"prior range, lower bounds" + r" *([\d\.-]+)"*np,
+            txt
+        )[0]
+    ]
+    upper = [
+        float(i)
+        for i in re.findall(
+            r"Prior range, upper bounds" + r" *([\d\.-]+)"*np,
+            txt
+        )[0]
+    ]
+    return model, list(zip(lower, upper))
+
 
 
 def loadMC(root, model="plp+pow+trivial+trivial"):
@@ -43,8 +66,8 @@ def loadMC(root, model="plp+pow+trivial+trivial"):
     samples = getdist.MCSamples(
         samples=dat[:, 2:],
         weights=dat[:, 0],
-        names=[j for _, _, j in parameters[model]],
-        labels=[j for _, j, _ in parameters[model]]
+        names=[j for _, j in parameters[model]],
+        labels=[j for j, _ in parameters[model]]
     )
     samples.dat = dat
     return samples
@@ -97,8 +120,9 @@ def plot_bestfit_m1(samples, model="plp+pow+trivial+trivial"):
     return fig
 
 if __name__ == "__main__":
-    root = sys.argv[1] + "/test-"
-    model = sys.argv[2]
+    root = sys.argv[1]
+    model, lim = parseInfo(root)
+
     samples = loadMC(root, model)
 
     fig = triangle_plot(samples, model)
