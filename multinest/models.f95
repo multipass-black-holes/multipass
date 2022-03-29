@@ -220,7 +220,7 @@ contains
   type(para), intent(in) :: p
   real(kind=prec) :: ppisn_pm2m1den_m11g(size(m))
 
-  integer, parameter :: Nsamples = 10000
+  integer, parameter :: Nsamples = 100
   real(kind=prec) :: BT(0:size(m))
   real(kind=prec) :: sLVC(2)
   integer i, cut
