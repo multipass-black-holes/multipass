@@ -283,6 +283,10 @@ contains
 
   ppisn_m2_phys = ppisn_mf1g(m2, p) / ppisn_pm2m1den_m11g(m1, p)
 
+  ! if m1 < mmin, pm2m1den_m11g = 0 and hence ppisn_m2_phys = nan
+  where(isnan(ppisn_m2_phys)) &
+    ppisn_m2_phys = 0.
+
   END FUNCTION PPISN_M2_PHYS
 
 
@@ -313,6 +317,8 @@ contains
   end select
 
   ppisn_norms = L21+L12+L22
+  where(isnan(ppisn_norms)) &
+    ppisn_norms = 0.
 
   END FUNCTION PPISN_NORMS
 
