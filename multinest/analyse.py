@@ -136,6 +136,7 @@ def plot_bestfit_m1(samples, model="plp+pow+trivial+trivial", fig=None):
 def main(roots):
     figc = figure()
     l = []
+    logz = {}
 
     for root in roots:
         model, lim = parseInfo(root)
@@ -152,7 +153,28 @@ def main(roots):
         l.append(model)
         l.append('$1\sigma$')
 
+        with open(root+'stats.dat') as fp:
+            s = fp.read()
+        logz[model] = [float(i) for i in re.findall(
+            '([\d\.E\+-]+) *\+/- *([\d\.E\+-]+)',
+            s.splitlines()[0]
+        )[0]]
+
     legend(l)
+
+    for i, ki in enumerate(logz.keys()):
+        for j, kj in enumerate(logz.keys()):
+            if i < j:
+                bf = (
+                    logz[ki][0] - logz[kj][0],
+                    sqrt(logz[ki][1]**2 + logz[kj][1]**2)
+                )
+                if bf[0] > 0:
+                    kf = kj
+                else:
+                    kf = ki
+                print(f"BF {ki} and {kj} = {bf[0]} +- {bf[1]} favours {kf}")
+
     return figc
 
 
