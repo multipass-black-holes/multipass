@@ -35,6 +35,17 @@ parameters = {
         ("\\log_{10}\\lambda_{21}", "lam21"),
         ("\\log_{10}\\lambda_{12}", "lam12"),
         ("\\log_{10}\\lambda_{22}", "lam22")
+    ],
+    "ppisn+trivial+trivial": [
+        ("m_{min}\\ [M_{\\odot}]", "mmin"),
+        ("\\delta_{m}\\ [M_{\\odot}]", "dm"),
+        ("m_{gap}\\ [M_{\\odot}]", "mgap"),
+        ("a", "a"),
+        ("b", "b"),
+        ("d", "d"),
+        ("\\log_{10}\\lambda_{21}", "lam21"),
+        ("\\log_{10}\\lambda_{12}", "lam12"),
+        ("\\log_{10}\\lambda_{22}", "lam22")
     ]
 }
 
@@ -87,7 +98,7 @@ def best_fit(samples):
     return samples.dat[samples.dat[:, 1].argmin(), 2:]
 
 
-def plot_bestfit_m1(samples, model="plp+pow+trivial+trivial"):
+def plot_bestfit_m1(samples, model="plp+pow+trivial+trivial", fig=None):
     h = 1e-6
     n = 1000
 
@@ -108,7 +119,9 @@ def plot_bestfit_m1(samples, model="plp+pow+trivial+trivial"):
     tot = J @ samples.cov() @ J.T
     err = np.sqrt(tot.diagonal())
 
-    fig = figure()
+    if fig == None:
+        fig = figure()
+
     plot(x, y)
     fill_between(x, y-err/2, y+err/2, alpha=0.2)
     yscale('log')
@@ -119,14 +132,29 @@ def plot_bestfit_m1(samples, model="plp+pow+trivial+trivial"):
     ylim(3e-4, 1)
     return fig
 
+
+def main(roots):
+    figc = figure()
+    l = []
+
+    for root in roots:
+        model, lim = parseInfo(root)
+
+        samples = loadMC(root, model)
+
+        fig = triangle_plot(samples, model)
+        fig.savefig(root + model + "triangle.pdf")
+
+        fig = plot_bestfit_m1(samples, model)
+        fig.savefig(root + model + "fitm1.pdf")
+
+        plot_bestfit_m1(samples, model, figc)
+        l.append(model)
+        l.append('$1\sigma$')
+
+    legend(l)
+    return figc
+
+
 if __name__ == "__main__":
-    root = sys.argv[1]
-    model, lim = parseInfo(root)
-
-    samples = loadMC(root, model)
-
-    fig = triangle_plot(samples, model)
-    fig.savefig(root + "triangle.pdf")
-
-    fig = plot_bestfit_m1(samples, model)
-    fig.savefig(root + "fitm1.pdf")
+    main(sys.argv[1:])
