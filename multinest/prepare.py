@@ -186,6 +186,18 @@ def convert_gw(fo='data.rec', base='../tmp/', cm=True):
         write_record(fp, 'i', o)
         write_record(fp, 'd', d)
 
+    return d, o
+
+
+def plot_population(do):
+    d, o = do
+    oo = np.concatenate(([0], o))
+
+    hist([mean(d[i:j,0]) for i,j in zip(o[:-1], o[1:])], alpha=0.3)
+    hist([mean(d[i:j,1]) for i,j in zip(o[:-1], o[1:])], alpha=0.3)
+    xlabel("$M_i/M_\odot$")
+    ylabel("$n$")
+    legend([f"$M_{i}$" for i in [0,1]])
 
 if __name__ == '__main__':
     convert_injection()
