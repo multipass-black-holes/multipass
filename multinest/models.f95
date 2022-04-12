@@ -249,6 +249,38 @@ contains
   END FUNCTION PPISN_PM2M1DEN_M11G
 
 
+  PURE FUNCTION PPISN_PM2M1DEN_M11G_approx(M, P)
+  real(kind=prec), intent(in) :: m(:)
+  type(para), intent(in) :: p
+  real(kind=prec) :: ppisn_pm2m1den_m11g_approx(size(m))
+  real(kind=prec) :: t1(size(m)), t2(size(m)), t3(1)
+  logical mask(size(m))
+  real(kind=prec) :: BT(0:size(m))
+  real(kind=prec), parameter :: mfudge = 0.99
+
+  BT = Btilde(1.5_prec+p%b, p%a, [p%mmin+p%dm, m]/p%mgap)
+
+  ppisn_pm2m1den_m11g_approx = 1._prec
+
+  where((p%mmin < m) .and. (m < p%mmin + p%dm)) &
+    ppisn_pm2m1den_m11g_approx = (m - p%mmin) * ppisn_mf1g(m, p) * 0.5
+
+  mask = ((p%mmin+p%dm < m) .and. (m < p%mgap*mfudge))
+
+  t1 = 0.
+  t2 = 0.
+  where(mask) &
+    t1 = (m**(p%b+1) - (p%mmin+p%dm)**(p%b+1)) / (p%b+1)
+  where(mask) &
+    t2 = 2*p%a*p%a*p%mgap**(p%b+1) * (BT(1:size(m)) - BT(0))
+
+  t3 = ppisn_mf1g((/p%mmin + p%dm/), p) * p%dm * 0.5
+
+  where(mask) &
+    ppisn_pm2m1den_m11g_approx = (t1+t2)/mpiv + t3(1)
+
+  END FUNCTION PPISN_PM2M1DEN_M11G_approx
+
   ! returns the integral from mmin to m1 of mf_2g for all m1 in lm1;
   ! this is the denominator of the conditional probability for m2
   ! given the assumption that m1 is in 2g
@@ -275,6 +307,25 @@ contains
 
   END FUNCTION PPISN_PM2M1DEN_M12G
 
+  PURE FUNCTION PPISN_PM2M1DEN_M12G_approx(M, P)
+  real(kind=prec), intent(in) :: m(:)
+  type(para), intent(in) :: p
+  real(kind=prec) :: ppisn_pm2m1den_m12g_approx(size(m))
+  real(kind=prec) :: mmax, vlow
+  mmax = p%mgap + p%mmin + p%dm/2
+  vlow = p%dm * 0.5
+
+  ppisn_pm2m1den_m12g_approx = 1.
+
+  where ((p%mmin < m) .and. (m < p%mmin + p%dm)) &
+    ppisn_pm2m1den_m12g_approx = (m - p%mmin) * 0.5
+  where ((p%mmin + p%dm < m) .and. (m < mmax)) &
+    ppisn_pm2m1den_m12g_approx = vlow + m
+  where ((mmax < m)) &
+    ppisn_pm2m1den_m12g_approx = vlow + mmax + ((m/mmax)**(1+p%d) - 1)*mmax/(1+p%d)
+
+  ppisn_pm2m1den_m12g_approx = ppisn_pm2m1den_m12g_approx * mpiv**p%b
+  END FUNCTION PPISN_PM2M1DEN_M12G_approx
 
   PURE FUNCTION PPISN_M2_PHYS(M1, M2, P)
   real(kind=prec), intent(in) :: m1(:), m2(:)
@@ -419,6 +470,7 @@ contains
   real(kind=prec), dimension(6) :: mtest, ans
   real(kind=prec) :: diff
   type(para) :: p
+  real(kind=prec) :: BT(0:size(mtest))
 
   mtest = (/ 1.,11., 20., 30., 40., 100. /)
   ans = (/0._prec,  0.010459028944395847_prec, &
@@ -537,6 +589,44 @@ contains
 
   diff = sum(abs((ppisn_pm2m1den_m12g(mtest, p)+1e-15) / (ans+1e-15) - 1)) / 6.
   print*, "ppisn_pm2m1den_m12g", diff
+
+  print*, "Comparison with python code"
+  mtest = (/ 2., 4., 10., 20., 25., 35. /)
+  p%sf => smooth_exp
+  p%sfint => smooth_expint
+  p%sf_c = 'exp'
+
+  ans = (/0._prec, 0.000276814962771_prec, 0.004903900506881_prec, &
+         0.001047864239495_prec, 0.000670785044834_prec, 0._prec /)
+  diff = sum(abs(ans-ppisn_mf1g(mtest, p))) / 6.
+  print*, "ppisn_mf1g", diff
+
+  ans = (/2.167636805288472e-13, 3.495716979119389e-04, &
+          3.495716979119389e-04, 3.495716979119389e-04, &
+          3.495716979119389e-04, 1.682826514280412e-04 /)
+  mtest = (/ 3., 30., 35., 37., 40., 45. /)
+  diff = sum(abs(ans-ppisn_mf2g(mtest, p))) / 6.
+  print*, "ppisn_mf2g", diff
+
+  ans = (/ -7.036244987357108,  3.366450242210134,  4.699203519611515, &
+            5.757592699486201,  9.013019845715352, 29.836942133255924/)
+  BT = Btilde(1.5_prec+p%b, p%a, [p%mmin+p%dm, mtest]/p%mgap)
+  diff = sum(abs(ans-(BT(1:size(mtest)) - BT(0)))) / 6.
+  print*, 'Btilde', diff
+
+  mtest = (/ 2., 4., 10., 20., 25., 35. /)
+  ans = (/ 1.000000000000000e+00, 1.915670268357831e-04, &
+           1.810539682742491e-02, 1.693658575797712e-02, &
+           1.707515630726487e-02, 1.000000000000000e+00 /)
+  diff = sum(abs(ans-ppisn_pm2m1den_m11g_approx(mtest, p))) / 6.
+  print*, 'pm2m1den_m11g_approx', diff
+
+  ans = (/ 0.000349571697912, 0.000241917597823, 0.001290632691559, &
+           0.008484996516152, 0.010232855005712, 0.013728571984832 /)
+
+  diff = sum(abs(ans-ppisn_pm2m1den_m12g_approx(mtest, p))) / 6.
+  print*, 'pm2m1den_m12g_approx', diff
+
   END SUBROUTINE TEST
 
                           !!!!!!!!!!!!!!!!!!!!!!
