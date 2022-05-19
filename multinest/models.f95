@@ -627,6 +627,10 @@ contains
   diff = sum(abs(ans-ppisn_pm2m1den_m12g_approx(mtest, p))) / 6.
   print*, 'pm2m1den_m12g_approx', diff
 
+  print*, "Goodness of approximation"
+  print*, ppisn_pm2m1den_m11g_approx(mtest, p) / ppisn_pm2m1den_m11g(mtest, p)
+  print*, ppisn_pm2m1den_m12g_approx(mtest, p) / ppisn_pm2m1den_m12g(mtest, p)
+
   END SUBROUTINE TEST
 
                           !!!!!!!!!!!!!!!!!!!!!!
