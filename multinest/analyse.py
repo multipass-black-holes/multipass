@@ -139,6 +139,7 @@ def main(roots):
     logz = {}
 
     for root in roots:
+        print(root)
         model, lim = parseInfo(root)
 
         samples = loadMC(root, model)
@@ -167,7 +168,7 @@ def main(roots):
             if i < j:
                 bf = (
                     logz[ki][0] - logz[kj][0],
-                    sqrt(logz[ki][1]**2 + logz[kj][1]**2)
+                    np.sqrt(logz[ki][1]**2 + logz[kj][1]**2)
                 )
                 if bf[0] > 0:
                     kf = kj
