@@ -167,6 +167,12 @@ def convert_gw(fo='data.rec', base='../tmp/', cm=True):
         "190917"
     ])
 
+    # others
+    veto.update([
+        "190917_114630", "191219_163120"
+        #"200210_092254"
+    ])
+
     d1, o1 = load_gw(veto, base, v=1, cm=cm)
 
     d2, o2 = load_gw(veto, base, v=2, cm=cm)
