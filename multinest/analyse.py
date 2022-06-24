@@ -98,14 +98,14 @@ def best_fit(samples):
     return samples.dat[samples.dat[:, 1].argmin(), 2:]
 
 
-def plot_bestfit_m1(samples, model="plp+pow+trivial+trivial", fig=None):
+def plot_bestfit_m1(samples, model="plp+pow+trivial+trivial", fig=None, prescale=1, col=None):
     h = 1e-6
     n = 1000
 
     bestfit = best_fit(samples)
 
     x = np.linspace(0, 100, n)
-    y = interface.pyinterface(model, 'm1', bestfit, x)
+    y = prescale * interface.pyinterface(model, 'm1', bestfit, x)
 
     plots = parameters[model]
 
@@ -113,7 +113,7 @@ def plot_bestfit_m1(samples, model="plp+pow+trivial+trivial", fig=None):
 
     mat = (1 + h * np.identity(len(plots))) * bestfit
     for i in range(len(plots)):
-        yy = interface.pyinterface(model, 'm1', mat[i], x)
+        yy = prescale * interface.pyinterface(model, 'm1', mat[i], x)
         J[:, i] = (yy - y) / h / bestfit[i]
 
     tot = J @ samples.cov() @ J.T
@@ -122,8 +122,12 @@ def plot_bestfit_m1(samples, model="plp+pow+trivial+trivial", fig=None):
     if fig == None:
         fig = figure()
 
-    plot(x, y)
-    fill_between(x, y-err/2, y+err/2, alpha=0.2)
+    if col:
+        plot(x, y, color=col)
+        fill_between(x, y-err/2, y+err/2, color=col, alpha=0.2)
+    else:
+        plot(x, y)
+        fill_between(x, y-err/2, y+err/2, alpha=0.2)
     yscale('log')
 
     ylabel(r"${\rm d}R/{\rm d}m_1$")
@@ -156,6 +160,7 @@ def main(roots):
 
         with open(root+'stats.dat') as fp:
             s = fp.read()
+        model = root
         logz[model] = [float(i) for i in re.findall(
             '([\d\.E\+-]+) *\+/- *([\d\.E\+-]+)',
             s.splitlines()[0]
