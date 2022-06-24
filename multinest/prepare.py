@@ -205,6 +205,35 @@ def plot_population(do):
     ylabel("$n$")
     legend([f"$M_{i}$" for i in [0,1]])
 
+
+def histogram_all(base='../tmp/', cm=True):
+    def avg(d, o):
+        oo = np.concatenate(([0], o))
+        return [np.mean(d[i:j,0]) for i,j in zip(oo[:-1], oo[1:])]
+
+    veto = get_veto()
+    d1, o1 = load_gw(veto, base, v=1, cm=cm)
+    d2, o2 = load_gw(veto, base, v=2, cm=cm)
+    d21, o21 = load_gw(veto, base, v=21, cm=cm)
+    d3, o3 = load_gw(veto, base, v=3, cm=cm)
+
+    avg1 = avg(d1,o1)
+    avg2 = avg(d2,o2)
+    avg21 = avg(d21,o21)
+    avg3 = avg(d3,o3)
+
+    # hist([avg1, avg2, avg21, avg3], stacked=True)
+    # xlabel("$M_i/M_\odot$")
+    # ylabel("$n$")
+    # legend([f'GWTC-{i}' for i in [1, 2, '2.1', 3]])
+
+    open('avg.txt', 'w').write('\n'.join([
+        ','.join(str(i) for i in avg1),
+        ','.join(str(i) for i in avg2),
+        ','.join(str(i) for i in avg21),
+        ','.join(str(i) for i in avg3)
+    ]))
+
 if __name__ == '__main__':
     convert_injection()
     convert_gw()
