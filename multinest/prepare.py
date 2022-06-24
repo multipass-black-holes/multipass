@@ -124,7 +124,7 @@ def load_gw(veto, base='../tmp/', v=2, cm=True):
     return np.column_stack((m1, m2, rs, ce)), np.array(offsets)
 
 
-def convert_gw(fo='data.rec', base='../tmp/', cm=True):
+def get_veto():
     veto = set()
 
     # From 2104.02685
@@ -173,6 +173,11 @@ def convert_gw(fo='data.rec', base='../tmp/', cm=True):
         #"200210_092254"
     ])
 
+    return veto
+
+
+def convert_gw(fo='data.rec', base='../tmp/', cm=True):
+    veto = get_veto()
     d1, o1 = load_gw(veto, base, v=1, cm=cm)
 
     d2, o2 = load_gw(veto, base, v=2, cm=cm)
