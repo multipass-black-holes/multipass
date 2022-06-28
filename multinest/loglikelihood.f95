@@ -166,6 +166,8 @@ contains
                      -5.39496671e+00_prec,&
                      -5.33128390e-01_prec,&
                      -5.02651228e+00_prec/))
+  p%sf => the_model%smooth
+  p%sfint => the_model%smoothint
   ans = ll(the_model, p)
   print*, 'x',ans
 
