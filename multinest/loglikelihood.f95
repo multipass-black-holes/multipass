@@ -156,6 +156,19 @@ contains
   ans = ll(the_model, p) / -449.972
   print*,'ans',ans
 
+  the_model = getmodel('ppisn+trivial+trivial')
+  p = the_model%r2p((/2.53325764e+00_prec,& ! mmax
+                      2.21172743e-02_prec,& ! dm
+                      4.76023054e+01_prec,& ! mgap
+                      4.35632844e-01_prec,& ! a
+                      3.22931846e-02_prec,& ! b
+                      4.09565979e+00_prec,& ! d
+                     -5.39496671e+00_prec,&
+                     -5.33128390e-01_prec,&
+                     -5.02651228e+00_prec/))
+  ans = ll(the_model, p)
+  print*, 'x',ans
+
   END SUBROUTINE TEST
 
                           !!!!!!!!!!!!!!!!!!!!!!
