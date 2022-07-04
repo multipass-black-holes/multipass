@@ -402,7 +402,7 @@ contains
   m%model_name = trim(mods)
   select case(mods)
     case('plp+flat+trivial+trivial')
-      m%ndim = 8
+      m%ndim = 7
       m%primary => plp_mf
       m%secondary => flatm
       m%redshift => trivial
