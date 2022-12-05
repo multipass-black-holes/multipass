@@ -198,6 +198,27 @@ def convert_gw(fo='data.rec', base='../tmp/', cm=True):
         write_record(fp, 'd', d)
 
 
+def convert_gw_201014533(fo='data.rec', base='../tmp/', cm=True):
+    veto=set(['170817','190425','190814'])
+    veto.update([
+        '190426_152155',
+        '190719_215514',
+        '190909_114149'
+    ])
+    d1, o1 = load_gw(veto, base, v=1, cm=cm)
+    d2, o2 = load_gw(veto, base, v=2, cm=cm)
+    o2 += len(d1)
+
+    d = np.concatenate((d1, d2))
+    o = np.concatenate((o1, o2))
+
+    with open(fo, 'wb') as fp:
+        write_record(fp, 'i', [len(d), len(o)])
+        write_record(fp, 'i', o)
+        write_record(fp, 'd', d)
+
+
 if __name__ == '__main__':
     convert_injection()
+    convert_gw_201014533('data-201014533.rec')
     convert_gw()
