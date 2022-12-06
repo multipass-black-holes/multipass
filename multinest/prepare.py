@@ -24,17 +24,26 @@ def write_record(fp, typ, content):
     fp.write(struct.pack('<I', len(body)))
 
 
-def convert_injection(ifar_find=1, fi='../endo3_mixture-LIGO-T2100113-v12.hdf5', fo='inj.rec'):
+def convert_injection(ifar_find=1, fi='../endo3_mixture-LIGO-T2100113-v12.hdf5', fo='inj.rec', version=3):
     with h5py.File(fi, 'r') as f:
-        mask = [
-            np.array(f['injections/ifar_gstlal']) > ifar_find,
-            np.array(f['injections/ifar_pycbc_bbh']) > ifar_find
-        ]
-        if 'injections/ifar_pycbc_full' in f:
-            mask.append(
+        if version == 2:
+            mask = (
+                np.array(f['injections/ifar_gstlal']) > ifar_find
+            ) & (
                 np.array(f['injections/ifar_pycbc_full']) > ifar_find
+            ) & (
+                np.array(f['injections/ifar_pycbc_bbh']) > ifar_find
             )
-        mask = np.all(mask, axis=0)
+        elif version == 3:
+            mask = [
+                np.array(f['injections/ifar_gstlal']) > ifar_find,
+                np.array(f['injections/ifar_pycbc_bbh']) > ifar_find
+            ]
+            if 'injections/ifar_pycbc_full' in f:
+                mask.append(
+                    np.array(f['injections/ifar_pycbc_full']) > ifar_find
+                )
+            mask = np.all(mask, axis=0)
         m1 = f['injections/mass1_source'][mask]
         m2 = f['injections/mass2_source'][mask]
         rs = f['injections/redshift'][mask]
@@ -220,5 +229,6 @@ def convert_gw_201014533(fo='data.rec', base='../tmp/', cm=True):
 
 if __name__ == '__main__':
     convert_injection()
+    convert_injection(fi='../o3a_bbhpop_inj_info.hdf', fo='inj-201014533.rec', version=2)
     convert_gw_201014533('data-201014533.rec')
     convert_gw()
