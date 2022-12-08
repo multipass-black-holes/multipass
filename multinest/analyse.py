@@ -5,6 +5,7 @@ try:
     import getdist.plots
 except ImportError:
     sys.path.append("../bhmf/lib/python3.10/site-packages")
+    sys.path.append("../bhmf/lib/python3.11/site-packages")
     import getdist
     import getdist.plots
 import numpy as np
