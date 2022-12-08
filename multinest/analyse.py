@@ -93,11 +93,11 @@ def loadMC(root, model="plp+pow+trivial+trivial"):
     return samples
 
 
-def triangle_plot(samples, model="plp+pow+trivial+trivial"):
+def triangle_plot(samples, lim, model="plp+pow+trivial+trivial"):
     g = getdist.plots.get_subplot_plotter()
     g.triangle_plot(
         samples,
-        #param_limits={i: j for j, _, i in parameters[model]},
+        param_limits={n: l for ((_, n), l) in zip(parameters[model], lim)},
         filled=True
     )
     return gcf()
@@ -157,7 +157,7 @@ def main(roots):
 
         samples = loadMC(root, model)
 
-        fig = triangle_plot(samples, model)
+        fig = triangle_plot(samples, lim, model)
         fig.savefig(root + model + "triangle.pdf")
 
         fig = plot_bestfit_m1(samples, model)
