@@ -127,6 +127,37 @@ contains
   powm = powm * p%sf(m2, p%mmin, p%dm)
   END FUNCTION POWM
 
+  ! This implements the integral over S[m]*PLP[m] from zero to infinity
+  PURE FUNCTION PLP_INT(p)
+  type(para), intent(in) :: p
+  integer, parameter :: Nsamples = 100
+  integer i
+  real(kind=prec), parameter :: linspace(1:Nsamples) = [(i / real(Nsamples), i=1,Nsamples)]
+  real(kind=prec), dimension(1:Nsamples) :: Msample, int
+  real(kind=prec) :: plp_int
+  ! We write
+  !
+  !  /\inf                   /\mmin+dm                   /\inf
+  !  |  dm S[m] * PLP[m] =   |       dm S[m] * PLP[m] +  |       dm PLP[m]
+  ! \/ 0                    \/ mmin                     \/ mmin+dm
+  !
+  ! The first integral needs to be evaluated numerically
+
+  Msample = p%mmin + linspace * p%dm
+  int = ( (1-p%lp) * powerlaw(Msample, -p%alpha, p%mmin, p%mmax) &
+              +   p%lp  * gauss(Msample, p%mum, p%sm) ) &
+            * p%sf(Msample, p%mmin, p%dm)
+
+  plp_int = sum(int) / Nsamples * p%dm
+
+  plp_int = plp_int &
+      +(1-p%lp)*(p%mmax*p%mmin**p%alpha - (p%mmax*p%mmin/(p%dm + p%mmin))**p%alpha*(p%dm + p%mmin)) &
+            /(-p%mmax**p%alpha*p%mmin + p%mmax*p%mmin**p%alpha) &
+      +p%lp * (Erf((p%mmax - p%mum)/Sqrt(2.)/p%sm) - Erf((p%dm + p%mmin - p%mum)/Sqrt(2.)/p%sm))/2.
+
+
+  END FUNCTION PLP_INT
+
   ! This implements the power-law + peak model (PLP) for the primary mass of the
   ! 1st generation. The model is specified in B2 of [2010.14533]
   PURE FUNCTION PLP_MF(MBH, p)
