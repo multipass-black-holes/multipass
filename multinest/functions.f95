@@ -74,6 +74,8 @@ contains
   where (m > mi + dm) &
     smooth_exp = 1.
 
+  smooth_exp = smooth_exp * 2 / dm
+
   END FUNCTION SMOOTH_EXP
 
 
