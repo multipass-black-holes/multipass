@@ -171,6 +171,8 @@ contains
               +   p%lp  * gauss(mBH, p%mum, p%sm) ) &
             * p%sf(mBH, p%mmin, p%dm)
 
+  plp_mf = plp_mf / plp_int(p)
+
   END FUNCTION PLP_MF
 
 
