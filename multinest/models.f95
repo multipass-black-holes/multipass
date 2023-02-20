@@ -504,6 +504,7 @@ contains
   real(kind=prec) :: diff
   type(para) :: p
   real(kind=prec) :: BT(0:size(mtest))
+  type(model) :: the_model
 
   mtest = (/ 1.,11., 20., 30., 40., 100. /)
   ans = (/0._prec,  0.010459028944395847_prec, &
@@ -541,6 +542,19 @@ contains
                      sfint= smooth_expint, &
                      sf   = smooth_exp)))) / 6.
   print*, "ppisn_mf2g", diff
+  print*,plp_int(para(mmax = 50._prec, &
+                     mum  = 30._prec, &
+                     sm   = 5._prec, &
+                     alpha= 2._prec, &
+                     lp   = 0.2_prec, &
+                     mmin = 5._prec, &
+                     dm   = 5._prec, &
+                     lam12=  0._prec, &
+                     lam21=  0._prec, &
+                     lam22=  0._prec, &
+                     sf_c = 'tan'   , &
+                     sfint= smooth_expint, &
+                     sf   = smooth_tanh))
 
   ans = (/ 0., 0.03674262, 0.01327075, 0.02089596, 0.00493742, 0. /)
 
@@ -663,6 +677,18 @@ contains
   print*, "Goodness of approximation"
   print*, ppisn_pm2m1den_m11g_approx(mtest, p) / ppisn_pm2m1den_m11g(mtest, p)
   print*, ppisn_pm2m1den_m12g_approx(mtest, p) / ppisn_pm2m1den_m12g(mtest, p)
+
+
+  ! comparison with gwpopulation
+  the_model = getmodel("plp+pow+trivial+trivial")
+  p = the_model%r2p((/3.5_prec, 5._prec, 85._prec, 33._prec, 3._prec, 3.0_prec, 0.03_prec, 4._prec/))
+  p%sf => the_model%smooth
+  p%sfint => the_model%smoothint
+  p%sf_c = the_model%smooth_c
+  ans = plp_mf(mtest, p)
+  print*, ans(2:) / (/0.00013537551253735636_prec, 0.06283120273729201_prec, &
+              0.007854781123313786_prec,   0.004321979423810812_prec, &
+              0.009896871567398238_prec /)
 
   END SUBROUTINE TEST
 
