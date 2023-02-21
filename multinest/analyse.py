@@ -147,6 +147,16 @@ def plot_bestfit_m1(samples, model="plp+pow+trivial+trivial", fig=None, prescale
     return fig
 
 
+def central_values(root, model):
+    mod = parameters[model]
+    with open(root + 'stats.dat') as fp:
+        for line in fp.readlines():
+            if m := re.match(" *(\d) +([\d.E+-]+) +([\d.E+-]+) *", line):
+                ind, y, e = m.groups()
+                _, para = mod[int(ind)-1]
+                print(f"{para:8s} {float(y):7.2f} +- {float(e):7.2f}")
+
+
 def main(roots):
     figc = figure()
     l = []
@@ -168,6 +178,7 @@ def main(roots):
         l.append(model)
         l.append('$1\sigma$')
 
+        central_values(root, model)
         with open(root+'stats.dat') as fp:
             s = fp.read()
         model = root
