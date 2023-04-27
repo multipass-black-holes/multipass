@@ -248,6 +248,13 @@ contains
   ! returns the integral from mmin to m1 of mf_1g for all m1 in lm1;
   ! this is the denominator of the conditional probability for m2
   ! given the assumption that m1 is in 1g, i.e. (1.12)
+  !
+  !                      (1g)
+  !   /\ m            dN
+  !   |      dm      -----
+  !  \/ mmin   1      dm
+  !                     1
+  !
   PURE FUNCTION PPISN_PM2M1DEN_M11G(M, P)
   real(kind=prec), intent(in) :: m(:)
   type(para), intent(in) :: p
@@ -284,6 +291,13 @@ contains
   ! returns the integral from mmin to m1 of mf_2g for all m1 in lm1;
   ! this is the denominator of the conditional probability for m2
   ! given the assumption that m1 is in 2g
+  !
+  !                      (2g)
+  !   /\ m            dN
+  !   |      dm      -----
+  !  \/ mmin   2      dm
+  !                     2
+  !
   PURE FUNCTION PPISN_PM2M1DEN_M12G(M, P)
   real(kind=prec), intent(in) :: m(:)
   type(para), intent(in) :: p
