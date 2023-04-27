@@ -124,7 +124,6 @@ contains
            sf_c = 'tan',&
            lam12=  0._prec, &
            lam21=  0._prec, &
-           lam22=  0._prec, &
            sfint= smooth_expint, &
            sf   = smooth_tanh)
 

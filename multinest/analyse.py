@@ -44,7 +44,6 @@ parameters = {
         ("d", "d"),
         ("\\log_{10}\\lambda_{21}", "lam21"),
         ("\\log_{10}\\lambda_{12}", "lam12"),
-        ("\\log_{10}\\lambda_{22}", "lam22")
     ],
     "ppisn+trivial+trivial": [
         ("m_{min}\\ [M_{\\odot}]", "mmin"),
@@ -55,7 +54,6 @@ parameters = {
         ("d", "d"),
         ("\\log_{10}\\lambda_{21}", "lam21"),
         ("\\log_{10}\\lambda_{12}", "lam12"),
-        ("\\log_{10}\\lambda_{22}", "lam22")
     ]
 }
 
