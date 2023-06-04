@@ -336,7 +336,80 @@ contains
   END FUNCTION PPISN_M2_PHYS
 
 
-  ! This calculates the correction term (1.9) with
+  ! We have
+  !
+  !        (1g)                  (1g)
+  !      dN      +-       -+   dN      +-          -+
+  ! P ~ -------- | M  | th |  -------- | M  | th,M  |
+  !        dM    +- 1     -+     dM    +- 2       1-+
+  !
+  !                     (1g)                  (2g)
+  !                   dN      +-       -+   dN      +-       -+
+  !    + lam    N    -------- | M  | th |  -------- | M  | th |
+  !         12   1      dM    +- 1     -+     dM    +- 2     -+
+  !
+  !                     (2g)                  (1g)
+  !                   dN      +-       -+   dN      +-       -+
+  !    + lam    N    -------- | M  | th |  -------- | M  | th |
+  !         21   2      dM    +- 1     -+     dM    +- 2     -+
+  !
+  ! This function calculates the sum of the second and third term. We
+  ! define the lam_{ij} as
+  !
+  ! lam       = N( M     in 2g  ) / N
+  !    12(21)       2(1)             tot
+  !
+  ! and now need to solve for N_1(2)
+  !
+  !                            inf            (1g)    (2g)
+  !                            /\           dN      dN
+  ! N( M   in 2g) = lam   N    |  dM  dM   -----   -----     theta(M  > M )
+  !     2              21  1  \/    1   2   dM      dM              1    2
+  !                            0              1       2
+  !
+  !                            inf            (2g)    (1g)
+  !                            /\           dN      dN
+  ! N( M   in 2g) = lam   N    |  dM  dM   -----   -----     theta(M  > M )
+  !     1              12  2  \/    1   2   dM      dM              1    2
+  !                            0              1       2
+  !
+  ! We also need an N_0 for normalisation purposes
+  !
+  !       inf            (1g)    (1g)
+  !       /\           dN      dN
+  !  N    |  dM  dM   -----   -----     theta(M  > M )
+  !   0  \/    1   2   dM      dM              1    2
+  !       0              1       2
+  !
+  ! The integrals
+  !
+  !          inf        (1g)     M        (1g)
+  !          /\       dN       /\ 1     dN
+  ! int  =   |  dM   -----     |  dM   -----
+  !    0    \/    1   dM      \/    2   dM
+  !          0          1      0          2
+  !
+  !          inf        (1g)     M        (2g)
+  !          /\       dN       /\ 1     dN
+  ! int  =   |  dM   -----     |  dM   -----
+  !    1    \/    1   dM      \/    2   dM
+  !          0          1      0          2
+  !
+  !
+  !          inf        (2g)     M        (1g)
+  !          /\       dN       /\ 1     dN
+  ! int  =   |  dM   -----     |  dM   -----
+  !    2    \/    1   dM      \/    2   dM
+  !          0          1      0          2
+  !
+  ! are returned by this function
+
+  PURE FUNCTION PPISN_NINT(p)
+  type(para), intent(in) :: p
+  real(kind=prec) :: ppsin_nint(0:2)
+
+  END FUNCTION PPISN_NINT
+
   ! norms = (/lam21, lam12 /)
   PURE FUNCTION PPISN_NORMS(M1, M2, CHI, Z, M, P)
   real(kind=prec), intent(in) :: m1(:), m2(:), chi(:), z(:)
