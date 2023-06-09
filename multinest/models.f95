@@ -406,7 +406,31 @@ contains
 
   PURE FUNCTION PPISN_NINT(p)
   type(para), intent(in) :: p
-  real(kind=prec) :: ppsin_nint(0:2)
+  real(kind=prec) :: ppisn_nint(0:2)
+  real(kind=prec) :: bt3,btt3(1),i1,i2,i3,i4,i5
+
+  btt3 = btilde(1.5 + p%b, p%a, (/(p%mmin+p%dm)/p%mgap/))
+  bt3 = btt3(1)
+
+  ppisn_nint(0) = (p%mgap**(1 + p%b) - (p%dm + p%mmin)**(1 + p%b))**2/(2.*(1 + p%b)**2) &
+    + 4*p%a**4*p%mgap**(2 + 2*p%b)*bt3**2 + 4*p%a**4*p%mgap**(1 + 2*p%b)*i1 &
+    + ((p%mgap**(1 + p%b) - (p%dm + p%mmin)**(1 + p%b))*i2)/(1 + p%b) &
+    + bt3*( - 2*p%a**2*p%mgap**(1 + p%b)*i2 &
+      + (-2*p%a**2*p%mgap**(1 + p%b)*(p%mgap**(1 + p%b) - (p%dm + p%mmin)**(1 + p%b))&
+        )/(1 + p%b)) &
+    + i3
+
+  ppisn_nint(1) = + (p%mgap**(2 + p%b) - (p%dm + p%mmin)**(2 + p%b))/(2 + p%b) + p%dm*i4 &
+    + (4*p%a**2*Sqrt(p%mgap)*(p%dm + p%mmin)**(1.5 + p%b)*(1 - (p%dm + p%mmin)/p%mgap)**p%a)/(3 + 2*p%a + 2*p%b) &
+    + ((p%dm + 2*p%mmin)*(-p%mgap**(1 + p%b) + (p%dm + p%mmin)**(1 + p%b)))/(2.*(1 + p%b)) &
+    + p%a**2*p%mgap**(1 + p%b)*(p%dm - (2*(3 + 2*p%b)*p%mgap)/(3 + 2*p%a + 2*p%b) + 2*p%mmin)*bt3
+
+  ppisn_nint(2) = ((p%dm + p%mmin)**(1 + p%b)*(p%dm - p%mgap + p%mmin))/(1 + p%b) &
+    - (4*p%a**2*Sqrt(p%mgap)*(p%dm + p%mmin)**(1.5 + p%b)*(1 - (p%dm + p%mmin)/p%mgap)**p%a)/(3 + 2*p%a + 2*p%b) &
+    + (p%mgap**(2 + p%b) - (p%dm + p%mmin)**(2 + p%b))/((1 + p%b)*(2 + p%b)) &
+    + ((p%mgap**(1 + p%b) - (p%dm + p%mmin)**(1 + p%b))*(-2*p%mgap + p%d*(p%dm + 2*p%mmin)))/(2.*(1 + p%b)*(1 + p%d)) &
+    + p%a**2*p%mgap**(1 + p%b)*((-2*p%a*p%mgap)/(1.5 + p%a + p%b) + (2*p%mgap - p%d*(p%dm + 2*p%mmin))/(1 + p%d))*bt3 &
+    + ((-2*p%dm - p%d*p%dm + 2*p%d*p%mgap - 2*p%mmin)*i2)/(2 + 2*p%d) + i5
 
   END FUNCTION PPISN_NINT
 
