@@ -407,11 +407,27 @@ contains
   PURE FUNCTION PPISN_NINT(p)
   type(para), intent(in) :: p
   integer, parameter :: Nsamples = 1000
+  integer, parameter :: Nit = 120
   integer i
   real(kind=prec), parameter :: linspace(1:Nsamples) = [(i / real(Nsamples), i=1,Nsamples)]
   real(kind=prec), dimension(1:NSamples) :: M1, M2, mf1g, subInt
   real(kind=prec) :: ppisn_nint(0:2)
   real(kind=prec) :: bt3,btt3(1),i1,i2,i3,i4,i5
+
+  real(kind=prec) :: gammaFrac, gamma1ma
+
+  btt3 = btilde(1.5 + p%b, p%a, (/(p%mmin+p%dm)/p%mgap/))
+  bt3 = btt3(1)
+
+  i1 = 0.
+  gamma1ma = gamma(1-p%a)
+  gammaFrac = gamma1ma
+  do i=0,Nit
+    btt3 = Btilde(3+2*p%b+i, p%a, (/(p%mmin+p%dm)/p%mgap/))
+    i1 = i1 + btt3(1) / (3+2*p%b+2*i) * gammaFrac
+    gammaFrac = (1. - p%a/(1. + i)) * gammaFrac
+  enddo
+  i1 = -2*p%mgap/gamma1ma * i1 + p%mgap * bt3 * gamma(p%a) * gamma(1.5+p%b) / gamma(1.5+p%a+p%b)
 
   M1 = linspace * p%dm + p%mmin
   mf1g = ppisn_mf1g(m1, p)
@@ -424,8 +440,6 @@ contains
   i3 = sum(subInt * mf1g) * p%dm / Nsamples
   i5 = sum(subInt * smooth_exp(M1, p%mmin, p%dm)) * p%dm / Nsamples
 
-  btt3 = btilde(1.5 + p%b, p%a, (/(p%mmin+p%dm)/p%mgap/))
-  bt3 = btt3(1)
 
   ppisn_nint(0) = (p%mgap**(1 + p%b) - (p%dm + p%mmin)**(1 + p%b))**2/(2.*(1 + p%b)**2) &
     + 4*p%a**4*p%mgap**(2 + 2*p%b)*bt3**2 + 4*p%a**4*p%mgap**(1 + 2*p%b)*i1 &
