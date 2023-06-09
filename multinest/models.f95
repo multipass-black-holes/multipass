@@ -424,6 +424,7 @@ contains
   gammaFrac = gamma1ma
   do i=0,Nit
     btt3 = Btilde(3+2*p%b+i, p%a, (/(p%mmin+p%dm)/p%mgap/))
+    if(isnan(btt3(1))) exit
     i1 = i1 + btt3(1) / (3+2*p%b+2*i) * gammaFrac
     gammaFrac = (1. - p%a/(1. + i)) * gammaFrac
   enddo
