@@ -740,6 +740,10 @@ contains
   diff = sum(abs(ans-(BT(1:size(mtest)) - BT(0)))) / 6.
   print*, 'Btilde', diff
 
+  p%sf => smooth_exp
+  ans(1:3) = ppisn_nint(p)
+  diff = sum(ans(1:3) / (/0.0018863614613710922,0.4113173426155685,2.05585086404557/) - 1.) / 3
+  print*, 'norm int', diff
 
   ! comparison with gwpopulation
   the_model = getmodel("plp+pow+trivial+trivial")
