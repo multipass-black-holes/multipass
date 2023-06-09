@@ -406,8 +406,23 @@ contains
 
   PURE FUNCTION PPISN_NINT(p)
   type(para), intent(in) :: p
+  integer, parameter :: Nsamples = 1000
+  integer i
+  real(kind=prec), parameter :: linspace(1:Nsamples) = [(i / real(Nsamples), i=1,Nsamples)]
+  real(kind=prec), dimension(1:NSamples) :: M1, M2, mf1g, subInt
   real(kind=prec) :: ppisn_nint(0:2)
   real(kind=prec) :: bt3,btt3(1),i1,i2,i3,i4,i5
+
+  M1 = linspace * p%dm + p%mmin
+  mf1g = ppisn_mf1g(m1, p)
+  i2 = sum(mf1g) * p%dm / Nsamples
+  i4 = sum(mf1g * lvc_int((m1 - p%mmin)/p%dm)) * p%dm / Nsamples
+
+  do i=1,Nsamples
+    subInt(i) = sum(mf1g(1:i)) * p%dm / Nsamples
+  enddo
+  i3 = sum(subInt * mf1g) * p%dm / Nsamples
+  i5 = sum(subInt * smooth_exp(M1, p%mmin, p%dm)) * p%dm / Nsamples
 
   btt3 = btilde(1.5 + p%b, p%a, (/(p%mmin+p%dm)/p%mgap/))
   bt3 = btt3(1)
