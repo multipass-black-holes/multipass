@@ -465,28 +465,41 @@ contains
   END FUNCTION PPISN_NINT
 
   ! norms = (/lam21, lam12 /)
-  PURE FUNCTION PPISN_NORMS(M1, M2, CHI, Z, M, P)
-  real(kind=prec), intent(in) :: m1(:), m2(:), chi(:), z(:)
+  PURE FUNCTION PPISN_NORMS(D11, M1, M2, CHI, Z, M, P)
+  real(kind=prec), intent(in) :: D11(:), m1(:), m2(:), chi(:), z(:)
   type(model), intent(in) :: m
   type(para), intent(in) :: p
-  real(kind=prec) :: ppisn_norms(size(m1))
+  real(kind=prec) :: ppisn_norms(size(m1)), N(0:2)
 
-  real(kind=prec), dimension(size(m1)) :: L21, L12
-  real(kind=prec) :: lam21, lam12
+  real(kind=prec), dimension(size(m1)) :: D21, D12
 
-  L21 = p%lam21 * m%primaryM2(m1,p)*m%spin(2,1)%f(chi,p)*m%redshift(z,p)
-  L12 = p%lam12 * m%primary  (m1,p)*m%spin(1,2)%f(chi,p)*m%redshift(z,p)
+  D21 = m%primaryM2(m1,p)*m%spin(2,1)%f(chi,p)*m%redshift(z,p)
+  D12 = m%primary  (m1,p)*m%spin(1,2)%f(chi,p)*m%redshift(z,p)
 
   select case(m%secondary_c)
     case('phys')
-      L21 = L21 * m%primary  (m2,p) / ppisn_pm2m1den_m12g(m1, p)
-      L12 = L12 * m%primaryM2(m2,p) / ppisn_pm2m1den_m11g(m1, p)
+      D21 = D21 * m%primary  (m2,p)
+      D12 = D12 * m%primaryM2(m2,p)
     case('flat')
-      L21 = L21 / (m1 - p%mmin)
-      L12 = L12 / (m1 - p%mmin)
+      D21 = D21 / (m1 - p%mmin)
+      D12 = D12 / (m1 - p%mmin)
   end select
 
-  ppisn_norms = L21+L12
+  ! We want
+  !
+  !     D                  D                  D
+  !      11      \          21       \         12
+  !  --------- + /\     ---------  + /\    ---------
+  !   N   /N       21    N   /N        12   N   /N
+  !    tot  0             tot  1             tot  2
+  !
+  !               \                \
+  ! ~ D     N   + /\   D     N   + /\   D     N
+  !    11    0      21  21    1      12  12    2
+
+  N = ppisn_nint(p)
+
+  ppisn_norms = D11 * N(0) + p%lam21 * D21 * N(1) + p%lam12 * D12 * N(2)
   where(isnan(ppisn_norms)) &
     ppisn_norms = 0.
 

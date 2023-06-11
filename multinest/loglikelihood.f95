@@ -30,8 +30,8 @@ contains
                 * m%spin(1,1)%f(dat(:,4), p)
 
   if(m%norms) then
-    av_likelihood = av_likelihood + &
-        ppisn_norms(dat(:,1), dat(:,2), dat(:,3), dat(:,4), m, p)
+    av_likelihood = &
+        ppisn_norms(av_likelihood, dat(:,1), dat(:,2), dat(:,3), dat(:,4), m, p)
   endif
 
   END FUNCTION AV_LIKELIHOOD
