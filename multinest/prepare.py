@@ -34,6 +34,9 @@ def convert_injection(ifar_find=1, fi='../endo3_mixture-LIGO-T2100113-v12.hdf5',
             ) & (
                 np.array(f['injections/ifar_pycbc_bbh']) > ifar_find
             )
+
+            s1  = f['injections/spin1z'][mask]
+            s2  = f['injections/spin2z'][mask]
         elif version == 3:
             mask = [
                 np.array(f['injections/ifar_gstlal']) > ifar_find,
@@ -44,15 +47,20 @@ def convert_injection(ifar_find=1, fi='../endo3_mixture-LIGO-T2100113-v12.hdf5',
                     np.array(f['injections/ifar_pycbc_full']) > ifar_find
                 )
             mask = np.all(mask, axis=0)
+
+            s1 = np.sqrt(f['injections/spin1x'][mask]**2 + f['injections/spin1y'][mask]**2 + f['injections/spin1z'][mask]**2)
+            s2 = np.sqrt(f['injections/spin2x'][mask]**2 + f['injections/spin2y'][mask]**2 + f['injections/spin2z'][mask]**2)
         m1 = f['injections/mass1_source'][mask]
         m2 = f['injections/mass2_source'][mask]
         rs = f['injections/redshift'][mask]
-        s1 = f['injections/spin1z'][mask]
-        s2 = f['injections/spin2z'][mask]
+        s1z = f['injections/spin1z'][mask]
+        s2z = f['injections/spin2z'][mask]
 
         dat = np.column_stack((
             m1, m2, rs,
-            (m1*s1+m2*s2)/(m1+m2)
+            # FIXME why is this only looking at z? cos?
+            (m1*s1z+m2*s2z)/(m1+m2),
+            s1, s2
         ))
 
     with open(fo, 'wb') as fp:
@@ -81,6 +89,8 @@ def load_gw(veto, base='../tmp/', v=2, cm=True):
     m2 = np.array([])
     rs = np.array([])
     ce = np.array([])
+    s1 = np.array([])
+    s2 = np.array([])
 
     offsets = []
 
@@ -108,29 +118,38 @@ def load_gw(veto, base='../tmp/', v=2, cm=True):
                         + d['spin2'] * m2i * d['costilt2']
                     ) / (m1i + m2i)
                 ))
+                s1 = np.concatenate((s1, d['spin1']))
+                s2 = np.concatenate((s2, d['spin2']))
 
             elif v == 2:
                 d = f['PublicationSamples/posterior_samples']
+                # chi_eff = (spin1 * m1 * cos1 + spin2 * m2 * cos2)/(m1+m2)
                 m1 = np.concatenate((m1, d['mass_1_source']))
                 m2 = np.concatenate((m2, d['mass_2_source']))
                 rs = np.concatenate((rs, d['redshift']))
                 ce = np.concatenate((ce, d['chi_eff']))
+                s1 = np.concatenate((s1, np.sqrt(d['spin_1x']**2 + d['spin_1y']**2 + d['spin_1z']**2)))
+                s2 = np.concatenate((s2, np.sqrt(d['spin_2x']**2 + d['spin_2y']**2 + d['spin_2z']**2)))
             elif v == 21:
                 d = f['PrecessingSpinIMRHM/posterior_samples']
                 m1 = np.concatenate((m1, d['mass_1_source']))
                 m2 = np.concatenate((m2, d['mass_2_source']))
                 rs = np.concatenate((rs, d['redshift']))
                 ce = np.concatenate((ce, d['chi_eff']))
+                s1 = np.concatenate((s1, np.sqrt(d['spin_1x']**2 + d['spin_1y']**2 + d['spin_1z']**2)))
+                s2 = np.concatenate((s2, np.sqrt(d['spin_2x']**2 + d['spin_2y']**2 + d['spin_2z']**2)))
             elif v == 3:
                 d = f['C01:Mixed/posterior_samples']
                 m1 = np.concatenate((m1, d['mass_1_source']))
                 m2 = np.concatenate((m2, d['mass_2_source']))
                 rs = np.concatenate((rs, d['redshift']))
                 ce = np.concatenate((ce, d['chi_eff']))
+                s1 = np.concatenate((s1, np.sqrt(d['spin_1x']**2 + d['spin_1y']**2 + d['spin_1z']**2)))
+                s2 = np.concatenate((s2, np.sqrt(d['spin_2x']**2 + d['spin_2y']**2 + d['spin_2z']**2)))
 
             offsets.append(len(m1))
 
-    return np.column_stack((m1, m2, rs, ce)), np.array(offsets)
+    return np.column_stack((m1, m2, rs, ce, s1, s2)), np.array(offsets)
 
 
 def get_veto():

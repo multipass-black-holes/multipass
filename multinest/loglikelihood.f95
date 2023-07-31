@@ -76,7 +76,7 @@ contains
   open(unit=8, action='read', form='unformatted', file=trim(fn))
 
   read(8) n
-  allocate(injections(n,4))
+  allocate(injections(n,6))
   read(8) injections
 
   close(unit=8)
@@ -89,7 +89,7 @@ contains
   open(unit=8, action='read', form='unformatted', file=trim(fn))
 
   read(8) nD, nO
-  allocate(dat(nD,4))
+  allocate(dat(nD,6))
   allocate(offsets(nO))
   read(8) offsets
   read(8) dat
