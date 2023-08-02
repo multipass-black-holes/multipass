@@ -58,8 +58,6 @@ def convert_injection(ifar_find=1, fi='../endo3_mixture-LIGO-T2100113-v12.hdf5',
 
         dat = np.column_stack((
             m1, m2, rs,
-            # FIXME why is this only looking at z? cos?
-            (m1*s1z+m2*s2z)/(m1+m2),
             s1, s2
         ))
 
@@ -88,7 +86,6 @@ def load_gw(veto, base='../tmp/', v=2, cm=True):
     m1 = np.array([])
     m2 = np.array([])
     rs = np.array([])
-    ce = np.array([])
     s1 = np.array([])
     s2 = np.array([])
 
@@ -111,13 +108,13 @@ def load_gw(veto, base='../tmp/', v=2, cm=True):
                 m1 = np.concatenate((m1, m1i))
                 m2 = np.concatenate((m2, m2i))
                 rs = np.concatenate((rs, rsi))
-                ce = np.concatenate((
-                    ce,
-                    (
-                        d['spin1'] * m1i * d['costilt1']
-                        + d['spin2'] * m2i * d['costilt2']
-                    ) / (m1i + m2i)
-                ))
+                # ce = np.concatenate((
+                #     ce,
+                #     (
+                #         d['spin1'] * m1i * d['costilt1']
+                #         + d['spin2'] * m2i * d['costilt2']
+                #     ) / (m1i + m2i)
+                # ))
                 s1 = np.concatenate((s1, d['spin1']))
                 s2 = np.concatenate((s2, d['spin2']))
 
@@ -127,7 +124,6 @@ def load_gw(veto, base='../tmp/', v=2, cm=True):
                 m1 = np.concatenate((m1, d['mass_1_source']))
                 m2 = np.concatenate((m2, d['mass_2_source']))
                 rs = np.concatenate((rs, d['redshift']))
-                ce = np.concatenate((ce, d['chi_eff']))
                 s1 = np.concatenate((s1, np.sqrt(d['spin_1x']**2 + d['spin_1y']**2 + d['spin_1z']**2)))
                 s2 = np.concatenate((s2, np.sqrt(d['spin_2x']**2 + d['spin_2y']**2 + d['spin_2z']**2)))
             elif v == 21:
@@ -135,7 +131,6 @@ def load_gw(veto, base='../tmp/', v=2, cm=True):
                 m1 = np.concatenate((m1, d['mass_1_source']))
                 m2 = np.concatenate((m2, d['mass_2_source']))
                 rs = np.concatenate((rs, d['redshift']))
-                ce = np.concatenate((ce, d['chi_eff']))
                 s1 = np.concatenate((s1, np.sqrt(d['spin_1x']**2 + d['spin_1y']**2 + d['spin_1z']**2)))
                 s2 = np.concatenate((s2, np.sqrt(d['spin_2x']**2 + d['spin_2y']**2 + d['spin_2z']**2)))
             elif v == 3:
@@ -143,13 +138,12 @@ def load_gw(veto, base='../tmp/', v=2, cm=True):
                 m1 = np.concatenate((m1, d['mass_1_source']))
                 m2 = np.concatenate((m2, d['mass_2_source']))
                 rs = np.concatenate((rs, d['redshift']))
-                ce = np.concatenate((ce, d['chi_eff']))
                 s1 = np.concatenate((s1, np.sqrt(d['spin_1x']**2 + d['spin_1y']**2 + d['spin_1z']**2)))
                 s2 = np.concatenate((s2, np.sqrt(d['spin_2x']**2 + d['spin_2y']**2 + d['spin_2z']**2)))
 
             offsets.append(len(m1))
 
-    return np.column_stack((m1, m2, rs, ce, s1, s2)), np.array(offsets)
+    return np.column_stack((m1, m2, rs, s1, s2)), np.array(offsets)
 
 
 def get_veto():

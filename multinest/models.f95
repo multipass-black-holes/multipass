@@ -60,12 +60,12 @@
       real(kind=prec) :: redshiftfn(size(z))
     END FUNCTION REDSHIFTFN
 
-    PURE FUNCTION SPINFN(chieff, chi1, chi2, P)
+    PURE FUNCTION SPINFN(chi1, chi2, P)
       use functions, only: prec
       import para
-      real(kind=prec), intent(in) :: chieff(:), chi1(:), chi2(:)
+      real(kind=prec), intent(in) :: chi1(:), chi2(:)
       type(para), intent(in) :: p
-      real(kind=prec) :: spinfn(size(chieff))
+      real(kind=prec) :: spinfn(size(chi1))
     END FUNCTION SPINFN
 
     PURE FUNCTION PARAFN(V)
@@ -104,35 +104,35 @@ contains
   trivial = 1.
   END FUNCTION TRIVIAL
 
-  PURE FUNCTION TRIVIAL_SPIN(chieff, chi1, chi2, P)
-  real(kind=prec), intent(in) :: chieff(:), chi1(:), chi2(:)
+  PURE FUNCTION TRIVIAL_SPIN(chi1, chi2, P)
+  real(kind=prec), intent(in) :: chi1(:), chi2(:)
   type(para), intent(in) :: p
-  real(kind=prec) :: trivial_spin(size(chieff))
+  real(kind=prec) :: trivial_spin(size(chi1))
   trivial_spin = 1.
   END FUNCTION TRIVIAL_SPIN
 
-  PURE FUNCTION BETA_SPIN_11(chieff, chi1, chi2, P)
-  real(kind=prec), intent(in) :: chieff(:), chi1(:), chi2(:)
+  PURE FUNCTION BETA_SPIN_11(chi1, chi2, P)
+  real(kind=prec), intent(in) :: chi1(:), chi2(:)
   type(para), intent(in) :: p
-  real(kind=prec) :: beta_spin_11(size(chieff))
+  real(kind=prec) :: beta_spin_11(size(chi1))
 
   beta_spin_11 = chi1**(p%alpha11-1) * (1-chi1)**(p%beta11-1) &
                * chi2**(p%alpha11-1) * (1-chi2)**(p%beta11-1) &
                * gamma(p%alpha11+p%beta11)**2 / gamma(p%alpha11)**2 / gamma(p%beta11)**2
   END FUNCTION BETA_SPIN_11
-  PURE FUNCTION BETA_SPIN_12(chieff, chi1, chi2, P)
-  real(kind=prec), intent(in) :: chieff(:), chi1(:), chi2(:)
+  PURE FUNCTION BETA_SPIN_12(chi1, chi2, P)
+  real(kind=prec), intent(in) :: chi1(:), chi2(:)
   type(para), intent(in) :: p
-  real(kind=prec) :: beta_spin_12(size(chieff))
+  real(kind=prec) :: beta_spin_12(size(chi1))
 
   beta_spin_12 = chi1**(p%alpha12-1) * (1-chi1)**(p%beta12-1) &
                * chi2**(p%alpha12-1) * (1-chi2)**(p%beta12-1) &
                * gamma(p%alpha12+p%beta12)**2 / gamma(p%alpha12)**2 / gamma(p%beta12)**2
   END FUNCTION BETA_SPIN_12
-  PURE FUNCTION BETA_SPIN_21(chieff, chi1, chi2, P)
-  real(kind=prec), intent(in) :: chieff(:), chi1(:), chi2(:)
+  PURE FUNCTION BETA_SPIN_21(chi1, chi2, P)
+  real(kind=prec), intent(in) :: chi1(:), chi2(:)
   type(para), intent(in) :: p
-  real(kind=prec) :: beta_spin_21(size(chieff))
+  real(kind=prec) :: beta_spin_21(size(chi1))
 
   beta_spin_21 = chi1**(p%alpha21-1) * (1-chi1)**(p%beta21-1) &
                * chi2**(p%alpha21-1) * (1-chi2)**(p%beta21-1) &
@@ -534,16 +534,16 @@ contains
   END FUNCTION PPISN_NINT
 
   ! norms = (/lam21, lam12 /)
-  PURE FUNCTION PPISN_NORMS(D11, M1, M2, CHIEFF, CHI1, CHI2, Z, M, P)
-  real(kind=prec), intent(in) :: D11(:), m1(:), m2(:), chieff(:), chi1(:), chi2(:), z(:)
+  PURE FUNCTION PPISN_NORMS(D11, M1, M2, CHI1, CHI2, Z, M, P)
+  real(kind=prec), intent(in) :: D11(:), m1(:), m2(:), chi1(:), chi2(:), z(:)
   type(model), intent(in) :: m
   type(para), intent(in) :: p
   real(kind=prec) :: ppisn_norms(size(m1)), N(0:2)
 
   real(kind=prec), dimension(size(m1)) :: D21, D12
 
-  D21 = m%primaryM2(m1,p)*m%spin(2,1)%f(chieff, chi1, chi2,p)*m%redshift(z,p)
-  D12 = m%primary  (m1,p)*m%spin(1,2)%f(chieff, chi1, chi2,p)*m%redshift(z,p)
+  D21 = m%primaryM2(m1,p)*m%spin(2,1)%f(chi1, chi2,p)*m%redshift(z,p)
+  D12 = m%primary  (m1,p)*m%spin(1,2)%f(chi1, chi2,p)*m%redshift(z,p)
 
   select case(m%secondary_c)
     case('phys')
