@@ -27,11 +27,11 @@ contains
   av_likelihood = m%primary(dat(:, 1), p)  &
                 * m%secondary(dat(:,1), dat(:,2), p) &
                 * m%redshift(dat(:,3), p) &
-                * m%spin(1,1)%f(dat(:,4), p)
+                * m%spin(1,1)%f(dat(:,4), dat(:,5), dat(:,6), p)
 
   if(m%norms) then
     av_likelihood = &
-        ppisn_norms(av_likelihood, dat(:,1), dat(:,2), dat(:,3), dat(:,4), m, p)
+        ppisn_norms(av_likelihood, dat(:,1), dat(:,2), dat(:,3), dat(:,4), dat(:,5), dat(:,6), m, p)
   endif
 
   END FUNCTION AV_LIKELIHOOD

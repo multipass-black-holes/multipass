@@ -57,10 +57,10 @@
       real(kind=prec) :: redshiftfn(size(z))
     END FUNCTION REDSHIFTFN
 
-    PURE FUNCTION SPINFN(chieff, P)
+    PURE FUNCTION SPINFN(chieff, chi1, chi2, P)
       use functions, only: prec
       import para
-      real(kind=prec), intent(in) :: chieff(:)
+      real(kind=prec), intent(in) :: chieff(:), chi1(:), chi2(:)
       type(para), intent(in) :: p
       real(kind=prec) :: spinfn(size(chieff))
     END FUNCTION SPINFN
@@ -101,6 +101,12 @@ contains
   trivial = 1.
   END FUNCTION TRIVIAL
 
+  PURE FUNCTION TRIVIAL_SPIN(chieff, chi1, chi2, P)
+  real(kind=prec), intent(in) :: chieff(:), chi1(:), chi2(:)
+  type(para), intent(in) :: p
+  real(kind=prec) :: trivial_spin(size(chieff))
+  trivial_spin = 1.
+  END FUNCTION TRIVIAL_SPIN
 
                    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                    !!                             !!
@@ -465,16 +471,16 @@ contains
   END FUNCTION PPISN_NINT
 
   ! norms = (/lam21, lam12 /)
-  PURE FUNCTION PPISN_NORMS(D11, M1, M2, CHI, Z, M, P)
-  real(kind=prec), intent(in) :: D11(:), m1(:), m2(:), chi(:), z(:)
+  PURE FUNCTION PPISN_NORMS(D11, M1, M2, CHIEFF, CHI1, CHI2, Z, M, P)
+  real(kind=prec), intent(in) :: D11(:), m1(:), m2(:), chieff(:), chi1(:), chi2(:), z(:)
   type(model), intent(in) :: m
   type(para), intent(in) :: p
   real(kind=prec) :: ppisn_norms(size(m1)), N(0:2)
 
   real(kind=prec), dimension(size(m1)) :: D21, D12
 
-  D21 = m%primaryM2(m1,p)*m%spin(2,1)%f(chi,p)*m%redshift(z,p)
-  D12 = m%primary  (m1,p)*m%spin(1,2)%f(chi,p)*m%redshift(z,p)
+  D21 = m%primaryM2(m1,p)*m%spin(2,1)%f(chieff, chi1, chi2,p)*m%redshift(z,p)
+  D12 = m%primary  (m1,p)*m%spin(1,2)%f(chieff, chi1, chi2,p)*m%redshift(z,p)
 
   select case(m%secondary_c)
     case('phys')
@@ -537,10 +543,10 @@ contains
       m%primary => plp_mf
       m%secondary => flatm
       m%redshift => trivial
-      m%spin(1,1)%f => trivial
-      m%spin(1,2)%f => trivial
-      m%spin(2,1)%f => trivial
-      m%spin(2,2)%f => trivial
+      m%spin(1,1)%f => trivial_spin
+      m%spin(1,2)%f => trivial_spin
+      m%spin(2,1)%f => trivial_spin
+      m%spin(2,2)%f => trivial_spin
       m%r2p => r2p_plp_flat
       m%smooth => smooth_tanh
       m%smoothint => smooth_expint
@@ -551,10 +557,10 @@ contains
       m%primary => plp_mf
       m%secondary => powm
       m%redshift => trivial
-      m%spin(1,1)%f => trivial
-      m%spin(1,2)%f => trivial
-      m%spin(2,1)%f => trivial
-      m%spin(2,2)%f => trivial
+      m%spin(1,1)%f => trivial_spin
+      m%spin(1,2)%f => trivial_spin
+      m%spin(2,1)%f => trivial_spin
+      m%spin(2,2)%f => trivial_spin
       m%r2p => r2p_plp_pow
       m%smooth => smooth_exp
       m%smoothint => smooth_expint
@@ -567,10 +573,10 @@ contains
       m%secondary => flatm
       m%secondary_c = "flat"
       m%redshift => trivial
-      m%spin(1,1)%f => trivial
-      m%spin(1,2)%f => trivial
-      m%spin(2,1)%f => trivial
-      m%spin(2,2)%f => trivial
+      m%spin(1,1)%f => trivial_spin
+      m%spin(1,2)%f => trivial_spin
+      m%spin(2,1)%f => trivial_spin
+      m%spin(2,2)%f => trivial_spin
       m%r2p => r2p_ppisn
       m%smooth => smooth_exp
       m%smoothint => smooth_expint
@@ -583,10 +589,10 @@ contains
       m%secondary => ppisn_m2_phys
       m%secondary_c = "phys"
       m%redshift => trivial
-      m%spin(1,1)%f => trivial
-      m%spin(1,2)%f => trivial
-      m%spin(2,1)%f => trivial
-      m%spin(2,2)%f => trivial
+      m%spin(1,1)%f => trivial_spin
+      m%spin(1,2)%f => trivial_spin
+      m%spin(2,1)%f => trivial_spin
+      m%spin(2,2)%f => trivial_spin
       m%r2p => r2p_ppisn
       m%smooth => smooth_exp
       m%smoothint => smooth_expint
