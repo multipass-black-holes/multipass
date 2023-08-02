@@ -24,6 +24,9 @@
     ! Needed for PPISN
     real(kind=prec) :: mgap=0, a=0, b=0, d=0
 
+    ! Needed for spin
+    real(kind=prec) :: alpha11=0, alpha12=0, alpha21=0, beta11=0, beta12=0, beta21=0
+
     ! Smooth function
     procedure(smoothfn), pointer, nopass :: sf, sfint
     character(len=3) :: sf_c
@@ -107,6 +110,34 @@ contains
   real(kind=prec) :: trivial_spin(size(chieff))
   trivial_spin = 1.
   END FUNCTION TRIVIAL_SPIN
+
+  PURE FUNCTION BETA_SPIN_11(chieff, chi1, chi2, P)
+  real(kind=prec), intent(in) :: chieff(:), chi1(:), chi2(:)
+  type(para), intent(in) :: p
+  real(kind=prec) :: beta_spin_11(size(chieff))
+
+  beta_spin_11 = chi1**(p%alpha11-1) * (1-chi1)**(p%beta11-1) &
+               * chi2**(p%alpha11-1) * (1-chi2)**(p%beta11-1) &
+               * gamma(p%alpha11+p%beta11)**2 / gamma(p%alpha11)**2 / gamma(p%beta11)**2
+  END FUNCTION BETA_SPIN_11
+  PURE FUNCTION BETA_SPIN_12(chieff, chi1, chi2, P)
+  real(kind=prec), intent(in) :: chieff(:), chi1(:), chi2(:)
+  type(para), intent(in) :: p
+  real(kind=prec) :: beta_spin_12(size(chieff))
+
+  beta_spin_12 = chi1**(p%alpha12-1) * (1-chi1)**(p%beta12-1) &
+               * chi2**(p%alpha12-1) * (1-chi2)**(p%beta12-1) &
+               * gamma(p%alpha12+p%beta12)**2 / gamma(p%alpha12)**2 / gamma(p%beta12)**2
+  END FUNCTION BETA_SPIN_12
+  PURE FUNCTION BETA_SPIN_21(chieff, chi1, chi2, P)
+  real(kind=prec), intent(in) :: chieff(:), chi1(:), chi2(:)
+  type(para), intent(in) :: p
+  real(kind=prec) :: beta_spin_21(size(chieff))
+
+  beta_spin_21 = chi1**(p%alpha21-1) * (1-chi1)**(p%beta21-1) &
+               * chi2**(p%alpha21-1) * (1-chi2)**(p%beta21-1) &
+               * gamma(p%alpha21+p%beta21)**2 / gamma(p%alpha21)**2 / gamma(p%beta21)**2
+  END FUNCTION BETA_SPIN_21
 
                    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                    !!                             !!
