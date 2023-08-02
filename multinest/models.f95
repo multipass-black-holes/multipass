@@ -238,6 +238,38 @@ contains
   p%k    = v(8)
   END FUNCTION R2P_PLP_POW
 
+  PURE FUNCTION R2P_PLP_FLAT_BETA(V) result(p)
+  real(kind=prec), intent(in) :: v(:)
+  type(para) :: p
+  p%mmin = v(1)
+  p%dm   = v(2)
+  p%mmax = v(3)
+  p%mum  = v(4)
+  p%sm   = v(5)
+  p%alpha= v(6)
+  p%lp   = v(7)
+
+  ! Spin
+  p%alpha11 = v(8)
+  p%beta11 = v(9)
+  END FUNCTION R2P_PLP_FLAT_BETA
+
+  PURE FUNCTION R2P_PLP_POW_BETA(V) result(p)
+  real(kind=prec), intent(in) :: v(:)
+  type(para) :: p
+  p%mmin = v(1)
+  p%dm   = v(2)
+  p%mmax = v(3)
+  p%mum  = v(4)
+  p%sm   = v(5)
+  p%alpha= v(6)
+  p%lp   = v(7)
+  p%k    = v(8)
+
+  ! Spin
+  p%alpha11 = v(9)
+  p%beta11 = v(10)
+  END FUNCTION R2P_PLP_POW_BETA
 
                    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                    !!                             !!
@@ -557,6 +589,28 @@ contains
   END FUNCTION R2P_PPISN
 
 
+  PURE FUNCTION R2P_PPISN_BETA(V) result(p)
+  real(kind=prec), intent(in) :: v(:)
+  type(para) :: p
+  p%mmin = v(1)
+  p%dm   = v(2)
+  p%mgap = v(3)
+  p%a    = v(4)
+  p%b    = v(5)
+  p%d    = v(6)
+  p%lam21= 10**v(7)
+  p%lam12= 10**v(8)
+
+  ! Spin
+  p%alpha11 = v(9)
+  p%beta11 = v(10)
+  p%alpha12 = v(11)
+  p%beta12 = v(12)
+  p%alpha21 = v(13)
+  p%beta21 = v(14)
+  END FUNCTION R2P_PPISN_BETA
+
+
                    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                    !!                             !!
                    !!            TOOLS            !!
@@ -597,6 +651,36 @@ contains
       m%smoothint => smooth_expint
       m%smooth_c = "tan"
       m%norms = .false.
+
+    case('plp+flat+trivial+beta')
+      m%ndim = 7
+      m%primary => plp_mf
+      m%secondary => flatm
+      m%redshift => trivial
+      m%spin(1,1)%f => beta_spin_11
+      m%spin(1,2)%f => trivial_spin
+      m%spin(2,1)%f => trivial_spin
+      m%spin(2,2)%f => trivial_spin
+      m%r2p => r2p_plp_flat_beta
+      m%smooth => smooth_tanh
+      m%smoothint => smooth_expint
+      m%smooth_c = "tan"
+      m%norms = .false.
+    case('plp+pow+trivial+beta')
+      m%ndim = 8
+      m%primary => plp_mf
+      m%secondary => powm
+      m%redshift => trivial
+      m%spin(1,1)%f => beta_spin_11
+      m%spin(1,2)%f => trivial_spin
+      m%spin(2,1)%f => trivial_spin
+      m%spin(2,2)%f => trivial_spin
+      m%r2p => r2p_plp_pow_beta
+      m%smooth => smooth_exp
+      m%smoothint => smooth_expint
+      m%smooth_c = "tan"
+      m%norms = .false.
+
     case("ppisn+flat+trivial+trivial")
       m%ndim = 8
       m%primary => ppisn_mf1g
@@ -625,6 +709,23 @@ contains
       m%spin(2,1)%f => trivial_spin
       m%spin(2,2)%f => trivial_spin
       m%r2p => r2p_ppisn
+      m%smooth => smooth_exp
+      m%smoothint => smooth_expint
+      m%smooth_c = "tan"
+      m%norms = .true.
+
+    case("ppisn+trivial+beta")
+      m%ndim = 8
+      m%primary => ppisn_mf1g
+      m%primaryM2 => ppisn_mf2g
+      m%secondary => ppisn_m2_phys
+      m%secondary_c = "phys"
+      m%redshift => trivial
+      m%spin(1,1)%f => beta_spin_11
+      m%spin(1,2)%f => beta_spin_12
+      m%spin(2,1)%f => beta_spin_21
+      m%spin(2,2)%f => trivial_spin
+      m%r2p => r2p_ppisn_beta
       m%smooth => smooth_exp
       m%smoothint => smooth_expint
       m%smooth_c = "tan"
