@@ -53,11 +53,13 @@ def convert_injection(ifar_find=1, fi='../endo3_mixture-LIGO-T2100113-v12.hdf5',
         m1 = f['injections/mass1_source'][mask]
         m2 = f['injections/mass2_source'][mask]
         rs = f['injections/redshift'][mask]
+        ld = f['injections/distance'][mask]
         s1z = f['injections/spin1z'][mask]
         s2z = f['injections/spin2z'][mask]
 
         dat = np.column_stack((
-            m1, m2, rs,
+            m1, m2,
+            rs, ld,
             s1, s2
         ))
 
@@ -86,6 +88,7 @@ def load_gw(veto, base='../tmp/', v=2, cm=True):
     m1 = np.array([])
     m2 = np.array([])
     rs = np.array([])
+    ld = np.array([])
     s1 = np.array([])
     s2 = np.array([])
 
@@ -108,6 +111,7 @@ def load_gw(veto, base='../tmp/', v=2, cm=True):
                 m1 = np.concatenate((m1, m1i))
                 m2 = np.concatenate((m2, m2i))
                 rs = np.concatenate((rs, rsi))
+                ld = np.concatenate((ld, d['luminosity_distance_Mpc']))
                 # ce = np.concatenate((
                 #     ce,
                 #     (
@@ -124,6 +128,7 @@ def load_gw(veto, base='../tmp/', v=2, cm=True):
                 m1 = np.concatenate((m1, d['mass_1_source']))
                 m2 = np.concatenate((m2, d['mass_2_source']))
                 rs = np.concatenate((rs, d['redshift']))
+                ld = np.concatenate((ld, d['luminosity_distance']))
                 s1 = np.concatenate((s1, np.sqrt(d['spin_1x']**2 + d['spin_1y']**2 + d['spin_1z']**2)))
                 s2 = np.concatenate((s2, np.sqrt(d['spin_2x']**2 + d['spin_2y']**2 + d['spin_2z']**2)))
             elif v == 21:
@@ -131,6 +136,7 @@ def load_gw(veto, base='../tmp/', v=2, cm=True):
                 m1 = np.concatenate((m1, d['mass_1_source']))
                 m2 = np.concatenate((m2, d['mass_2_source']))
                 rs = np.concatenate((rs, d['redshift']))
+                ld = np.concatenate((ld, d['luminosity_distance']))
                 s1 = np.concatenate((s1, np.sqrt(d['spin_1x']**2 + d['spin_1y']**2 + d['spin_1z']**2)))
                 s2 = np.concatenate((s2, np.sqrt(d['spin_2x']**2 + d['spin_2y']**2 + d['spin_2z']**2)))
             elif v == 3:
@@ -138,12 +144,13 @@ def load_gw(veto, base='../tmp/', v=2, cm=True):
                 m1 = np.concatenate((m1, d['mass_1_source']))
                 m2 = np.concatenate((m2, d['mass_2_source']))
                 rs = np.concatenate((rs, d['redshift']))
+                ld = np.concatenate((ld, d['luminosity_distance']))
                 s1 = np.concatenate((s1, np.sqrt(d['spin_1x']**2 + d['spin_1y']**2 + d['spin_1z']**2)))
                 s2 = np.concatenate((s2, np.sqrt(d['spin_2x']**2 + d['spin_2y']**2 + d['spin_2z']**2)))
 
             offsets.append(len(m1))
 
-    return np.column_stack((m1, m2, rs, s1, s2)), np.array(offsets)
+    return np.column_stack((m1, m2, rs, ld, s1, s2)), np.array(offsets)
 
 
 def get_veto():
