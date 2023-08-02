@@ -24,6 +24,9 @@
     ! Needed for PPISN
     real(kind=prec) :: mgap=0, a=0, b=0, d=0
 
+    ! Needed for spin
+    real(kind=prec) :: alpha11=0, alpha12=0, alpha21=0, beta11=0, beta12=0, beta21=0
+
     ! Smooth function
     procedure(smoothfn), pointer, nopass :: sf, sfint
     character(len=3) :: sf_c
@@ -57,12 +60,12 @@
       real(kind=prec) :: redshiftfn(size(z))
     END FUNCTION REDSHIFTFN
 
-    PURE FUNCTION SPINFN(chieff, P)
+    PURE FUNCTION SPINFN(chi1, chi2, P)
       use functions, only: prec
       import para
-      real(kind=prec), intent(in) :: chieff(:)
+      real(kind=prec), intent(in) :: chi1(:), chi2(:)
       type(para), intent(in) :: p
-      real(kind=prec) :: spinfn(size(chieff))
+      real(kind=prec) :: spinfn(size(chi1))
     END FUNCTION SPINFN
 
     PURE FUNCTION PARAFN(V)
@@ -100,6 +103,42 @@ contains
   real(kind=prec) :: trivial(size(m))
   trivial = 1.
   END FUNCTION TRIVIAL
+
+  PURE FUNCTION TRIVIAL_SPIN(chi1, chi2, P)
+  real(kind=prec), intent(in) :: chi1(:), chi2(:)
+  type(para), intent(in) :: p
+  real(kind=prec) :: trivial_spin(size(chi1))
+  trivial_spin = 1.
+  END FUNCTION TRIVIAL_SPIN
+
+  PURE FUNCTION BETA_SPIN_11(chi1, chi2, P)
+  real(kind=prec), intent(in) :: chi1(:), chi2(:)
+  type(para), intent(in) :: p
+  real(kind=prec) :: beta_spin_11(size(chi1))
+
+  beta_spin_11 = chi1**(p%alpha11-1) * (1-chi1)**(p%beta11-1) &
+               * chi2**(p%alpha11-1) * (1-chi2)**(p%beta11-1) &
+               * gamma(p%alpha11+p%beta11)**2 / gamma(p%alpha11)**2 / gamma(p%beta11)**2
+  END FUNCTION BETA_SPIN_11
+  PURE FUNCTION BETA_SPIN_12(chi1, chi2, P)
+  real(kind=prec), intent(in) :: chi1(:), chi2(:)
+  type(para), intent(in) :: p
+  real(kind=prec) :: beta_spin_12(size(chi1))
+
+  beta_spin_12 = chi1**(p%alpha12-1) * (1-chi1)**(p%beta12-1) &
+               * chi2**(p%alpha12-1) * (1-chi2)**(p%beta12-1) &
+               * gamma(p%alpha12+p%beta12)**2 / gamma(p%alpha12)**2 / gamma(p%beta12)**2
+  END FUNCTION BETA_SPIN_12
+  PURE FUNCTION BETA_SPIN_21(chi1, chi2, P)
+  real(kind=prec), intent(in) :: chi1(:), chi2(:)
+  type(para), intent(in) :: p
+  real(kind=prec) :: beta_spin_21(size(chi1))
+
+  beta_spin_21 = chi1**(p%alpha21-1) * (1-chi1)**(p%beta21-1) &
+               * chi2**(p%alpha21-1) * (1-chi2)**(p%beta21-1) &
+               * gamma(p%alpha21+p%beta21)**2 / gamma(p%alpha21)**2 / gamma(p%beta21)**2
+  END FUNCTION BETA_SPIN_21
+
 
                    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                    !!                             !!
@@ -230,6 +269,38 @@ contains
   p%k    = v(8)
   END FUNCTION R2P_PLP_POW
 
+  PURE FUNCTION R2P_PLP_FLAT_BETA(V) result(p)
+  real(kind=prec), intent(in) :: v(:)
+  type(para) :: p
+  p%mmin = v(1)
+  p%dm   = v(2)
+  p%mmax = v(3)
+  p%mum  = v(4)
+  p%sm   = v(5)
+  p%alpha= v(6)
+  p%lp   = v(7)
+
+  ! Spin
+  p%alpha11 = v(8)
+  p%beta11 = v(9)
+  END FUNCTION R2P_PLP_FLAT_BETA
+
+  PURE FUNCTION R2P_PLP_POW_BETA(V) result(p)
+  real(kind=prec), intent(in) :: v(:)
+  type(para) :: p
+  p%mmin = v(1)
+  p%dm   = v(2)
+  p%mmax = v(3)
+  p%mum  = v(4)
+  p%sm   = v(5)
+  p%alpha= v(6)
+  p%lp   = v(7)
+  p%k    = v(8)
+
+  ! Spin
+  p%alpha11 = v(9)
+  p%beta11 = v(10)
+  END FUNCTION R2P_PLP_POW_BETA
 
                    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                    !!                             !!
@@ -494,16 +565,16 @@ contains
   END FUNCTION PPISN_NINT
 
   ! norms = (/lam21, lam12 /)
-  PURE FUNCTION PPISN_NORMS(D11, M1, M2, CHI, Z, M, P)
-  real(kind=prec), intent(in) :: D11(:), m1(:), m2(:), chi(:), z(:)
+  PURE FUNCTION PPISN_NORMS(D11, M1, M2, CHI1, CHI2, Z, M, P)
+  real(kind=prec), intent(in) :: D11(:), m1(:), m2(:), chi1(:), chi2(:), z(:)
   type(model), intent(in) :: m
   type(para), intent(in) :: p
   real(kind=prec) :: ppisn_norms(size(m1)), N(0:2)
 
   real(kind=prec), dimension(size(m1)) :: D21, D12
 
-  D21 = m%primaryM2(m1,p)*m%spin(2,1)%f(chi,p)*m%redshift(z,p)
-  D12 = m%primary  (m1,p)*m%spin(1,2)%f(chi,p)*m%redshift(z,p)
+  D21 = m%primaryM2(m1,p)*m%spin(2,1)%f(chi1, chi2,p)*m%redshift(z,p)
+  D12 = m%primary  (m1,p)*m%spin(1,2)%f(chi1, chi2,p)*m%redshift(z,p)
 
   select case(m%secondary_c)
     case('phys')
@@ -549,6 +620,28 @@ contains
   END FUNCTION R2P_PPISN
 
 
+  PURE FUNCTION R2P_PPISN_BETA(V) result(p)
+  real(kind=prec), intent(in) :: v(:)
+  type(para) :: p
+  p%mmin = v(1)
+  p%dm   = v(2)
+  p%mgap = v(3)
+  p%a    = v(4)
+  p%b    = v(5)
+  p%d    = v(6)
+  p%lam21= 10**v(7)
+  p%lam12= 10**v(8)
+
+  ! Spin
+  p%alpha11 = v(9)
+  p%beta11 = v(10)
+  p%alpha12 = v(11)
+  p%beta12 = v(12)
+  p%alpha21 = v(13)
+  p%beta21 = v(14)
+  END FUNCTION R2P_PPISN_BETA
+
+
                    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                    !!                             !!
                    !!            TOOLS            !!
@@ -566,10 +659,10 @@ contains
       m%primary => plp_mf
       m%secondary => flatm
       m%redshift => trivial
-      m%spin(1,1)%f => trivial
-      m%spin(1,2)%f => trivial
-      m%spin(2,1)%f => trivial
-      m%spin(2,2)%f => trivial
+      m%spin(1,1)%f => trivial_spin
+      m%spin(1,2)%f => trivial_spin
+      m%spin(2,1)%f => trivial_spin
+      m%spin(2,2)%f => trivial_spin
       m%r2p => r2p_plp_flat
       m%smooth => smooth_tanh
       m%smoothint => smooth_expint
@@ -580,15 +673,45 @@ contains
       m%primary => plp_mf
       m%secondary => powm
       m%redshift => trivial
-      m%spin(1,1)%f => trivial
-      m%spin(1,2)%f => trivial
-      m%spin(2,1)%f => trivial
-      m%spin(2,2)%f => trivial
+      m%spin(1,1)%f => trivial_spin
+      m%spin(1,2)%f => trivial_spin
+      m%spin(2,1)%f => trivial_spin
+      m%spin(2,2)%f => trivial_spin
       m%r2p => r2p_plp_pow
       m%smooth => smooth_exp
       m%smoothint => smooth_expint
       m%smooth_c = "tan"
       m%norms = .false.
+
+    case('plp+flat+trivial+beta')
+      m%ndim = 7
+      m%primary => plp_mf
+      m%secondary => flatm
+      m%redshift => trivial
+      m%spin(1,1)%f => beta_spin_11
+      m%spin(1,2)%f => trivial_spin
+      m%spin(2,1)%f => trivial_spin
+      m%spin(2,2)%f => trivial_spin
+      m%r2p => r2p_plp_flat_beta
+      m%smooth => smooth_tanh
+      m%smoothint => smooth_expint
+      m%smooth_c = "tan"
+      m%norms = .false.
+    case('plp+pow+trivial+beta')
+      m%ndim = 8
+      m%primary => plp_mf
+      m%secondary => powm
+      m%redshift => trivial
+      m%spin(1,1)%f => beta_spin_11
+      m%spin(1,2)%f => trivial_spin
+      m%spin(2,1)%f => trivial_spin
+      m%spin(2,2)%f => trivial_spin
+      m%r2p => r2p_plp_pow_beta
+      m%smooth => smooth_exp
+      m%smoothint => smooth_expint
+      m%smooth_c = "tan"
+      m%norms = .false.
+
     case("ppisn+flat+trivial+trivial")
       m%ndim = 8
       m%primary => ppisn_mf1g
@@ -596,10 +719,10 @@ contains
       m%secondary => flatm
       m%secondary_c = "flat"
       m%redshift => trivial
-      m%spin(1,1)%f => trivial
-      m%spin(1,2)%f => trivial
-      m%spin(2,1)%f => trivial
-      m%spin(2,2)%f => trivial
+      m%spin(1,1)%f => trivial_spin
+      m%spin(1,2)%f => trivial_spin
+      m%spin(2,1)%f => trivial_spin
+      m%spin(2,2)%f => trivial_spin
       m%r2p => r2p_ppisn
       m%smooth => smooth_exp
       m%smoothint => smooth_expint
@@ -612,11 +735,28 @@ contains
       m%secondary => ppisn_m2_phys
       m%secondary_c = "phys"
       m%redshift => trivial
-      m%spin(1,1)%f => trivial
-      m%spin(1,2)%f => trivial
-      m%spin(2,1)%f => trivial
-      m%spin(2,2)%f => trivial
+      m%spin(1,1)%f => trivial_spin
+      m%spin(1,2)%f => trivial_spin
+      m%spin(2,1)%f => trivial_spin
+      m%spin(2,2)%f => trivial_spin
       m%r2p => r2p_ppisn
+      m%smooth => smooth_exp
+      m%smoothint => smooth_expint
+      m%smooth_c = "tan"
+      m%norms = .true.
+
+    case("ppisn+trivial+beta")
+      m%ndim = 8
+      m%primary => ppisn_mf1g
+      m%primaryM2 => ppisn_mf2g
+      m%secondary => ppisn_m2_phys
+      m%secondary_c = "phys"
+      m%redshift => trivial
+      m%spin(1,1)%f => beta_spin_11
+      m%spin(1,2)%f => beta_spin_12
+      m%spin(2,1)%f => beta_spin_21
+      m%spin(2,2)%f => trivial_spin
+      m%r2p => r2p_ppisn_beta
       m%smooth => smooth_exp
       m%smoothint => smooth_expint
       m%smooth_c = "tan"
