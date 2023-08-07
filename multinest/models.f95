@@ -145,29 +145,28 @@ contains
                    !!          RED SHIFT          !!
                    !!                             !!
                    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  PURE FUNCTION REDSHIFT_PLANK(Z, P)
-  ! This implements (1) of 2103.14663 using Plank values for \Omega
+  PURE FUNCTION REDSHIFT_PLANCK(Z, P)
+  ! This implements (1) of 2103.14663 using Planck values for \Omega
   !    P ~ dVc/dz (1+z)^(\gamma-1)
   ! with the differential co-moving
   !    dVc/dz ~ (1+z)^2 D_A^2 / H(z)
   ! and the angular diameter distance D_A. We also assume \Omega_k = 0
   use functions, only: prec
-  import para
   real(kind=prec), intent(in) :: z(:)
   type(para), intent(in) :: p
-  real(kind=prec) :: redshift_plank(size(z))
-  real(kind=prec) :: DA
-  real(kind=prec) :: intg
-  real(kind=prec) :: WM = 0.308 !Planck value
+  real(kind=prec) :: redshift_planck(size(z))
+  ! real(kind=prec) :: DA
+  ! real(kind=prec) :: intg
+  ! real(kind=prec), parameter :: WM = 0.308 !Planck value
 
-  ! integral 1/H[z] from 0 to z
-  intg = Btilde(1./6., 1./3., 1 - WM)/(3*(1 - WM)**(1./6.)*WM**(1./3.)) &
-    - Btilde(1./6., 1./3., (1. - WM)/(1. - WM + WM*(1 + z)**3))/(3*(1 - WM)**(1./6.)*WM**(1./.3))
+  ! ! integral 1/H[z] from 0 to z
+  ! intg = Btilde(1./6., 1./3., 1 - WM)/(3*(1 - WM)**(1./6.)*WM**(1./3.)) &
+  !   - Btilde(1./6., 1./3., (1. - WM)/(1. - WM + WM*(1 + z)**3))/(3*(1 - WM)**(1./6.)*WM**(1./.3))
 
-  H = H0 * sqrt(OmegaM0 * (1+z)**3 + OmegaL0)
+  ! H = H0 * sqrt(OmegaM0 * (1+z)**3 + OmegaL0)
 
-  Da = 1/sqrt(Omegak0) / H0 / (1+z) * Sk
-  END FUNCTION RESHIFT_PLANK
+  ! Da = 1/sqrt(Omegak0) / H0 / (1+z) * Sk
+  END FUNCTION REDSHIFT_PLANCK
 
 
                    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
