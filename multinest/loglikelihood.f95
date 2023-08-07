@@ -21,18 +21,37 @@ contains
   real(kind=prec), intent(in) :: dat(:, :)
   type(model), intent(in) :: m
   type(para), intent(in) :: p
-  real(kind=prec) :: av_likelihood(size(dat,1))
+  real(kind=prec), dimension(size(dat,1)) :: av_likelihood, m1, m2
   integer i
 
   ! the ordering is 1: m1S, 2: m2S, 3: m1D, 4: m2D, 5: z, 6: d, 7: s1, 8: s2
-  av_likelihood = m%primary(dat(:, 1), p)  &
-                * m%secondary(dat(:,1), dat(:,2), p) &
-                * m%redshift(dat(:,5), p) &
-                * m%spin(1,1)%f(dat(:,7), dat(:,8), p)
 
-  if(m%norms) then
-    av_likelihood = &
-        ppisn_norms(av_likelihood, dat(:,1), dat(:,2), dat(:,7), dat(:,8), dat(:,5), m, p)
+  ! If we are running in redshift mode, i.e. m%redshift is
+  ! associated, we don't really care about what the data says m1S
+  ! and m2S are and will just overwrite it with what we think
+  ! it's supposed to be. However, due to purity rules, we can't
+  ! modify dat, hence the duplicated code
+
+  if(associated(m%redshift)) then
+    call m%redshift(dat(:,3),dat(:,4), m1,m2, dat(:,5), dat(:,6), p)
+
+    av_likelihood = m%primary(m1, p)  &
+                  * m%secondary(m1,m2, p) &
+                  * m%spin(1,1)%f(dat(:,7), dat(:,8), p)
+
+    if(m%norms) then
+      av_likelihood = &
+          ppisn_norms(av_likelihood, m1,m2, dat(:,7), dat(:,8), m, p)
+    endif
+  else
+    av_likelihood = m%primary(dat(:, 1), p)  &
+                  * m%secondary(dat(:,1), dat(:,2), p) &
+                  * m%spin(1,1)%f(dat(:,7), dat(:,8), p)
+
+    if(m%norms) then
+      av_likelihood = &
+          ppisn_norms(av_likelihood, dat(:,1), dat(:,2), dat(:,7), dat(:,8), m, p)
+    endif
   endif
 
   END FUNCTION AV_LIKELIHOOD
