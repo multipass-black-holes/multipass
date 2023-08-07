@@ -145,28 +145,38 @@ contains
                    !!          RED SHIFT          !!
                    !!                             !!
                    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  PURE FUNCTION REDSHIFT_PLANCK(Z, P)
-  ! This implements (1) of 2103.14663 using Planck values for \Omega
-  !    P ~ dVc/dz (1+z)^(\gamma-1)
-  ! with the differential co-moving
-  !    dVc/dz ~ (1+z)^2 D_A^2 / H(z)
-  ! and the angular diameter distance D_A. We also assume \Omega_k = 0
+
+  PURE SUBROUTINE REDSHIFT_PLANCK(M1D, M2D, M1S, M2S, Z, D, P)
+  ! This implements (4.1) of 2205.11278 to calculate the source-frame
+  ! masses from the detector-frame ones.
+  !    m_source = m_det / (1+z)
+  ! We infer the redshift z from the luminosity distance d rather than
+  ! taking the LVC value (which assumed a value of H0).
   use functions, only: prec
-  real(kind=prec), intent(in) :: z(:)
+  real(kind=prec), parameter :: Om = 0.315
+  integer, parameter :: Nnewton = 10
+  real(kind=prec), intent(in) :: m1d(:), m2d(:), Z(:), D(:)
+  real(kind=prec), intent(out) :: m1s(:), m2s(:)
+  real(kind=prec) :: zz(size(d))
   type(para), intent(in) :: p
-  real(kind=prec) :: redshift_planck(size(z))
-  ! real(kind=prec) :: DA
-  ! real(kind=prec) :: intg
-  ! real(kind=prec), parameter :: WM = 0.308 !Planck value
+  real(kind=prec) :: Btild0(1), pref, H0
+  real(kind=prec) :: Dl(size(d)), dDl(size(d))
+  integer :: i
 
-  ! ! integral 1/H[z] from 0 to z
-  ! intg = Btilde(1./6., 1./3., 1 - WM)/(3*(1 - WM)**(1./6.)*WM**(1./3.)) &
-  !   - Btilde(1./6., 1./3., (1. - WM)/(1. - WM + WM*(1 + z)**3))/(3*(1 - WM)**(1./6.)*WM**(1./.3))
+  Btild0 = Btilde(1./6._prec, 1./3._prec, (/1. - Om/))
+  pref = 1/3./H0/Om**(1/3.)/(1-Om)**(1/6.)
+  zz = 1.
+  do i=1,Nnewton
+    Dl = pref*(1 + zz)*(Btild0(1) - Btilde(1./6._prec,1./3._prec,(1 - Om)/(1 - Om + Om*(1 + zz)**3)))
+    dDl = Dl/(1 + zz) + (1 + zz)/(H0*Sqrt(1 + Om*(-1 + (1 + zz)**3)))
 
-  ! H = H0 * sqrt(OmegaM0 * (1+z)**3 + OmegaL0)
+    zz = zz - (Dl-d)/dDL
+  enddo
 
-  ! Da = 1/sqrt(Omegak0) / H0 / (1+z) * Sk
-  END FUNCTION REDSHIFT_PLANCK
+  m1s = m1d / (1+zz)
+  m2s = m2d / (1+zz)
+
+  END SUBROUTINE REDSHIFT_PLANCK
 
 
                    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
