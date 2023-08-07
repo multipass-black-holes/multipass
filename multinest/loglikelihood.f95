@@ -24,14 +24,15 @@ contains
   real(kind=prec) :: av_likelihood(size(dat,1))
   integer i
 
+  ! the ordering is 1: m1S, 2: m2S, 3: m1D, 4: m2D, 5: z, 6: d, 7: s1, 8: s2
   av_likelihood = m%primary(dat(:, 1), p)  &
                 * m%secondary(dat(:,1), dat(:,2), p) &
-                * m%redshift(dat(:,3), p) &
-                * m%spin(1,1)%f(dat(:,4), dat(:,5), p)
+                * m%redshift(dat(:,5), p) &
+                * m%spin(1,1)%f(dat(:,7), dat(:,8), p)
 
   if(m%norms) then
     av_likelihood = &
-        ppisn_norms(av_likelihood, dat(:,1), dat(:,2), dat(:,3), dat(:,4), dat(:,5), m, p)
+        ppisn_norms(av_likelihood, dat(:,1), dat(:,2), dat(:,7), dat(:,8), dat(:,5), m, p)
   endif
 
   END FUNCTION AV_LIKELIHOOD
@@ -76,7 +77,7 @@ contains
   open(unit=8, action='read', form='unformatted', file=trim(fn))
 
   read(8) n
-  allocate(injections(n,6))
+  allocate(injections(n,8))
   read(8) injections
 
   close(unit=8)
@@ -89,7 +90,7 @@ contains
   open(unit=8, action='read', form='unformatted', file=trim(fn))
 
   read(8) nD, nO
-  allocate(dat(nD,6))
+  allocate(dat(nD,8))
   allocate(offsets(nO))
   read(8) offsets
   read(8) dat
