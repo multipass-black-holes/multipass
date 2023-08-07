@@ -100,12 +100,17 @@ contains
     if(Uin==5) then
       print*, "Available commands:"
       print*, " * [m]odel: ", trim(the_model%model_name)
+      ! generate using
+      ! cat models.f95| perl -ne 'print if s/ *case\(.(.*\+.*).\)/      print*, "    - \1"/g'
       print*, "    - plp+flat+trivial+trivial"
       print*, "    - plp+pow+trivial+trivial"
+      print*, "    - plp+flat+planck+trivial"
+      print*, "    - plp+pow+planck+trivial"
       print*, "    - plp+flat+trivial+beta"
       print*, "    - plp+pow+trivial+beta"
       print*, "    - ppisn+flat+trivial+trivial"
       print*, "    - ppisn+trivial+trivial"
+      print*, "    - ppisn+planck+trivial"
       print*, "    - ppisn+trivial+beta"
       print*, " * [n]umber of live points: ", np
       print*, " * [t]olerance (defines stopping)", tol

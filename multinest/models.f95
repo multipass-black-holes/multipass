@@ -31,6 +31,9 @@
     procedure(smoothfn), pointer, nopass :: sf, sfint
     character(len=3) :: sf_c
 
+    ! Needed for H0
+    real(kind=prec) :: H0 = 100.
+
     real(kind=prec) :: lam21, lam12
   END TYPE PARA
 
@@ -159,16 +162,16 @@ contains
   real(kind=prec), intent(out) :: m1s(:), m2s(:)
   real(kind=prec) :: zz(size(d))
   type(para), intent(in) :: p
-  real(kind=prec) :: Btild0(1), pref, H0
+  real(kind=prec) :: Btild0(1), pref
   real(kind=prec) :: Dl(size(d)), dDl(size(d))
   integer :: i
 
   Btild0 = Btilde(1./6._prec, 1./3._prec, (/1. - Om/))
-  pref = 1/3./H0/Om**(1/3.)/(1-Om)**(1/6.)
+  pref = 1/3./p%H0/Om**(1/3.)/(1-Om)**(1/6.)
   zz = 1.
   do i=1,Nnewton
     Dl = pref*(1 + zz)*(Btild0(1) - Btilde(1./6._prec,1./3._prec,(1 - Om)/(1 - Om + Om*(1 + zz)**3)))
-    dDl = Dl/(1 + zz) + (1 + zz)/(H0*Sqrt(1 + Om*(-1 + (1 + zz)**3)))
+    dDl = Dl/(1 + zz) + (1 + zz)/(p%H0*Sqrt(1 + Om*(-1 + (1 + zz)**3)))
 
     zz = zz - (Dl-d)/dDL
   enddo
@@ -311,6 +314,32 @@ contains
   p%beta11 = v(10)
   END FUNCTION R2P_PLP_POW_BETA
 
+  PURE FUNCTION R2P_PLP_FLAT_PLANCK(V) result(p)
+  real(kind=prec), intent(in) :: v(:)
+  type(para) :: p
+  p%mmin = v(1)
+  p%dm   = v(2)
+  p%mmax = v(3)
+  p%mum  = v(4)
+  p%sm   = v(5)
+  p%alpha= v(6)
+  p%lp   = v(7)
+  p%h0   = v(8)
+  END FUNCTION R2P_PLP_FLAT_PLANCK
+
+  PURE FUNCTION R2P_PLP_POW_PLANCK(V) result(p)
+  real(kind=prec), intent(in) :: v(:)
+  type(para) :: p
+  p%mmin = v(1)
+  p%dm   = v(2)
+  p%mmax = v(3)
+  p%mum  = v(4)
+  p%sm   = v(5)
+  p%alpha= v(6)
+  p%lp   = v(7)
+  p%k    = v(8)
+  p%h0   = v(9)
+  END FUNCTION R2P_PLP_POW_PLANCK
                    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                    !!                             !!
                    !!     PULS. PAIR. INST. SN    !!
@@ -650,6 +679,19 @@ contains
   p%beta21 = v(14)
   END FUNCTION R2P_PPISN_BETA
 
+  PURE FUNCTION R2P_PPISN_PLANCK(V) result(p)
+  real(kind=prec), intent(in) :: v(:)
+  type(para) :: p
+  p%mmin = v(1)
+  p%dm   = v(2)
+  p%mgap = v(3)
+  p%a    = v(4)
+  p%b    = v(5)
+  p%d    = v(6)
+  p%lam21= 10**v(7)
+  p%lam12= 10**v(8)
+  p%h0   = v(9)
+  END FUNCTION R2P_PPISN_PLANCK
 
                    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                    !!                             !!
@@ -687,6 +729,35 @@ contains
       m%spin(2,1)%f => trivial_spin
       m%spin(2,2)%f => trivial_spin
       m%r2p => r2p_plp_pow
+      m%smooth => smooth_exp
+      m%smoothint => smooth_expint
+      m%smooth_c = "tan"
+      m%norms = .false.
+
+    case('plp+flat+planck+trivial')
+      m%ndim = 8
+      m%primary => plp_mf
+      m%secondary => flatm
+      m%redshift => redshift_planck
+      m%spin(1,1)%f => trivial_spin
+      m%spin(1,2)%f => trivial_spin
+      m%spin(2,1)%f => trivial_spin
+      m%spin(2,2)%f => trivial_spin
+      m%r2p => r2p_plp_flat_planck
+      m%smooth => smooth_tanh
+      m%smoothint => smooth_expint
+      m%smooth_c = "tan"
+      m%norms = .false.
+    case('plp+pow+planck+trivial')
+      m%ndim = 9
+      m%primary => plp_mf
+      m%secondary => powm
+      m%redshift => redshift_planck
+      m%spin(1,1)%f => trivial_spin
+      m%spin(1,2)%f => trivial_spin
+      m%spin(2,1)%f => trivial_spin
+      m%spin(2,2)%f => trivial_spin
+      m%r2p => r2p_plp_pow_planck
       m%smooth => smooth_exp
       m%smoothint => smooth_expint
       m%smooth_c = "tan"
@@ -749,6 +820,22 @@ contains
       m%spin(2,1)%f => trivial_spin
       m%spin(2,2)%f => trivial_spin
       m%r2p => r2p_ppisn
+      m%smooth => smooth_exp
+      m%smoothint => smooth_expint
+      m%smooth_c = "tan"
+      m%norms = .true.
+    case("ppisn+planck+trivial")
+      m%ndim = 9
+      m%primary => ppisn_mf1g
+      m%primaryM2 => ppisn_mf2g
+      m%secondary => ppisn_m2_phys
+      m%secondary_c = "phys"
+      m%redshift => redshift_planck
+      m%spin(1,1)%f => trivial_spin
+      m%spin(1,2)%f => trivial_spin
+      m%spin(2,1)%f => trivial_spin
+      m%spin(2,2)%f => trivial_spin
+      m%r2p => r2p_ppisn_planck
       m%smooth => smooth_exp
       m%smoothint => smooth_expint
       m%smooth_c = "tan"
