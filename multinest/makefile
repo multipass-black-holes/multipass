@@ -1,5 +1,5 @@
 FC=gfortran
-FFLAGS=-g -fPIC
+FFLAGS=-g -fPIC -cpp
 LD=gfortran
 LFLAGS=
 
