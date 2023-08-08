@@ -233,6 +233,15 @@ def convert_gw(fo='data.rec', base='../tmp/'):
     d = np.concatenate((d1, d2, d21, d3))
     o = np.concatenate((o1, o2, o21, o3))
 
+    print("\n".join(
+        f"{name} in [{mi}, {ma}]"
+        for name, mi, ma in zip(
+            ["m1","m2","m1D","m2D","rs ", "ld ", "s1 ", "s2 "],
+            np.min(d, axis=0),
+            np.max(d, axis=0),
+        )
+    ))
+
     with open(fo, 'wb') as fp:
         write_record(fp, 'i', [len(d), len(o)])
         write_record(fp, 'i', o)
