@@ -25,7 +25,7 @@
     real(kind=prec) :: mgap=0, a=0, b=0, d=0
 
     ! Needed for spin
-    real(kind=prec) :: alpha11=0, alpha12=0, alpha21=0, beta11=0, beta12=0, beta21=0
+    real(kind=prec) :: alpha1=0, alpha2=0, beta1=0, beta2=0
 
     ! Smooth function
     procedure(smoothfn), pointer, nopass :: sf, sfint
@@ -111,32 +111,37 @@ contains
   trivial_spin = 1.
   END FUNCTION TRIVIAL_SPIN
 
+  PURE FUNCTION BETA_SPIN(chi, alpha, beta)
+  real(kind=prec), intent(in) :: chi(:), alpha, beta
+  real(kind=prec) :: beta_spin(size(chi))
+
+  beta_spin = chi**(alpha-1) * (1-chi)**(beta-1) * gamma(alpha+beta) &
+    / gamma(alpha) / gamma(beta)
+
+  END FUNCTION BETA_SPIN
+
   PURE FUNCTION BETA_SPIN_11(chi1, chi2, P)
   real(kind=prec), intent(in) :: chi1(:), chi2(:)
   type(para), intent(in) :: p
   real(kind=prec) :: beta_spin_11(size(chi1))
-
-  beta_spin_11 = chi1**(p%alpha11-1) * (1-chi1)**(p%beta11-1) &
-               * chi2**(p%alpha11-1) * (1-chi2)**(p%beta11-1) &
-               * gamma(p%alpha11+p%beta11)**2 / gamma(p%alpha11)**2 / gamma(p%beta11)**2
+  beta_spin_11 = beta_spin(chi1, p%alpha1, p%beta1) &
+               * beta_spin(chi2, p%alpha1, p%beta1)
   END FUNCTION BETA_SPIN_11
+
   PURE FUNCTION BETA_SPIN_12(chi1, chi2, P)
   real(kind=prec), intent(in) :: chi1(:), chi2(:)
   type(para), intent(in) :: p
   real(kind=prec) :: beta_spin_12(size(chi1))
-
-  beta_spin_12 = chi1**(p%alpha12-1) * (1-chi1)**(p%beta12-1) &
-               * chi2**(p%alpha12-1) * (1-chi2)**(p%beta12-1) &
-               * gamma(p%alpha12+p%beta12)**2 / gamma(p%alpha12)**2 / gamma(p%beta12)**2
+  beta_spin_12 = beta_spin(chi1, p%alpha1, p%beta1) &
+               * beta_spin(chi2, p%alpha2, p%beta2)
   END FUNCTION BETA_SPIN_12
+
   PURE FUNCTION BETA_SPIN_21(chi1, chi2, P)
   real(kind=prec), intent(in) :: chi1(:), chi2(:)
   type(para), intent(in) :: p
   real(kind=prec) :: beta_spin_21(size(chi1))
-
-  beta_spin_21 = chi1**(p%alpha21-1) * (1-chi1)**(p%beta21-1) &
-               * chi2**(p%alpha21-1) * (1-chi2)**(p%beta21-1) &
-               * gamma(p%alpha21+p%beta21)**2 / gamma(p%alpha21)**2 / gamma(p%beta21)**2
+  beta_spin_21 = beta_spin(chi1, p%alpha2, p%beta2) &
+               * beta_spin(chi2, p%alpha1, p%beta1)
   END FUNCTION BETA_SPIN_21
 
                    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -250,8 +255,8 @@ contains
   p%lp   = v(7)
 
   ! Spin
-  p%alpha11 = v(8)
-  p%beta11 = v(9)
+  p%alpha1 = v(8)
+  p%beta1 = v(9)
   END FUNCTION R2P_PLP_FLAT_BETA
 
   PURE FUNCTION R2P_PLP_POW_BETA(V) result(p)
@@ -267,8 +272,8 @@ contains
   p%k    = v(8)
 
   ! Spin
-  p%alpha11 = v(9)
-  p%beta11 = v(10)
+  p%alpha1 = v(9)
+  p%beta1 = v(10)
   END FUNCTION R2P_PLP_POW_BETA
 
                    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -602,12 +607,10 @@ contains
   p%lam12= 10**v(8)
 
   ! Spin
-  p%alpha11 = v(9)
-  p%beta11 = v(10)
-  p%alpha12 = v(11)
-  p%beta12 = v(12)
-  p%alpha21 = v(13)
-  p%beta21 = v(14)
+  p%alpha1 = v(9)
+  p%beta1 = v(10)
+  p%alpha2 = v(11)
+  p%beta2 = v(12)
   END FUNCTION R2P_PPISN_BETA
 
 
