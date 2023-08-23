@@ -228,7 +228,7 @@ contains
   do j=1,size(d)
     dmat(j, :) = tab
   enddo
-  y = ((d/299792.458)/p%H0-750)/750.
+  y = ((d/299792.458)*p%H0-750)/750.
 
   do j = n, 3, -1
     dmat(:, j-1) = dmat(:, j-1) + 2*y(:)*dmat(:, j)
@@ -924,6 +924,7 @@ contains
   SUBROUTINE TEST
   real(kind=prec), dimension(6) :: mtest, ans
   real(kind=prec), dimension(25) :: chi1test, chi2test, chians
+  real(kind=prec), dimension(6) :: m1dtest, m2dtest, m1stest, m2stest, ztest, dtest
   real(kind=prec) :: diff
   type(para) :: p
   real(kind=prec) :: BT(0:size(mtest))
@@ -1126,6 +1127,18 @@ contains
        0.05144772095095936,0.,0.,0.,0.,0.,0. /)
   print*, 'spin_21', sum(abs(chians - beta_spin_21(chi1test, chi2test, p)))
 
+  ! test redshift
+  p%H0 = 70
+  m1dtest = (/ 1.,11., 20., 30., 40., 100. /)
+  m2dtest = (/ 0.2,10., 15., 3., 33., 80. /)
+  dtest = (/ 459.9190751959335, 2165.352153582382, 86.95879617595057, &
+        18249.0848891852, 32310.127331891996, 45016.503681422204 /)
+  ztest = (/ 0.1, 0.4, 0.02, 2.3, 3.7, 4.9 /)
+  ! real(kind=prec), dimension(6) :: m1dtest, m2dtest, m1stest, m2stest, z, d
+  call redshift_planck(m1dtest, m2dtest, m1stest, m2stest, ztest, dtest, p)
+  print*, 'm1D -> m1S', sum(abs(m1stest / (/ 0.909091, 7.85714, 19.6078, 9.09091, 8.51064, 16.9492 /) - 1)) / 6.
+  print*, 'm2D -> m2S', sum(abs(m2stest / (/ 0.181818, 7.14286, 14.7059, 0.909091, 7.02128, 13.5593 /) - 1)) / 6.
+  print*, abs(m2stest / (/ 0.181818, 7.14286, 14.7059, 0.909091, 7.02128, 13.5593 /) - 1)
 
   END SUBROUTINE TEST
 
