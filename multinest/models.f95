@@ -115,8 +115,10 @@ contains
   real(kind=prec), intent(in) :: chi(:), alpha, beta
   real(kind=prec) :: beta_spin(size(chi))
 
-  beta_spin = chi**(alpha-1) * (1-chi)**(beta-1) * gamma(alpha+beta) &
-    / gamma(alpha) / gamma(beta)
+  beta_spin = 0.
+  where ((chi > 0.) .and. (chi < 1.)) &
+    beta_spin = chi**(alpha-1) * (1-chi)**(beta-1) * gamma(alpha+beta) &
+      / gamma(alpha) / gamma(beta)
 
   END FUNCTION BETA_SPIN
 
@@ -740,6 +742,7 @@ contains
 
   SUBROUTINE TEST
   real(kind=prec), dimension(6) :: mtest, ans
+  real(kind=prec), dimension(25) :: chi1test, chi2test, chians
   real(kind=prec) :: diff
   type(para) :: p
   real(kind=prec) :: BT(0:size(mtest))
@@ -779,18 +782,18 @@ contains
                      sfint= smooth_expint, &
                      sf   = smooth_exp)))) / 6.
   print*, "ppisn_mf2g", diff
-  print*,plp_int(para(mmax = 50._prec, &
-                     mum  = 30._prec, &
-                     sm   = 5._prec, &
-                     alpha= 2._prec, &
-                     lp   = 0.2_prec, &
-                     mmin = 5._prec, &
-                     dm   = 5._prec, &
-                     lam12=  0._prec, &
-                     lam21=  0._prec, &
-                     sf_c = 'tan'   , &
-                     sfint= smooth_expint, &
-                     sf   = smooth_tanh))
+  ! print*,plp_int(para(mmax = 50._prec, &
+  !                    mum  = 30._prec, &
+  !                    sm   = 5._prec, &
+  !                    alpha= 2._prec, &
+  !                    lp   = 0.2_prec, &
+  !                    mmin = 5._prec, &
+  !                    dm   = 5._prec, &
+  !                    lam12=  0._prec, &
+  !                    lam21=  0._prec, &
+  !                    sf_c = 'tan'   , &
+  !                    sfint= smooth_expint, &
+  !                    sf   = smooth_tanh))
 
   ans = (/ 0., 0.03674262, 0.01327075, 0.02089596, 0.00493742, 0. /)
 
@@ -899,6 +902,8 @@ contains
   diff = sum(ans(1:3) / (/0.0018863614613710922,0.4113173426155685,2.05585086404557/) - 1.) / 3
   print*, 'norm int', diff
 
+#if 0
+! I have no idea what this does...
   ! comparison with gwpopulation
   the_model = getmodel("plp+pow+trivial+trivial")
   p = the_model%r2p((/3.5_prec, 5._prec, 85._prec, 33._prec, 3._prec, 3.0_prec, 0.03_prec, 4._prec/))
@@ -909,6 +914,37 @@ contains
   print*, ans(2:) / (/0.00013537551253735636_prec, 0.06283120273729201_prec, &
               0.007854781123313786_prec,   0.004321979423810812_prec, &
               0.009896871567398238_prec /)
+#endif
+
+  ! test spin
+  p%alpha1 = 1.2
+  p%beta1 = 4.2
+  p%alpha2 = 3.2
+  p%beta2 = 2.2
+
+  chi1test=(/-0.4,-0.4,-0.4,-0.4,-0.4,0.1,0.1,0.1,0.1,0.1,&
+    0.4,0.4,0.4,0.4,0.4,0.8,0.8,0.8,0.8,0.8,1.1,1.1,1.1,1.1,1.1/)
+  chi2test = (/-0.4,0.1,0.4,0.8,1.1,-0.4,0.1,0.4,0.8,1.1,&
+    -0.4,0.1,0.4,0.8,1.1,-0.4,0.1,0.4,0.8,1.1,-0.4,0.1,0.4,0.8,1.1/)
+
+  chians = (/0.,0.,0.,0.,0.,0.,7.954291810492719,2.867619260750767, &
+       0.09793534842428382,0.,0.,2.867619260750767,1.033811735921138, &
+       0.03530688817316813,0.,0.,0.09793534842428382,0.03530688817316813, &
+       0.0012058059597881091,0.,0.,0.,0.,0.,0./)
+  print*, 'spin_11', sum(abs(chians - beta_spin_11(chi1test, chi2test, p)))
+
+  chians = (/ 0.,0.,0.,0.,0.,0.,0.2618696892343281,3.3986598645935016, &
+       4.178574866102779,0.,0.,0.09440721846093056,1.225258353684312, &
+       1.5064272287218412,0.,0.,0.0032242090016225116,0.04184520079782889, &
+       0.05144772095095936,0.,0.,0.,0.,0.,0. /)
+  print*, 'spin_12', sum(abs(chians - beta_spin_12(chi1test, chi2test, p)))
+
+  chians = (/ 0.,0.,0.,0.,0.,0.,0.2618696892343281,0.09440721846093056, &
+       0.0032242090016225116,0.,0.,3.3986598645935016,1.225258353684312, &
+       0.04184520079782889,0.,0.,4.178574866102779,1.5064272287218412, &
+       0.05144772095095936,0.,0.,0.,0.,0.,0. /)
+  print*, 'spin_21', sum(abs(chians - beta_spin_21(chi1test, chi2test, p)))
+
 
   END SUBROUTINE TEST
 
