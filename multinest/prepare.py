@@ -24,17 +24,26 @@ def write_record(fp, typ, content):
     fp.write(struct.pack('<I', len(body)))
 
 
-def convert_injection(ifar_find=1, fi='../endo3_mixture-LIGO-T2100113-v12.hdf5', fo='inj.rec'):
+def convert_injection(ifar_find=1, fi='../endo3_mixture-LIGO-T2100113-v12.hdf5', fo='inj.rec', version=3):
     with h5py.File(fi, 'r') as f:
-        mask = [
-            np.array(f['injections/ifar_gstlal']) > ifar_find,
-            np.array(f['injections/ifar_pycbc_bbh']) > ifar_find
-        ]
-        if 'injections/ifar_pycbc_full' in f:
-            mask.append(
+        if version == 2:
+            mask = (
+                np.array(f['injections/ifar_gstlal']) > ifar_find
+            ) & (
                 np.array(f['injections/ifar_pycbc_full']) > ifar_find
+            ) & (
+                np.array(f['injections/ifar_pycbc_bbh']) > ifar_find
             )
-        mask = np.all(mask, axis=0)
+        elif version == 3:
+            mask = [
+                np.array(f['injections/ifar_gstlal']) > ifar_find,
+                np.array(f['injections/ifar_pycbc_bbh']) > ifar_find
+            ]
+            if 'injections/ifar_pycbc_full' in f:
+                mask.append(
+                    np.array(f['injections/ifar_pycbc_full']) > ifar_find
+                )
+            mask = np.all(mask, axis=0)
         m1 = f['injections/mass1_source'][mask]
         m2 = f['injections/mass2_source'][mask]
         rs = f['injections/redshift'][mask]
@@ -197,7 +206,70 @@ def convert_gw(fo='data.rec', base='../tmp/', cm=True):
         write_record(fp, 'i', o)
         write_record(fp, 'd', d)
 
+    return d, o
+
+
+def plot_population(do):
+    d, o = do
+    oo = np.concatenate(([0], o))
+
+    hist([mean(d[i:j,0]) for i,j in zip(o[:-1], o[1:])], alpha=0.3)
+    hist([mean(d[i:j,1]) for i,j in zip(o[:-1], o[1:])], alpha=0.3)
+    xlabel("$M_i/M_\odot$")
+    ylabel("$n$")
+    legend([f"$M_{i}$" for i in [0,1]])
+
+
+def histogram_all(base='../tmp/', cm=True):
+    def avg(d, o):
+        oo = np.concatenate(([0], o))
+        return [np.mean(d[i:j,0]) for i,j in zip(oo[:-1], oo[1:])]
+
+    veto = get_veto()
+    d1, o1 = load_gw(veto, base, v=1, cm=cm)
+    d2, o2 = load_gw(veto, base, v=2, cm=cm)
+    d21, o21 = load_gw(veto, base, v=21, cm=cm)
+    d3, o3 = load_gw(veto, base, v=3, cm=cm)
+
+    avg1 = avg(d1,o1)
+    avg2 = avg(d2,o2)
+    avg21 = avg(d21,o21)
+    avg3 = avg(d3,o3)
+
+    # hist([avg1, avg2, avg21, avg3], stacked=True)
+    # xlabel("$M_i/M_\odot$")
+    # ylabel("$n$")
+    # legend([f'GWTC-{i}' for i in [1, 2, '2.1', 3]])
+
+    open('avg.txt', 'w').write('\n'.join([
+        ','.join(str(i) for i in avg1),
+        ','.join(str(i) for i in avg2),
+        ','.join(str(i) for i in avg21),
+        ','.join(str(i) for i in avg3)
+    ]))
+
+def convert_gw_201014533(fo='data.rec', base='../tmp/', cm=True):
+    veto=set(['170817','190425','190814'])
+    veto.update([
+        '190426_152155',
+        '190719_215514',
+        '190909_114149'
+    ])
+    d1, o1 = load_gw(veto, base, v=1, cm=cm)
+    d2, o2 = load_gw(veto, base, v=2, cm=cm)
+    o2 += len(d1)
+
+    d = np.concatenate((d1, d2))
+    o = np.concatenate((o1, o2))
+
+    with open(fo, 'wb') as fp:
+        write_record(fp, 'i', [len(d), len(o)])
+        write_record(fp, 'i', o)
+        write_record(fp, 'd', d)
+
 
 if __name__ == '__main__':
     convert_injection()
+    convert_injection(fi='../o3a_bbhpop_inj_info.hdf', fo='inj-201014533.rec', version=2)
+    convert_gw_201014533('data-201014533.rec')
     convert_gw()

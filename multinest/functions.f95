@@ -38,9 +38,9 @@ contains
   PURE FUNCTION BTILDE(A, B, Z)
   real(kind=prec), intent(in) :: a, b
   real(kind=prec), intent(in) :: z(:)
-  real(kind=prec) :: btilde(size(z))
-  integer, parameter :: N = 10
-  integer k, kfac
+  real(kind=prec) :: btilde(size(z)), kfac
+  integer, parameter :: N = 20
+  integer k
   real(kind=prec) :: gb, zk(size(z))
 
   gb = gamma(1-b)
@@ -102,6 +102,104 @@ contains
   real(kind=prec) :: smooth_erf(size(m))
   smooth_erf = 0.5 * erf( 4 * (m-mi-dm/2) / dm ) + 0.5
   END FUNCTION SMOOTH_ERF
+
+
+  PURE FUNCTION LVC_INT(X)
+  ! This returns
+  !  /\ y                         /\ y                1
+  !  |    dx  Slvc(mmin+x dm) =   |    dx -------------------------
+  ! \/  0                        \/  0     1 - exp((1-2x)/(x-x^2))
+  !
+  real(kind=prec), intent(in) :: x(:)
+  real(kind=prec) :: lvc_int(size(x))
+
+  real(kind=prec) :: y(size(x))
+  integer, parameter :: n = 31
+  real(kind=prec) :: d(size(x), n)
+  integer j
+  real(kind=prec), parameter :: tab(n) = (/ &
+    0.16790870845090712667_prec,  &
+    0.24999999999999999714_prec,  &
+    0.090025770283039018322_prec,  &
+    0._prec,  &
+    -0.0086900366867500027511_prec,  &
+    0._prec,  &
+    0.00060381235790050824993_prec,  &
+    0._prec,  &
+    0.00022998828036085831279_prec,  &
+    0._prec,  &
+    -0.000078972992026240712111_prec,  &
+    0._prec,  &
+    -5.3118908386568023622e-6_prec,  &
+    0._prec,  &
+    6.0803996989299871997e-6_prec,  &
+    0._prec,  &
+    5.0847562954713294469e-7_prec,  &
+    0._prec,  &
+    -4.4499957697981702844e-7_prec,  &
+    0._prec,  &
+    -1.4537309204451550916e-7_prec,  &
+    0._prec,  &
+    1.175946802213709722e-8_prec,  &
+    0._prec,  &
+    2.8726825067562003393e-8_prec,  &
+    0._prec,  &
+    8.3072230051403210069e-9_prec,  &
+    0._prec,  &
+    -2.9478257498685722721e-9_prec,  &
+    0._prec,  &
+    -2.2149737143110270241e-9_prec /)
+
+  do j=1,size(x)
+    d(j, :) = tab
+  enddo
+  y = -1+2*x
+
+  do j = n, 3, -1
+    d(:, j-1) = d(:, j-1) + 2*y(:)*d(:, j)
+    d(:, j-2) = d(:, j-2) - d(:, j)
+  end do
+  lvc_int = d(:, 1)+y(:)*d(:, 2)
+
+  END FUNCTION LVC_INT
+
+  PURE FUNCTION ERF_INT(X)
+  ! This returns
+  !  /\ y                         /\ y     1  +-              -+
+  !  |    dx  Serf(mmin+x dm) =   |    dx --- |  1 - Erf(2-4x) |
+  ! \/  0                        \/  0     2  +-              -+
+  !
+  real(kind=prec), intent(in) :: x(:)
+  real(kind=prec) :: erf_int(size(x))
+  real(kind=prec), parameter :: e4 = exp(-4.)
+  real(kind=prec), parameter :: erf2 = 2*erf(2.)
+  real(kind=prec), parameter :: sqpi = 1/sqrt(pi)
+
+
+  erf_int = (-e4 + exp(-4 * (1-2*x)**2 )) * sqpi &
+          + 4 * x - erf2 + (2-4*x) * erf(2-4*x)
+  erf_int = erf_int / 8
+
+  END FUNCTION ERF_INT
+
+
+  PURE FUNCTION SMOOTH_EXPint(M, MI, DM)
+  implicit none
+  real(kind=prec), intent(in) :: m(:)
+  real(kind=prec), intent(in) :: mi, dm
+  real(kind=prec) :: smooth_expint(size(m))
+  smooth_expint = dm * lvc_int((m - mi)/dm)
+  END FUNCTION SMOOTH_EXPINT
+
+
+  PURE FUNCTION SMOOTH_ERFint(M, MI, DM)
+  implicit none
+  real(kind=prec), intent(in) :: m(:)
+  real(kind=prec), intent(in) :: mi, dm
+  real(kind=prec) :: smooth_erfint(size(m))
+  smooth_erfint = dm * erf_int((m - mi)/dm)
+  END FUNCTION SMOOTH_ERFINT
+
 
                           !!!!!!!!!!!!!!!!!!!!!!
                             END MODULE functions

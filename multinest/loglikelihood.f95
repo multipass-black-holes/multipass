@@ -125,6 +125,7 @@ contains
            lam12=  0._prec, &
            lam21=  0._prec, &
            lam22=  0._prec, &
+           sfint= smooth_expint, &
            sf   = smooth_tanh)
 
   m = getmodel('plp+pow+trivial+trivial')
@@ -154,6 +155,21 @@ contains
 
   ans = ll(the_model, p) / -449.972
   print*,'ans',ans
+
+  the_model = getmodel('ppisn+trivial+trivial')
+  p = the_model%r2p((/2.53325764e+00_prec,& ! mmax
+                      2.21172743e-02_prec,& ! dm
+                      4.76023054e+01_prec,& ! mgap
+                      4.35632844e-01_prec,& ! a
+                      3.22931846e-02_prec,& ! b
+                      4.09565979e+00_prec,& ! d
+                     -5.39496671e+00_prec,&
+                     -5.33128390e-01_prec,&
+                     -5.02651228e+00_prec/))
+  p%sf => the_model%smooth
+  p%sfint => the_model%smoothint
+  ans = ll(the_model, p)
+  print*, 'x',ans
 
   END SUBROUTINE TEST
 

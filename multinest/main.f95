@@ -68,6 +68,7 @@ contains
   cube = min_val(1:ndim) + cube * (max_val(1:ndim) - min_val(1:ndim))
   p = the_model%r2p(cube)
   p%sf => the_model%smooth
+  p%sfint => the_model%smoothint
   p%sf_c = the_model%smooth_c
 
   lnew = ll(the_model, p)
@@ -101,6 +102,8 @@ contains
       print*, " * [m]odel: ", trim(the_model%model_name)
       print*, "    - plp+flat+trivial+trivial"
       print*, "    - plp+pow+trivial+trivial"
+      print*, "    - ppisn+flat+trivial+trivial"
+      print*, "    - ppisn+trivial+trivial"
       print*, " * [n]umber of live points: ", np
       print*, " * [t]olerance (defines stopping)", tol
       print*, " * [e]fr, require efficency", efr
