@@ -228,7 +228,7 @@ contains
   do j=1,size(d)
     dmat(j, :) = tab
   enddo
-  y = (d/p%H0-750)/750.
+  y = ((d/299792.458)/p%H0-750)/750.
 
   do j = n, 3, -1
     dmat(:, j-1) = dmat(:, j-1) + 2*y(:)*dmat(:, j)
