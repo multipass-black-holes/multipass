@@ -1,5 +1,5 @@
 FC=gfortran
-FFLAGS=-g -fPIC -cpp
+FFLAGS=-g -fPIC -cpp -J .obj -I .obj
 LD=gfortran
 LFLAGS=
 
@@ -16,7 +16,7 @@ F2PY=f2py
 
 EXT_SUFFIX := $(shell python3-config --extension-suffix)
 
-OBJ=models.o functions.o loglikelihood.o
+OBJ=.obj/models.o .obj/functions.o .obj/loglikelihood.o
 
 FFLAGS+=-IMultiNest/modules/
 LFLAGS+=-llapack -lblas
@@ -42,21 +42,21 @@ MultiNest/modules/nested.mod: MultiNest/build/Makefile
 MultiNest/lib/libmultinest$(MPISUFFIX).a: MultiNest/build/Makefile
 	make -C MultiNest/build
 
-%.mod %.o: %.f95
-	$(FC) $(FFLAGS) -c $<
+.obj/%.mod .obj/%.o: src/%.f95
+	$(FC) $(FFLAGS) -o $(@:.mod=.o) -c $<
 
-models.o: functions.mod
-loglikelihood.o: models.mod
-test.o: models.mod loglikelihood.mod
-main.o: loglikelihood.mod MultiNest/modules/nested.mod
+.obj/models.o: .obj/functions.mod
+.obj/loglikelihood.o: .obj/models.mod
+.obj/test.o: .obj/models.mod .obj/loglikelihood.mod
+.obj/main.o: .obj/loglikelihood.mod MultiNest/modules/nested.mod
 
-test: test.o $(OBJ)
+test: .obj/test.o $(OBJ)
 	$(LD) $(LFLAGS) -o $@ $^
-main: main.o $(OBJ) MultiNest/lib/libmultinest$(MPISUFFIX).a
+main: .obj/main.o $(OBJ) MultiNest/lib/libmultinest$(MPISUFFIX).a
 	$(LD)  -o $@ $^ $(LFLAGS)
 
-interface$(EXT_SUFFIX): interface.f95 loglikelihood.o
-	$(F2PY) -m interface -c models.o functions.o loglikelihood.o $<
+interface$(EXT_SUFFIX): src/interface.f95 .obj/loglikelihood.o
+	$(F2PY) -m interface -I.obj -c .obj/models.o .obj/functions.o .obj/loglikelihood.o $<
 
 clean:
-	rm -fr *.o *.mod test main MultiNest/build/{CMake*,cmake*,Makefile,src} *.so
+	rm -fr .obj/*.o .obj/*.mod test main MultiNest/build/{CMake*,cmake*,Makefile,src} *.so
