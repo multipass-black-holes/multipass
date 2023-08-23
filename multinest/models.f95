@@ -31,6 +31,9 @@
     procedure(smoothfn), pointer, nopass :: sf, sfint
     character(len=3) :: sf_c
 
+    ! Needed for H0
+    real(kind=prec) :: H0 = 100.
+
     real(kind=prec) :: lam21, lam12
   END TYPE PARA
 
@@ -52,13 +55,13 @@
       real(kind=prec) :: mass2fn(size(m1))
     END FUNCTION MASS2FN
 
-    PURE FUNCTION REDSHIFTFN(Z, P)
+    PURE SUBROUTINE REDSHIFTFN(M1D, M2D, M1S, M2S, Z, D, P)
       use functions, only: prec
       import para
-      real(kind=prec), intent(in) :: z(:)
+      real(kind=prec), intent(in) :: m1d(:), m2d(:), Z(:), D(:)
+      real(kind=prec), intent(out) :: m1s(:), m2s(:)
       type(para), intent(in) :: p
-      real(kind=prec) :: redshiftfn(size(z))
-    END FUNCTION REDSHIFTFN
+    END SUBROUTINE REDSHIFTFN
 
     PURE FUNCTION SPINFN(chi1, chi2, P)
       use functions, only: prec
@@ -145,6 +148,100 @@ contains
   beta_spin_21 = beta_spin(chi1, p%alpha2, p%beta2) &
                * beta_spin(chi2, p%alpha1, p%beta1)
   END FUNCTION BETA_SPIN_21
+
+
+                   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                   !!                             !!
+                   !!          RED SHIFT          !!
+                   !!                             !!
+                   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  PURE SUBROUTINE REDSHIFT_PLANCK(M1D, M2D, M1S, M2S, Z, D, P)
+  ! This implements (4.1) of 2205.11278 to calculate the source-frame
+  ! masses from the detector-frame ones.
+  !    m_source = m_det / (1+z)
+  ! We infer the redshift z from the luminosity distance d rather than
+  ! taking the LVC value (which assumed a value of H0).
+  use functions, only: prec
+  real(kind=prec), intent(in) :: m1d(:), m2d(:), Z(:), D(:)
+  real(kind=prec), intent(out) :: m1s(:), m2s(:)
+  real(kind=prec) :: zz(size(d))
+  type(para), intent(in) :: p
+
+#if 0
+  real(kind=prec), parameter :: Om = 0.315
+  integer, parameter :: Nnewton = 10
+  real(kind=prec) :: Btild0(1), pref
+  real(kind=prec) :: Dl(size(d)), dDl(size(d))
+  integer :: i
+
+  Btild0 = Btilde(1./6._prec, 1./3._prec, (/1. - Om/))
+  pref = 1/3./p%H0/Om**(1/3.)/(1-Om)**(1/6.)
+  zz = 1.
+  do i=1,Nnewton
+    Dl = pref*(1 + zz)*(Btild0(1) - Btilde(1./6._prec,1./3._prec,(1 - Om)/(1 - Om + Om*(1 + zz)**3)))
+    dDl = Dl/(1 + zz) + (1 + zz)/(p%H0*Sqrt(1 + Om*(-1 + (1 + zz)**3)))
+
+    zz = zz - (Dl-d)/dDL
+  enddo
+
+#else
+  integer, parameter :: n = 101
+  real(kind=prec), parameter :: tab(n) = (/ &
+      +2.449725074451571e+2_prec, +2.402984917778505e+2_prec, -1.983376791903085e+0_prec, &
+      +8.410678687837400e-1_prec, -4.617175012860565e-1_prec, +2.901106847987246e-1_prec, &
+      -1.982356155300366e-1_prec, +1.434702442210064e-1_prec, -1.082887711009297e-1_prec, &
+      +8.440331729983370e-2_prec, -6.748108197259523e-2_prec, +5.507860835882244e-2_prec, &
+      -4.573358962138768e-2_prec, +3.852798259347757e-2_prec, -3.286225733776347e-2_prec, &
+      +2.833173473012838e-2_prec, -2.465547299634830e-2_prec, +2.163365616426582e-2_prec, &
+      -1.912114414856928e-2_prec, +1.701054443804677e-2_prec, -1.522108333063463e-2_prec, &
+      +1.369111449462439e-2_prec, -1.237296864630598e-2_prec, +1.122934529251696e-2_prec, &
+      -1.023074150972088e-2_prec, +9.353591315518200e-3_prec, -8.578900293022430e-3_prec, &
+      +7.891230771934678e-3_prec, -7.277938686236346e-3_prec, +6.728593484120088e-3_prec, &
+      -6.234532783641145e-3_prec, +5.788517319503729e-3_prec, -5.384461306095222e-3_prec, &
+      +5.017220056050090e-3_prec, -4.682421453006985e-3_prec, +4.376331295000271e-3_prec, &
+      -4.095744999876041e-3_prec, +3.837899980053599e-3_prec, -3.600404332050311e-3_prec, &
+      +3.381178488739660e-3_prec, -3.178407231629039e-3_prec, +2.990500031985831e-3_prec, &
+      -2.816058122475376e-3_prec, +2.653847037829824e-3_prec, -2.502773618233775e-3_prec, &
+      +2.361866674006390e-3_prec, -2.230260665037098e-3_prec, +2.107181874386663e-3_prec, &
+      -1.991936652785291e-3_prec, +1.883901389789750e-3_prec, -1.782513929408978e-3_prec, &
+      +1.687266198297885e-3_prec, -1.597697856019165e-3_prec, +1.513390808670595e-3_prec, &
+      -1.433964454517415e-3_prec, +1.359071552470690e-3_prec, -1.288394621160421e-3_prec, &
+      +1.221642792557422e-3_prec, -1.158549054695358e-3_prec, +1.098867829538089e-3_prec, &
+      -1.042372839325817e-3_prec, +9.888552227544130e-4_prec, -9.381218671219730e-4_prec, &
+      +8.899939284136260e-4_prec, -8.443055145330540e-4_prec, +8.009025118067100e-4_prec, &
+      -7.596415353453017e-4_prec, +7.203889893309238e-4_prec, -6.830202231010595e-4_prec, &
+      +6.474187716374640e-4_prec, -6.134756703705353e-4_prec, +5.810888363577894e-4_prec, &
+      -5.501625070220717e-4_prec, +5.206067310053285e-4_prec, -4.923369047458038e-4_prec, &
+      +4.652733499805787e-4_prec, -4.393409274622337e-4_prec, +4.144686834681708e-4_prec, &
+      -3.905895251832194e-4_prec, +3.676399221331066e-4_prec, -3.455596308887681e-4_prec, &
+      +3.242914408566034e-4_prec, -3.037809387178441e-4_prec, +2.839762896896669e-4_prec, &
+      -2.648280343643284e-4_prec, +2.462888987191394e-4_prec, -2.283136166295307e-4_prec, &
+      +2.108587636997299e-4_prec, -1.938826006428623e-4_prec, +1.773449257559423e-4_prec, &
+      -1.612069353800635e-4_prec, +1.454310915863971e-4_prec, -1.299809963054350e-4_prec, &
+      +1.148212706475193e-4_prec, -9.991743999043710e-5_prec, +8.523582276801620e-5_prec, &
+      -7.074342346928359e-5_prec, +5.640782868275247e-5_prec, -4.219710615488578e-5_prec, &
+      +2.807970566107942e-5_prec, -1.402436216219212e-5_prec /)
+  real(kind=prec) :: y(size(d)), dmat(size(d),n)
+  integer j
+
+  do j=1,size(d)
+    dmat(j, :) = tab
+  enddo
+  y = (d/p%H0-750)/750.
+
+  do j = n, 3, -1
+    dmat(:, j-1) = dmat(:, j-1) + 2*y(:)*dmat(:, j)
+    dmat(:, j-2) = dmat(:, j-2) - dmat(:, j)
+  end do
+  zz = dmat(:, 1)+y(:)*dmat(:, 2)
+#endif
+
+  m1s = m1d / (1+zz)
+  m2s = m2d / (1+zz)
+
+  END SUBROUTINE REDSHIFT_PLANCK
+
 
                    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                    !!                             !!
@@ -278,6 +375,32 @@ contains
   p%beta1 = v(10)
   END FUNCTION R2P_PLP_POW_BETA
 
+  PURE FUNCTION R2P_PLP_FLAT_PLANCK(V) result(p)
+  real(kind=prec), intent(in) :: v(:)
+  type(para) :: p
+  p%mmin = v(1)
+  p%dm   = v(2)
+  p%mmax = v(3)
+  p%mum  = v(4)
+  p%sm   = v(5)
+  p%alpha= v(6)
+  p%lp   = v(7)
+  p%h0   = v(8)
+  END FUNCTION R2P_PLP_FLAT_PLANCK
+
+  PURE FUNCTION R2P_PLP_POW_PLANCK(V) result(p)
+  real(kind=prec), intent(in) :: v(:)
+  type(para) :: p
+  p%mmin = v(1)
+  p%dm   = v(2)
+  p%mmax = v(3)
+  p%mum  = v(4)
+  p%sm   = v(5)
+  p%alpha= v(6)
+  p%lp   = v(7)
+  p%k    = v(8)
+  p%h0   = v(9)
+  END FUNCTION R2P_PLP_POW_PLANCK
                    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                    !!                             !!
                    !!     PULS. PAIR. INST. SN    !!
@@ -541,16 +664,16 @@ contains
   END FUNCTION PPISN_NINT
 
   ! norms = (/lam21, lam12 /)
-  PURE FUNCTION PPISN_NORMS(D11, M1, M2, CHI1, CHI2, Z, M, P)
-  real(kind=prec), intent(in) :: D11(:), m1(:), m2(:), chi1(:), chi2(:), z(:)
+  PURE FUNCTION PPISN_NORMS(D11, M1, M2, CHI1, CHI2, M, P)
+  real(kind=prec), intent(in) :: D11(:), m1(:), m2(:), chi1(:), chi2(:)
   type(model), intent(in) :: m
   type(para), intent(in) :: p
   real(kind=prec) :: ppisn_norms(size(m1)), N(0:2)
 
   real(kind=prec), dimension(size(m1)) :: D21, D12
 
-  D21 = m%primaryM2(m1,p)*m%spin(2,1)%f(chi1, chi2,p)*m%redshift(z,p)
-  D12 = m%primary  (m1,p)*m%spin(1,2)%f(chi1, chi2,p)*m%redshift(z,p)
+  D21 = m%primaryM2(m1,p)*m%spin(2,1)%f(chi1, chi2,p)
+  D12 = m%primary  (m1,p)*m%spin(1,2)%f(chi1, chi2,p)
 
   select case(m%secondary_c)
     case('phys')
@@ -615,6 +738,19 @@ contains
   p%beta2 = v(12)
   END FUNCTION R2P_PPISN_BETA
 
+  PURE FUNCTION R2P_PPISN_PLANCK(V) result(p)
+  real(kind=prec), intent(in) :: v(:)
+  type(para) :: p
+  p%mmin = v(1)
+  p%dm   = v(2)
+  p%mgap = v(3)
+  p%a    = v(4)
+  p%b    = v(5)
+  p%d    = v(6)
+  p%lam21= 10**v(7)
+  p%lam12= 10**v(8)
+  p%h0   = v(9)
+  END FUNCTION R2P_PPISN_PLANCK
 
                    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                    !!                             !!
@@ -632,7 +768,7 @@ contains
       m%ndim = 7
       m%primary => plp_mf
       m%secondary => flatm
-      m%redshift => trivial
+      m%redshift => null()
       m%spin(1,1)%f => trivial_spin
       m%spin(1,2)%f => trivial_spin
       m%spin(2,1)%f => trivial_spin
@@ -646,7 +782,7 @@ contains
       m%ndim = 8
       m%primary => plp_mf
       m%secondary => powm
-      m%redshift => trivial
+      m%redshift => null()
       m%spin(1,1)%f => trivial_spin
       m%spin(1,2)%f => trivial_spin
       m%spin(2,1)%f => trivial_spin
@@ -657,11 +793,40 @@ contains
       m%smooth_c = "tan"
       m%norms = .false.
 
+    case('plp+flat+planck+trivial')
+      m%ndim = 8
+      m%primary => plp_mf
+      m%secondary => flatm
+      m%redshift => redshift_planck
+      m%spin(1,1)%f => trivial_spin
+      m%spin(1,2)%f => trivial_spin
+      m%spin(2,1)%f => trivial_spin
+      m%spin(2,2)%f => trivial_spin
+      m%r2p => r2p_plp_flat_planck
+      m%smooth => smooth_tanh
+      m%smoothint => smooth_expint
+      m%smooth_c = "tan"
+      m%norms = .false.
+    case('plp+pow+planck+trivial')
+      m%ndim = 9
+      m%primary => plp_mf
+      m%secondary => powm
+      m%redshift => redshift_planck
+      m%spin(1,1)%f => trivial_spin
+      m%spin(1,2)%f => trivial_spin
+      m%spin(2,1)%f => trivial_spin
+      m%spin(2,2)%f => trivial_spin
+      m%r2p => r2p_plp_pow_planck
+      m%smooth => smooth_exp
+      m%smoothint => smooth_expint
+      m%smooth_c = "tan"
+      m%norms = .false.
+
     case('plp+flat+trivial+beta')
       m%ndim = 7
       m%primary => plp_mf
       m%secondary => flatm
-      m%redshift => trivial
+      m%redshift => null()
       m%spin(1,1)%f => beta_spin_11
       m%spin(1,2)%f => trivial_spin
       m%spin(2,1)%f => trivial_spin
@@ -675,7 +840,7 @@ contains
       m%ndim = 8
       m%primary => plp_mf
       m%secondary => powm
-      m%redshift => trivial
+      m%redshift => null()
       m%spin(1,1)%f => beta_spin_11
       m%spin(1,2)%f => trivial_spin
       m%spin(2,1)%f => trivial_spin
@@ -692,7 +857,7 @@ contains
       m%primaryM2 => ppisn_mf2g
       m%secondary => flatm
       m%secondary_c = "flat"
-      m%redshift => trivial
+      m%redshift => null()
       m%spin(1,1)%f => trivial_spin
       m%spin(1,2)%f => trivial_spin
       m%spin(2,1)%f => trivial_spin
@@ -708,12 +873,28 @@ contains
       m%primaryM2 => ppisn_mf2g
       m%secondary => ppisn_m2_phys
       m%secondary_c = "phys"
-      m%redshift => trivial
+      m%redshift => null()
       m%spin(1,1)%f => trivial_spin
       m%spin(1,2)%f => trivial_spin
       m%spin(2,1)%f => trivial_spin
       m%spin(2,2)%f => trivial_spin
       m%r2p => r2p_ppisn
+      m%smooth => smooth_exp
+      m%smoothint => smooth_expint
+      m%smooth_c = "tan"
+      m%norms = .true.
+    case("ppisn+planck+trivial")
+      m%ndim = 9
+      m%primary => ppisn_mf1g
+      m%primaryM2 => ppisn_mf2g
+      m%secondary => ppisn_m2_phys
+      m%secondary_c = "phys"
+      m%redshift => redshift_planck
+      m%spin(1,1)%f => trivial_spin
+      m%spin(1,2)%f => trivial_spin
+      m%spin(2,1)%f => trivial_spin
+      m%spin(2,2)%f => trivial_spin
+      m%r2p => r2p_ppisn_planck
       m%smooth => smooth_exp
       m%smoothint => smooth_expint
       m%smooth_c = "tan"
@@ -725,7 +906,7 @@ contains
       m%primaryM2 => ppisn_mf2g
       m%secondary => ppisn_m2_phys
       m%secondary_c = "phys"
-      m%redshift => trivial
+      m%redshift => null()
       m%spin(1,1)%f => beta_spin_11
       m%spin(1,2)%f => beta_spin_12
       m%spin(2,1)%f => beta_spin_21

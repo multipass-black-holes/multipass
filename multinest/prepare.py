@@ -37,6 +37,9 @@ def convert_injection(ifar_find=1, fi='../endo3_mixture-LIGO-T2100113-v12.hdf5',
 
             s1  = f['injections/spin1z'][mask]
             s2  = f['injections/spin2z'][mask]
+
+            m1D = f['injections/mass1_source'][mask] * (1+f['injections/redshift'][mask])
+            m2D = f['injections/mass2_source'][mask] * (1+f['injections/redshift'][mask])
         elif version == 3:
             mask = [
                 np.array(f['injections/ifar_gstlal']) > ifar_find,
@@ -50,14 +53,19 @@ def convert_injection(ifar_find=1, fi='../endo3_mixture-LIGO-T2100113-v12.hdf5',
 
             s1 = np.sqrt(f['injections/spin1x'][mask]**2 + f['injections/spin1y'][mask]**2 + f['injections/spin1z'][mask]**2)
             s2 = np.sqrt(f['injections/spin2x'][mask]**2 + f['injections/spin2y'][mask]**2 + f['injections/spin2z'][mask]**2)
+
+            m1D = f['injections/mass1'][mask]
+            m2D = f['injections/mass2'][mask]
         m1 = f['injections/mass1_source'][mask]
         m2 = f['injections/mass2_source'][mask]
         rs = f['injections/redshift'][mask]
+        ld = f['injections/distance'][mask]
         s1z = f['injections/spin1z'][mask]
         s2z = f['injections/spin2z'][mask]
 
         dat = np.column_stack((
-            m1, m2, rs,
+            m1, m2, m1D, m2D,
+            rs, ld,
             s1, s2
         ))
 
@@ -66,7 +74,7 @@ def convert_injection(ifar_find=1, fi='../endo3_mixture-LIGO-T2100113-v12.hdf5',
         write_record(fp, 'd', dat)
 
 
-def load_gw(veto, base='../tmp/', v=2, cm=True):
+def load_gw(veto, base='../tmp/', v=2):
     if v == 1:
         pat = re.compile(r'GW([\d_]*)_GWTC-1.hdf5')
     elif v == 2:
@@ -85,7 +93,10 @@ def load_gw(veto, base='../tmp/', v=2, cm=True):
 
     m1 = np.array([])
     m2 = np.array([])
+    m1D = np.array([])
+    m2D = np.array([])
     rs = np.array([])
+    ld = np.array([])
     s1 = np.array([])
     s2 = np.array([])
 
@@ -101,13 +112,12 @@ def load_gw(veto, base='../tmp/', v=2, cm=True):
                 m1i = d['m1_detector_frame_Msun']
                 m2i = d['m2_detector_frame_Msun']
 
-                if cm:
-                    m1i /= (1+rsi)
-                    m2i /= (1+rsi)
-
-                m1 = np.concatenate((m1, m1i))
-                m2 = np.concatenate((m2, m2i))
+                m1 = np.concatenate((m1, m1i / (1+rsi)))
+                m2 = np.concatenate((m2, m2i / (1+rsi)))
+                m1D = np.concatenate((m1D, m1i))
+                m2D = np.concatenate((m2D, m2i))
                 rs = np.concatenate((rs, rsi))
+                ld = np.concatenate((ld, d['luminosity_distance_Mpc']))
                 # ce = np.concatenate((
                 #     ce,
                 #     (
@@ -123,27 +133,36 @@ def load_gw(veto, base='../tmp/', v=2, cm=True):
                 # chi_eff = (spin1 * m1 * cos1 + spin2 * m2 * cos2)/(m1+m2)
                 m1 = np.concatenate((m1, d['mass_1_source']))
                 m2 = np.concatenate((m2, d['mass_2_source']))
+                m1D = np.concatenate((m1D, d['mass_1']))
+                m2D = np.concatenate((m2D, d['mass_2']))
                 rs = np.concatenate((rs, d['redshift']))
+                ld = np.concatenate((ld, d['luminosity_distance']))
                 s1 = np.concatenate((s1, np.sqrt(d['spin_1x']**2 + d['spin_1y']**2 + d['spin_1z']**2)))
                 s2 = np.concatenate((s2, np.sqrt(d['spin_2x']**2 + d['spin_2y']**2 + d['spin_2z']**2)))
             elif v == 21:
                 d = f['PrecessingSpinIMRHM/posterior_samples']
                 m1 = np.concatenate((m1, d['mass_1_source']))
                 m2 = np.concatenate((m2, d['mass_2_source']))
+                m1D = np.concatenate((m1D, d['mass_1']))
+                m2D = np.concatenate((m2D, d['mass_2']))
                 rs = np.concatenate((rs, d['redshift']))
+                ld = np.concatenate((ld, d['luminosity_distance']))
                 s1 = np.concatenate((s1, np.sqrt(d['spin_1x']**2 + d['spin_1y']**2 + d['spin_1z']**2)))
                 s2 = np.concatenate((s2, np.sqrt(d['spin_2x']**2 + d['spin_2y']**2 + d['spin_2z']**2)))
             elif v == 3:
                 d = f['C01:Mixed/posterior_samples']
                 m1 = np.concatenate((m1, d['mass_1_source']))
                 m2 = np.concatenate((m2, d['mass_2_source']))
+                m1D = np.concatenate((m1D, d['mass_1']))
+                m2D = np.concatenate((m2D, d['mass_2']))
                 rs = np.concatenate((rs, d['redshift']))
+                ld = np.concatenate((ld, d['luminosity_distance']))
                 s1 = np.concatenate((s1, np.sqrt(d['spin_1x']**2 + d['spin_1y']**2 + d['spin_1z']**2)))
                 s2 = np.concatenate((s2, np.sqrt(d['spin_2x']**2 + d['spin_2y']**2 + d['spin_2z']**2)))
 
             offsets.append(len(m1))
 
-    return np.column_stack((m1, m2, rs, s1, s2)), np.array(offsets)
+    return np.column_stack((m1, m2, m1D, m2D, rs, ld, s1, s2)), np.array(offsets)
 
 
 def get_veto():
@@ -198,21 +217,30 @@ def get_veto():
     return veto
 
 
-def convert_gw(fo='data.rec', base='../tmp/', cm=True):
+def convert_gw(fo='data.rec', base='../tmp/'):
     veto = get_veto()
-    d1, o1 = load_gw(veto, base, v=1, cm=cm)
+    d1, o1 = load_gw(veto, base, v=1)
 
-    d2, o2 = load_gw(veto, base, v=2, cm=cm)
+    d2, o2 = load_gw(veto, base, v=2)
     o2 += len(d1)
 
-    d21, o21 = load_gw(veto, base, v=21, cm=cm)
+    d21, o21 = load_gw(veto, base, v=21)
     o21 += len(d1) + len(d2)
 
-    d3, o3 = load_gw(veto, base, v=3, cm=cm)
+    d3, o3 = load_gw(veto, base, v=3)
     o3 += len(d1) + len(d2) + len(d21)
 
     d = np.concatenate((d1, d2, d21, d3))
     o = np.concatenate((o1, o2, o21, o3))
+
+    print("\n".join(
+        f"{name} in [{mi}, {ma}]"
+        for name, mi, ma in zip(
+            ["m1","m2","m1D","m2D","rs ", "ld ", "s1 ", "s2 "],
+            np.min(d, axis=0),
+            np.max(d, axis=0),
+        )
+    ))
 
     with open(fo, 'wb') as fp:
         write_record(fp, 'i', [len(d), len(o)])
@@ -239,10 +267,10 @@ def histogram_all(base='../tmp/', cm=True):
         return [np.mean(d[i:j,0]) for i,j in zip(oo[:-1], oo[1:])]
 
     veto = get_veto()
-    d1, o1 = load_gw(veto, base, v=1, cm=cm)
-    d2, o2 = load_gw(veto, base, v=2, cm=cm)
-    d21, o21 = load_gw(veto, base, v=21, cm=cm)
-    d3, o3 = load_gw(veto, base, v=3, cm=cm)
+    d1, o1 = load_gw(veto, base, v=1)
+    d2, o2 = load_gw(veto, base, v=2)
+    d21, o21 = load_gw(veto, base, v=21)
+    d3, o3 = load_gw(veto, base, v=3)
 
     avg1 = avg(d1,o1)
     avg2 = avg(d2,o2)
@@ -268,8 +296,8 @@ def convert_gw_201014533(fo='data.rec', base='../tmp/', cm=True):
         '190719_215514',
         '190909_114149'
     ])
-    d1, o1 = load_gw(veto, base, v=1, cm=cm)
-    d2, o2 = load_gw(veto, base, v=2, cm=cm)
+    d1, o1 = load_gw(veto, base, v=1)
+    d2, o2 = load_gw(veto, base, v=2)
     o2 += len(d1)
 
     d = np.concatenate((d1, d2))
