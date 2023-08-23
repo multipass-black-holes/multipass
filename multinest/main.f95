@@ -102,8 +102,11 @@ contains
       print*, " * [m]odel: ", trim(the_model%model_name)
       print*, "    - plp+flat+trivial+trivial"
       print*, "    - plp+pow+trivial+trivial"
+      print*, "    - plp+flat+trivial+beta"
+      print*, "    - plp+pow+trivial+beta"
       print*, "    - ppisn+flat+trivial+trivial"
       print*, "    - ppisn+trivial+trivial"
+      print*, "    - ppisn+trivial+beta"
       print*, " * [n]umber of live points: ", np
       print*, " * [t]olerance (defines stopping)", tol
       print*, " * [e]fr, require efficency", efr

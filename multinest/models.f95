@@ -24,11 +24,14 @@
     ! Needed for PPISN
     real(kind=prec) :: mgap=0, a=0, b=0, d=0
 
+    ! Needed for spin
+    real(kind=prec) :: alpha1=0, alpha2=0, beta1=0, beta2=0
+
     ! Smooth function
     procedure(smoothfn), pointer, nopass :: sf, sfint
     character(len=3) :: sf_c
 
-    real(kind=prec) :: lam21, lam12, lam22
+    real(kind=prec) :: lam21, lam12
   END TYPE PARA
 
 
@@ -57,12 +60,12 @@
       real(kind=prec) :: redshiftfn(size(z))
     END FUNCTION REDSHIFTFN
 
-    PURE FUNCTION SPINFN(chieff, P)
+    PURE FUNCTION SPINFN(chi1, chi2, P)
       use functions, only: prec
       import para
-      real(kind=prec), intent(in) :: chieff(:)
+      real(kind=prec), intent(in) :: chi1(:), chi2(:)
       type(para), intent(in) :: p
-      real(kind=prec) :: spinfn(size(chieff))
+      real(kind=prec) :: spinfn(size(chi1))
     END FUNCTION SPINFN
 
     PURE FUNCTION PARAFN(V)
@@ -101,6 +104,47 @@ contains
   trivial = 1.
   END FUNCTION TRIVIAL
 
+  PURE FUNCTION TRIVIAL_SPIN(chi1, chi2, P)
+  real(kind=prec), intent(in) :: chi1(:), chi2(:)
+  type(para), intent(in) :: p
+  real(kind=prec) :: trivial_spin(size(chi1))
+  trivial_spin = 1.
+  END FUNCTION TRIVIAL_SPIN
+
+  PURE FUNCTION BETA_SPIN(chi, alpha, beta)
+  real(kind=prec), intent(in) :: chi(:), alpha, beta
+  real(kind=prec) :: beta_spin(size(chi))
+
+  beta_spin = 0.
+  where ((chi > 0.) .and. (chi < 1.)) &
+    beta_spin = chi**(alpha-1) * (1-chi)**(beta-1) * gamma(alpha+beta) &
+      / gamma(alpha) / gamma(beta)
+
+  END FUNCTION BETA_SPIN
+
+  PURE FUNCTION BETA_SPIN_11(chi1, chi2, P)
+  real(kind=prec), intent(in) :: chi1(:), chi2(:)
+  type(para), intent(in) :: p
+  real(kind=prec) :: beta_spin_11(size(chi1))
+  beta_spin_11 = beta_spin(chi1, p%alpha1, p%beta1) &
+               * beta_spin(chi2, p%alpha1, p%beta1)
+  END FUNCTION BETA_SPIN_11
+
+  PURE FUNCTION BETA_SPIN_12(chi1, chi2, P)
+  real(kind=prec), intent(in) :: chi1(:), chi2(:)
+  type(para), intent(in) :: p
+  real(kind=prec) :: beta_spin_12(size(chi1))
+  beta_spin_12 = beta_spin(chi1, p%alpha1, p%beta1) &
+               * beta_spin(chi2, p%alpha2, p%beta2)
+  END FUNCTION BETA_SPIN_12
+
+  PURE FUNCTION BETA_SPIN_21(chi1, chi2, P)
+  real(kind=prec), intent(in) :: chi1(:), chi2(:)
+  type(para), intent(in) :: p
+  real(kind=prec) :: beta_spin_21(size(chi1))
+  beta_spin_21 = beta_spin(chi1, p%alpha2, p%beta2) &
+               * beta_spin(chi2, p%alpha1, p%beta1)
+  END FUNCTION BETA_SPIN_21
 
                    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                    !!                             !!
@@ -201,6 +245,38 @@ contains
   p%k    = v(8)
   END FUNCTION R2P_PLP_POW
 
+  PURE FUNCTION R2P_PLP_FLAT_BETA(V) result(p)
+  real(kind=prec), intent(in) :: v(:)
+  type(para) :: p
+  p%mmin = v(1)
+  p%dm   = v(2)
+  p%mmax = v(3)
+  p%mum  = v(4)
+  p%sm   = v(5)
+  p%alpha= v(6)
+  p%lp   = v(7)
+
+  ! Spin
+  p%alpha1 = v(8)
+  p%beta1 = v(9)
+  END FUNCTION R2P_PLP_FLAT_BETA
+
+  PURE FUNCTION R2P_PLP_POW_BETA(V) result(p)
+  real(kind=prec), intent(in) :: v(:)
+  type(para) :: p
+  p%mmin = v(1)
+  p%dm   = v(2)
+  p%mmax = v(3)
+  p%mum  = v(4)
+  p%sm   = v(5)
+  p%alpha= v(6)
+  p%lp   = v(7)
+  p%k    = v(8)
+
+  ! Spin
+  p%alpha1 = v(9)
+  p%beta1 = v(10)
+  END FUNCTION R2P_PLP_POW_BETA
 
                    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                    !!                             !!
@@ -248,6 +324,13 @@ contains
   ! returns the integral from mmin to m1 of mf_1g for all m1 in lm1;
   ! this is the denominator of the conditional probability for m2
   ! given the assumption that m1 is in 1g, i.e. (1.12)
+  !
+  !                      (1g)
+  !   /\ m            dN
+  !   |      dm      -----
+  !  \/ mmin   1      dm
+  !                     1
+  !
   PURE FUNCTION PPISN_PM2M1DEN_M11G(M, P)
   real(kind=prec), intent(in) :: m(:)
   type(para), intent(in) :: p
@@ -281,42 +364,16 @@ contains
 
   END FUNCTION PPISN_PM2M1DEN_M11G
 
-
-  PURE FUNCTION PPISN_PM2M1DEN_M11G_approx(M, P)
-  real(kind=prec), intent(in) :: m(:)
-  type(para), intent(in) :: p
-  real(kind=prec) :: ppisn_pm2m1den_m11g_approx(size(m))
-  real(kind=prec) :: t1(size(m)), t2(size(m)), t3(1)
-  logical mask(size(m))
-  real(kind=prec) :: BT(0:size(m))
-  real(kind=prec), parameter :: mfudge = 0.99
-
-  BT = Btilde(1.5_prec+p%b, p%a, [p%mmin+p%dm, m]/p%mgap)
-
-  ppisn_pm2m1den_m11g_approx = 1._prec
-
-  where((p%mmin < m) .and. (m < p%mmin + p%dm)) &
-    ppisn_pm2m1den_m11g_approx = (m - p%mmin) * ppisn_mf1g(m, p) * 0.5
-
-  mask = ((p%mmin+p%dm < m) .and. (m < p%mgap*mfudge))
-
-  t1 = 0.
-  t2 = 0.
-  where(mask) &
-    t1 = (m**(p%b+1) - (p%mmin+p%dm)**(p%b+1)) / (p%b+1)
-  where(mask) &
-    t2 = 2*p%a*p%a*p%mgap**(p%b+1) * (BT(1:size(m)) - BT(0))
-
-  t3 = ppisn_mf1g((/p%mmin + p%dm/), p) * p%dm * 0.5
-
-  where(mask) &
-    ppisn_pm2m1den_m11g_approx = (t1+t2)/mpiv + t3(1)
-
-  END FUNCTION PPISN_PM2M1DEN_M11G_approx
-
   ! returns the integral from mmin to m1 of mf_2g for all m1 in lm1;
   ! this is the denominator of the conditional probability for m2
   ! given the assumption that m1 is in 2g
+  !
+  !                      (2g)
+  !   /\ m            dN
+  !   |      dm      -----
+  !  \/ mmin   2      dm
+  !                     2
+  !
   PURE FUNCTION PPISN_PM2M1DEN_M12G(M, P)
   real(kind=prec), intent(in) :: m(:)
   type(para), intent(in) :: p
@@ -340,25 +397,6 @@ contains
 
   END FUNCTION PPISN_PM2M1DEN_M12G
 
-  PURE FUNCTION PPISN_PM2M1DEN_M12G_approx(M, P)
-  real(kind=prec), intent(in) :: m(:)
-  type(para), intent(in) :: p
-  real(kind=prec) :: ppisn_pm2m1den_m12g_approx(size(m))
-  real(kind=prec) :: mmax, vlow
-  mmax = p%mgap + p%mmin + p%dm/2
-  vlow = p%dm * 0.5
-
-  ppisn_pm2m1den_m12g_approx = 1.
-
-  where ((p%mmin < m) .and. (m < p%mmin + p%dm)) &
-    ppisn_pm2m1den_m12g_approx = (m - p%mmin) * 0.5
-  where ((p%mmin + p%dm < m) .and. (m < mmax)) &
-    ppisn_pm2m1den_m12g_approx = vlow + m
-  where ((mmax < m)) &
-    ppisn_pm2m1den_m12g_approx = vlow + mmax + ((m/mmax)**(1+p%d) - 1)*mmax/(1+p%d)
-
-  ppisn_pm2m1den_m12g_approx = ppisn_pm2m1den_m12g_approx * mpiv**p%b
-  END FUNCTION PPISN_PM2M1DEN_M12G_approx
 
   PURE FUNCTION PPISN_M2_PHYS(M1, M2, P)
   real(kind=prec), intent(in) :: m1(:), m2(:)
@@ -374,33 +412,170 @@ contains
   END FUNCTION PPISN_M2_PHYS
 
 
-  ! This calculates the correction term (1.9) with
-  ! norms = (/lam21, lam12, lam22)
-  PURE FUNCTION PPISN_NORMS(M1, M2, CHI, Z, M, P)
-  real(kind=prec), intent(in) :: m1(:), m2(:), chi(:), z(:)
+  ! We have
+  !
+  !        (1g)                  (1g)
+  !      dN      +-       -+   dN      +-          -+
+  ! P ~ -------- | M  | th |  -------- | M  | th,M  |
+  !        dM    +- 1     -+     dM    +- 2       1-+
+  !
+  !                     (1g)                  (2g)
+  !                   dN      +-       -+   dN      +-       -+
+  !    + lam    N    -------- | M  | th |  -------- | M  | th |
+  !         12   1      dM    +- 1     -+     dM    +- 2     -+
+  !
+  !                     (2g)                  (1g)
+  !                   dN      +-       -+   dN      +-       -+
+  !    + lam    N    -------- | M  | th |  -------- | M  | th |
+  !         21   2      dM    +- 1     -+     dM    +- 2     -+
+  !
+  ! This function calculates the sum of the second and third term. We
+  ! define the lam_{ij} as
+  !
+  ! lam       = N( M     in 2g  ) / N
+  !    12(21)       2(1)             tot
+  !
+  ! and now need to solve for N_1(2)
+  !
+  !                            inf            (1g)    (2g)
+  !                            /\           dN      dN
+  ! N( M   in 2g) = lam   N    |  dM  dM   -----   -----     theta(M  > M )
+  !     2              21  1  \/    1   2   dM      dM              1    2
+  !                            0              1       2
+  !
+  !                            inf            (2g)    (1g)
+  !                            /\           dN      dN
+  ! N( M   in 2g) = lam   N    |  dM  dM   -----   -----     theta(M  > M )
+  !     1              12  2  \/    1   2   dM      dM              1    2
+  !                            0              1       2
+  !
+  ! We also need an N_0 for normalisation purposes
+  !
+  !       inf            (1g)    (1g)
+  !       /\           dN      dN
+  !  N    |  dM  dM   -----   -----     theta(M  > M )
+  !   0  \/    1   2   dM      dM              1    2
+  !       0              1       2
+  !
+  ! The integrals
+  !
+  !          inf        (1g)     M        (1g)
+  !          /\       dN       /\ 1     dN
+  ! int  =   |  dM   -----     |  dM   -----
+  !    0    \/    1   dM      \/    2   dM
+  !          0          1      0          2
+  !
+  !          inf        (1g)     M        (2g)
+  !          /\       dN       /\ 1     dN
+  ! int  =   |  dM   -----     |  dM   -----
+  !    1    \/    1   dM      \/    2   dM
+  !          0          1      0          2
+  !
+  !
+  !          inf        (2g)     M        (1g)
+  !          /\       dN       /\ 1     dN
+  ! int  =   |  dM   -----     |  dM   -----
+  !    2    \/    1   dM      \/    2   dM
+  !          0          1      0          2
+  !
+  ! are returned by this function
+
+  PURE FUNCTION PPISN_NINT(p)
+  type(para), intent(in) :: p
+  integer, parameter :: Nsamples = 1000
+  integer, parameter :: Nit = 120
+  integer i
+  real(kind=prec), parameter :: linspace(1:Nsamples) = [(i / real(Nsamples), i=1,Nsamples)]
+  real(kind=prec), dimension(1:NSamples) :: M1, M2, mf1g, subInt
+  real(kind=prec) :: ppisn_nint(0:2)
+  real(kind=prec) :: bt3,btt3(1),i1,i2,i3,i4,i5
+
+  real(kind=prec) :: gammaFrac, gamma1ma
+
+  btt3 = btilde(1.5 + p%b, p%a, (/(p%mmin+p%dm)/p%mgap/))
+  bt3 = btt3(1)
+
+  i1 = 0.
+  gamma1ma = gamma(1-p%a)
+  gammaFrac = gamma1ma
+  do i=0,Nit
+    btt3 = Btilde(3+2*p%b+i, p%a, (/(p%mmin+p%dm)/p%mgap/))
+    if(isnan(btt3(1))) exit
+    i1 = i1 + btt3(1) / (3+2*p%b+2*i) * gammaFrac
+    gammaFrac = (1. - p%a/(1. + i)) * gammaFrac
+  enddo
+  i1 = -2*p%mgap/gamma1ma * i1 + p%mgap * bt3 * gamma(p%a) * gamma(1.5+p%b) / gamma(1.5+p%a+p%b)
+
+  M1 = linspace * p%dm + p%mmin
+  mf1g = ppisn_mf1g(m1, p)
+  i2 = sum(mf1g) * p%dm / Nsamples
+  i4 = sum(mf1g * lvc_int((m1 - p%mmin)/p%dm)) * p%dm / Nsamples
+
+  do i=1,Nsamples
+    subInt(i) = sum(mf1g(1:i)) * p%dm / Nsamples
+  enddo
+  i3 = sum(subInt * mf1g) * p%dm / Nsamples
+  i5 = sum(subInt * smooth_exp(M1, p%mmin, p%dm)) * p%dm / Nsamples
+
+
+  ppisn_nint(0) = (p%mgap**(1 + p%b) - (p%dm + p%mmin)**(1 + p%b))**2/(2.*(1 + p%b)**2) &
+    + 4*p%a**4*p%mgap**(2 + 2*p%b)*bt3**2 + 4*p%a**4*p%mgap**(1 + 2*p%b)*i1 &
+    + ((p%mgap**(1 + p%b) - (p%dm + p%mmin)**(1 + p%b))*i2)/(1 + p%b) &
+    + bt3*( - 2*p%a**2*p%mgap**(1 + p%b)*i2 &
+      + (-2*p%a**2*p%mgap**(1 + p%b)*(p%mgap**(1 + p%b) - (p%dm + p%mmin)**(1 + p%b))&
+        )/(1 + p%b)) &
+    + i3
+
+  ppisn_nint(1) = + (p%mgap**(2 + p%b) - (p%dm + p%mmin)**(2 + p%b))/(2 + p%b) + p%dm*i4 &
+    + (4*p%a**2*Sqrt(p%mgap)*(p%dm + p%mmin)**(1.5 + p%b)*(1 - (p%dm + p%mmin)/p%mgap)**p%a)/(3 + 2*p%a + 2*p%b) &
+    + ((p%dm + 2*p%mmin)*(-p%mgap**(1 + p%b) + (p%dm + p%mmin)**(1 + p%b)))/(2.*(1 + p%b)) &
+    + p%a**2*p%mgap**(1 + p%b)*(p%dm - (2*(3 + 2*p%b)*p%mgap)/(3 + 2*p%a + 2*p%b) + 2*p%mmin)*bt3
+
+  ppisn_nint(2) = ((p%dm + p%mmin)**(1 + p%b)*(p%dm - p%mgap + p%mmin))/(1 + p%b) &
+    - (4*p%a**2*Sqrt(p%mgap)*(p%dm + p%mmin)**(1.5 + p%b)*(1 - (p%dm + p%mmin)/p%mgap)**p%a)/(3 + 2*p%a + 2*p%b) &
+    + (p%mgap**(2 + p%b) - (p%dm + p%mmin)**(2 + p%b))/((1 + p%b)*(2 + p%b)) &
+    + ((p%mgap**(1 + p%b) - (p%dm + p%mmin)**(1 + p%b))*(-2*p%mgap + p%d*(p%dm + 2*p%mmin)))/(2.*(1 + p%b)*(1 + p%d)) &
+    + p%a**2*p%mgap**(1 + p%b)*((-2*p%a*p%mgap)/(1.5 + p%a + p%b) + (2*p%mgap - p%d*(p%dm + 2*p%mmin))/(1 + p%d))*bt3 &
+    + ((-2*p%dm - p%d*p%dm + 2*p%d*p%mgap - 2*p%mmin)*i2)/(2 + 2*p%d) + i5
+
+  END FUNCTION PPISN_NINT
+
+  ! norms = (/lam21, lam12 /)
+  PURE FUNCTION PPISN_NORMS(D11, M1, M2, CHI1, CHI2, Z, M, P)
+  real(kind=prec), intent(in) :: D11(:), m1(:), m2(:), chi1(:), chi2(:), z(:)
   type(model), intent(in) :: m
   type(para), intent(in) :: p
-  real(kind=prec) :: ppisn_norms(size(m1))
+  real(kind=prec) :: ppisn_norms(size(m1)), N(0:2)
 
-  real(kind=prec), dimension(size(m1)) :: L21, L12, L22
-  real(kind=prec) :: lam21, lam12, lam22
+  real(kind=prec), dimension(size(m1)) :: D21, D12
 
-  L21 = p%lam21 * m%primaryM2(m1,p)*m%spin(2,1)%f(chi,p)*m%redshift(z,p)
-  L12 = p%lam12 * m%primary  (m1,p)*m%spin(1,2)%f(chi,p)*m%redshift(z,p)
-  L22 = p%lam22 * m%primaryM2(m1,p)*m%spin(2,2)%f(chi,p)*m%redshift(z,p)
+  D21 = m%primaryM2(m1,p)*m%spin(2,1)%f(chi1, chi2,p)*m%redshift(z,p)
+  D12 = m%primary  (m1,p)*m%spin(1,2)%f(chi1, chi2,p)*m%redshift(z,p)
 
   select case(m%secondary_c)
     case('phys')
-      L21 = L21 * m%primary  (m2,p) / ppisn_pm2m1den_m12g(m1, p)
-      L12 = L12 * m%primaryM2(m2,p) / ppisn_pm2m1den_m11g(m1, p)
-      L22 = L22 * m%primaryM2(m2,p) / ppisn_pm2m1den_m12g(m1, p)
+      D21 = D21 * m%primary  (m2,p)
+      D12 = D12 * m%primaryM2(m2,p)
     case('flat')
-      L21 = L21 / (m1 - p%mmin)
-      L12 = L12 / (m1 - p%mmin)
-      L22 = L22 / (m1 - p%mmin)
+      D21 = D21 / (m1 - p%mmin)
+      D12 = D12 / (m1 - p%mmin)
   end select
 
-  ppisn_norms = L21+L12+L22
+  ! We want
+  !
+  !     D                  D                  D
+  !      11      \          21       \         12
+  !  --------- + /\     ---------  + /\    ---------
+  !   N   /N       21    N   /N        12   N   /N
+  !    tot  0             tot  1             tot  2
+  !
+  !               \                \
+  ! ~ D     N   + /\   D     N   + /\   D     N
+  !    11    0      21  21    1      12  12    2
+
+  N = ppisn_nint(p)
+
+  ppisn_norms = D11 * N(0) + p%lam21 * D21 * N(1) + p%lam12 * D12 * N(2)
   where(isnan(ppisn_norms)) &
     ppisn_norms = 0.
 
@@ -418,8 +593,27 @@ contains
   p%d    = v(6)
   p%lam21= 10**v(7)
   p%lam12= 10**v(8)
-  p%lam22= 10**v(9)
   END FUNCTION R2P_PPISN
+
+
+  PURE FUNCTION R2P_PPISN_BETA(V) result(p)
+  real(kind=prec), intent(in) :: v(:)
+  type(para) :: p
+  p%mmin = v(1)
+  p%dm   = v(2)
+  p%mgap = v(3)
+  p%a    = v(4)
+  p%b    = v(5)
+  p%d    = v(6)
+  p%lam21= 10**v(7)
+  p%lam12= 10**v(8)
+
+  ! Spin
+  p%alpha1 = v(9)
+  p%beta1 = v(10)
+  p%alpha2 = v(11)
+  p%beta2 = v(12)
+  END FUNCTION R2P_PPISN_BETA
 
 
                    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -439,10 +633,10 @@ contains
       m%primary => plp_mf
       m%secondary => flatm
       m%redshift => trivial
-      m%spin(1,1)%f => trivial
-      m%spin(1,2)%f => trivial
-      m%spin(2,1)%f => trivial
-      m%spin(2,2)%f => trivial
+      m%spin(1,1)%f => trivial_spin
+      m%spin(1,2)%f => trivial_spin
+      m%spin(2,1)%f => trivial_spin
+      m%spin(2,2)%f => trivial_spin
       m%r2p => r2p_plp_flat
       m%smooth => smooth_tanh
       m%smoothint => smooth_expint
@@ -453,43 +647,90 @@ contains
       m%primary => plp_mf
       m%secondary => powm
       m%redshift => trivial
-      m%spin(1,1)%f => trivial
-      m%spin(1,2)%f => trivial
-      m%spin(2,1)%f => trivial
-      m%spin(2,2)%f => trivial
+      m%spin(1,1)%f => trivial_spin
+      m%spin(1,2)%f => trivial_spin
+      m%spin(2,1)%f => trivial_spin
+      m%spin(2,2)%f => trivial_spin
       m%r2p => r2p_plp_pow
       m%smooth => smooth_exp
       m%smoothint => smooth_expint
       m%smooth_c = "tan"
       m%norms = .false.
+
+    case('plp+flat+trivial+beta')
+      m%ndim = 7
+      m%primary => plp_mf
+      m%secondary => flatm
+      m%redshift => trivial
+      m%spin(1,1)%f => beta_spin_11
+      m%spin(1,2)%f => trivial_spin
+      m%spin(2,1)%f => trivial_spin
+      m%spin(2,2)%f => trivial_spin
+      m%r2p => r2p_plp_flat_beta
+      m%smooth => smooth_tanh
+      m%smoothint => smooth_expint
+      m%smooth_c = "tan"
+      m%norms = .false.
+    case('plp+pow+trivial+beta')
+      m%ndim = 8
+      m%primary => plp_mf
+      m%secondary => powm
+      m%redshift => trivial
+      m%spin(1,1)%f => beta_spin_11
+      m%spin(1,2)%f => trivial_spin
+      m%spin(2,1)%f => trivial_spin
+      m%spin(2,2)%f => trivial_spin
+      m%r2p => r2p_plp_pow_beta
+      m%smooth => smooth_exp
+      m%smoothint => smooth_expint
+      m%smooth_c = "tan"
+      m%norms = .false.
+
     case("ppisn+flat+trivial+trivial")
-      m%ndim = 9
+      m%ndim = 8
       m%primary => ppisn_mf1g
       m%primaryM2 => ppisn_mf2g
       m%secondary => flatm
       m%secondary_c = "flat"
       m%redshift => trivial
-      m%spin(1,1)%f => trivial
-      m%spin(1,2)%f => trivial
-      m%spin(2,1)%f => trivial
-      m%spin(2,2)%f => trivial
+      m%spin(1,1)%f => trivial_spin
+      m%spin(1,2)%f => trivial_spin
+      m%spin(2,1)%f => trivial_spin
+      m%spin(2,2)%f => trivial_spin
       m%r2p => r2p_ppisn
       m%smooth => smooth_exp
       m%smoothint => smooth_expint
       m%smooth_c = "tan"
       m%norms = .true.
     case("ppisn+trivial+trivial")
-      m%ndim = 9
+      m%ndim = 8
       m%primary => ppisn_mf1g
       m%primaryM2 => ppisn_mf2g
       m%secondary => ppisn_m2_phys
       m%secondary_c = "phys"
       m%redshift => trivial
-      m%spin(1,1)%f => trivial
-      m%spin(1,2)%f => trivial
-      m%spin(2,1)%f => trivial
-      m%spin(2,2)%f => trivial
+      m%spin(1,1)%f => trivial_spin
+      m%spin(1,2)%f => trivial_spin
+      m%spin(2,1)%f => trivial_spin
+      m%spin(2,2)%f => trivial_spin
       m%r2p => r2p_ppisn
+      m%smooth => smooth_exp
+      m%smoothint => smooth_expint
+      m%smooth_c = "tan"
+      m%norms = .true.
+
+    case("ppisn+trivial+beta")
+      m%ndim = 8
+      m%primary => ppisn_mf1g
+      m%primaryM2 => ppisn_mf2g
+      m%secondary => ppisn_m2_phys
+      m%secondary_c = "phys"
+      m%redshift => trivial
+      m%spin(1,1)%f => beta_spin_11
+      m%spin(1,2)%f => beta_spin_12
+      m%spin(2,1)%f => beta_spin_21
+      m%spin(2,2)%f => trivial_spin
+      m%r2p => r2p_ppisn_beta
       m%smooth => smooth_exp
       m%smoothint => smooth_expint
       m%smooth_c = "tan"
@@ -501,6 +742,7 @@ contains
 
   SUBROUTINE TEST
   real(kind=prec), dimension(6) :: mtest, ans
+  real(kind=prec), dimension(25) :: chi1test, chi2test, chians
   real(kind=prec) :: diff
   type(para) :: p
   real(kind=prec) :: BT(0:size(mtest))
@@ -520,7 +762,6 @@ contains
                      dm   =  5._prec, &
                      lam12=  0._prec, &
                      lam21=  0._prec, &
-                     lam22=  0._prec, &
                      sf_c = 'exp'   , &
                      sfint= smooth_expint, &
                      sf   = smooth_exp)))) / 6.
@@ -537,24 +778,22 @@ contains
                      dm   =  5._prec, &
                      lam12=  0._prec, &
                      lam21=  0._prec, &
-                     lam22=  0._prec, &
                      sf_c = 'exp'   , &
                      sfint= smooth_expint, &
                      sf   = smooth_exp)))) / 6.
   print*, "ppisn_mf2g", diff
-  print*,plp_int(para(mmax = 50._prec, &
-                     mum  = 30._prec, &
-                     sm   = 5._prec, &
-                     alpha= 2._prec, &
-                     lp   = 0.2_prec, &
-                     mmin = 5._prec, &
-                     dm   = 5._prec, &
-                     lam12=  0._prec, &
-                     lam21=  0._prec, &
-                     lam22=  0._prec, &
-                     sf_c = 'tan'   , &
-                     sfint= smooth_expint, &
-                     sf   = smooth_tanh))
+  ! print*,plp_int(para(mmax = 50._prec, &
+  !                    mum  = 30._prec, &
+  !                    sm   = 5._prec, &
+  !                    alpha= 2._prec, &
+  !                    lp   = 0.2_prec, &
+  !                    mmin = 5._prec, &
+  !                    dm   = 5._prec, &
+  !                    lam12=  0._prec, &
+  !                    lam21=  0._prec, &
+  !                    sf_c = 'tan'   , &
+  !                    sfint= smooth_expint, &
+  !                    sf   = smooth_tanh))
 
   ans = (/ 0., 0.03674262, 0.01327075, 0.02089596, 0.00493742, 0. /)
 
@@ -568,7 +807,6 @@ contains
                      dm   = 5._prec, &
                      lam12=  0._prec, &
                      lam21=  0._prec, &
-                     lam22=  0._prec, &
                      sf_c = 'tan'   , &
                      sfint= smooth_expint, &
                      sf   = smooth_tanh)))) / 6.
@@ -588,7 +826,6 @@ contains
                      dm   = 8.5451_prec,&
                      lam12=  0._prec, &
                      lam21=  0._prec, &
-                     lam22=  0._prec, &
                      sf_c = 'tan'   , &
                      sfint= smooth_expint, &
                      sf   = smooth_tanh)))) / 6.
@@ -603,7 +840,6 @@ contains
            b    = -2.34_prec, &
            d    = -7.63_prec, &
            lam21 = 0._prec, &
-           lam22 = 0._prec, &
            lam12 = 0._prec, &
            sf   = smooth_erf, &
            sfint= smooth_erfint, &
@@ -661,24 +897,13 @@ contains
   diff = sum(abs(ans-(BT(1:size(mtest)) - BT(0)))) / 6.
   print*, 'Btilde', diff
 
-  mtest = (/ 2., 4., 10., 20., 25., 35. /)
-  ans = (/ 1.000000000000000e+00, 1.915670268357831e-04, &
-           1.810539682742491e-02, 1.693658575797712e-02, &
-           1.707515630726487e-02, 1.000000000000000e+00 /)
-  diff = sum(abs(ans-ppisn_pm2m1den_m11g_approx(mtest, p))) / 6.
-  print*, 'pm2m1den_m11g_approx', diff
+  p%sf => smooth_exp
+  ans(1:3) = ppisn_nint(p)
+  diff = sum(ans(1:3) / (/0.0018863614613710922,0.4113173426155685,2.05585086404557/) - 1.) / 3
+  print*, 'norm int', diff
 
-  ans = (/ 0.000349571697912, 0.000241917597823, 0.001290632691559, &
-           0.008484996516152, 0.010232855005712, 0.013728571984832 /)
-
-  diff = sum(abs(ans-ppisn_pm2m1den_m12g_approx(mtest, p))) / 6.
-  print*, 'pm2m1den_m12g_approx', diff
-
-  print*, "Goodness of approximation"
-  print*, ppisn_pm2m1den_m11g_approx(mtest, p) / ppisn_pm2m1den_m11g(mtest, p)
-  print*, ppisn_pm2m1den_m12g_approx(mtest, p) / ppisn_pm2m1den_m12g(mtest, p)
-
-
+#if 0
+! I have no idea what this does...
   ! comparison with gwpopulation
   the_model = getmodel("plp+pow+trivial+trivial")
   p = the_model%r2p((/3.5_prec, 5._prec, 85._prec, 33._prec, 3._prec, 3.0_prec, 0.03_prec, 4._prec/))
@@ -689,6 +914,37 @@ contains
   print*, ans(2:) / (/0.00013537551253735636_prec, 0.06283120273729201_prec, &
               0.007854781123313786_prec,   0.004321979423810812_prec, &
               0.009896871567398238_prec /)
+#endif
+
+  ! test spin
+  p%alpha1 = 1.2
+  p%beta1 = 4.2
+  p%alpha2 = 3.2
+  p%beta2 = 2.2
+
+  chi1test=(/-0.4,-0.4,-0.4,-0.4,-0.4,0.1,0.1,0.1,0.1,0.1,&
+    0.4,0.4,0.4,0.4,0.4,0.8,0.8,0.8,0.8,0.8,1.1,1.1,1.1,1.1,1.1/)
+  chi2test = (/-0.4,0.1,0.4,0.8,1.1,-0.4,0.1,0.4,0.8,1.1,&
+    -0.4,0.1,0.4,0.8,1.1,-0.4,0.1,0.4,0.8,1.1,-0.4,0.1,0.4,0.8,1.1/)
+
+  chians = (/0.,0.,0.,0.,0.,0.,7.954291810492719,2.867619260750767, &
+       0.09793534842428382,0.,0.,2.867619260750767,1.033811735921138, &
+       0.03530688817316813,0.,0.,0.09793534842428382,0.03530688817316813, &
+       0.0012058059597881091,0.,0.,0.,0.,0.,0./)
+  print*, 'spin_11', sum(abs(chians - beta_spin_11(chi1test, chi2test, p)))
+
+  chians = (/ 0.,0.,0.,0.,0.,0.,0.2618696892343281,3.3986598645935016, &
+       4.178574866102779,0.,0.,0.09440721846093056,1.225258353684312, &
+       1.5064272287218412,0.,0.,0.0032242090016225116,0.04184520079782889, &
+       0.05144772095095936,0.,0.,0.,0.,0.,0. /)
+  print*, 'spin_12', sum(abs(chians - beta_spin_12(chi1test, chi2test, p)))
+
+  chians = (/ 0.,0.,0.,0.,0.,0.,0.2618696892343281,0.09440721846093056, &
+       0.0032242090016225116,0.,0.,3.3986598645935016,1.225258353684312, &
+       0.04184520079782889,0.,0.,4.178574866102779,1.5064272287218412, &
+       0.05144772095095936,0.,0.,0.,0.,0.,0. /)
+  print*, 'spin_21', sum(abs(chians - beta_spin_21(chi1test, chi2test, p)))
+
 
   END SUBROUTINE TEST
 

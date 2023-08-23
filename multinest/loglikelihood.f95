@@ -27,11 +27,11 @@ contains
   av_likelihood = m%primary(dat(:, 1), p)  &
                 * m%secondary(dat(:,1), dat(:,2), p) &
                 * m%redshift(dat(:,3), p) &
-                * m%spin(1,1)%f(dat(:,4), p)
+                * m%spin(1,1)%f(dat(:,4), dat(:,5), p)
 
   if(m%norms) then
-    av_likelihood = av_likelihood + &
-        ppisn_norms(dat(:,1), dat(:,2), dat(:,3), dat(:,4), m, p)
+    av_likelihood = &
+        ppisn_norms(av_likelihood, dat(:,1), dat(:,2), dat(:,3), dat(:,4), dat(:,5), m, p)
   endif
 
   END FUNCTION AV_LIKELIHOOD
@@ -76,7 +76,7 @@ contains
   open(unit=8, action='read', form='unformatted', file=trim(fn))
 
   read(8) n
-  allocate(injections(n,4))
+  allocate(injections(n,6))
   read(8) injections
 
   close(unit=8)
@@ -89,7 +89,7 @@ contains
   open(unit=8, action='read', form='unformatted', file=trim(fn))
 
   read(8) nD, nO
-  allocate(dat(nD,4))
+  allocate(dat(nD,6))
   allocate(offsets(nO))
   read(8) offsets
   read(8) dat
@@ -124,7 +124,6 @@ contains
            sf_c = 'tan',&
            lam12=  0._prec, &
            lam21=  0._prec, &
-           lam22=  0._prec, &
            sfint= smooth_expint, &
            sf   = smooth_tanh)
 
