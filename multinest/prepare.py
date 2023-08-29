@@ -2,7 +2,7 @@ import h5py
 import numpy as np
 import struct
 import os
-from astropy.cosmology import Planck18_arXiv_v2 as cosmo
+from astropy.cosmology import Planck18 as cosmo
 import scipy.interpolate
 import re
 
