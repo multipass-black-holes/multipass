@@ -827,7 +827,7 @@ contains
       m%norms = .false.
 
     case('plp+flat+trivial+beta')
-      m%ndim = 7
+      m%ndim = 9
       m%primary => plp_mf
       m%secondary => flatm
       m%redshift => null()
@@ -841,7 +841,7 @@ contains
       m%smooth_c = "tan"
       m%norms = .false.
     case('plp+pow+trivial+beta')
-      m%ndim = 8
+      m%ndim = 10
       m%primary => plp_mf
       m%secondary => powm
       m%redshift => null()
