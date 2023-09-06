@@ -33,6 +33,7 @@
 
     ! Needed for H0
     real(kind=prec) :: H0 = 100.
+    real(kind=prec) :: gamma = 3
 
     real(kind=prec) :: lam21, lam12
   END TYPE PARA
@@ -55,11 +56,11 @@
       real(kind=prec) :: mass2fn(size(m1))
     END FUNCTION MASS2FN
 
-    PURE SUBROUTINE REDSHIFTFN(M1D, M2D, M1S, M2S, Z, D, P)
+    PURE SUBROUTINE REDSHIFTFN(M1D, M2D, M1S, M2S, Z, D, P, LL)
       use functions, only: prec
       import para
       real(kind=prec), intent(in) :: m1d(:), m2d(:), Z(:), D(:)
-      real(kind=prec), intent(out) :: m1s(:), m2s(:)
+      real(kind=prec), intent(out) :: m1s(:), m2s(:), ll(:)
       type(para), intent(in) :: p
     END SUBROUTINE REDSHIFTFN
 
@@ -156,7 +157,7 @@ contains
                    !!                             !!
                    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  PURE SUBROUTINE REDSHIFT_PLANCK(M1D, M2D, M1S, M2S, Z, D, P)
+  PURE SUBROUTINE REDSHIFT_PLANCK(M1D, M2D, M1S, M2S, Z, D, P, LL)
   ! This implements (4.1) of 2205.11278 to calculate the source-frame
   ! masses from the detector-frame ones.
   !    m_source = m_det / (1+z)
@@ -164,12 +165,12 @@ contains
   ! taking the LVC value (which assumed a value of H0).
   use functions, only: prec
   real(kind=prec), intent(in) :: m1d(:), m2d(:), Z(:), D(:)
-  real(kind=prec), intent(out) :: m1s(:), m2s(:)
+  real(kind=prec), intent(out) :: m1s(:), m2s(:), LL(:)
   real(kind=prec) :: zz(size(d))
   type(para), intent(in) :: p
+  real(kind=prec), parameter :: Om = 0.3111
 
 #if 0
-  real(kind=prec), parameter :: Om = 0.315
   integer, parameter :: Nnewton = 10
   real(kind=prec) :: Btild0(1), pref
   real(kind=prec) :: Dl(size(d)), dDl(size(d))
@@ -236,6 +237,8 @@ contains
   end do
   zz = dmat(:, 1)+y(:)*dmat(:, 2)
 #endif
+
+  ll = d**2 * (1+zz)**(p%gamma-3) / p%H0 / sqrt((1+zz)**3*Om + (1-Om))
 
   m1s = m1d / (1+zz)
   m2s = m2d / (1+zz)
@@ -1129,16 +1132,17 @@ contains
 
   ! test redshift
   p%H0 = 70
+  p%gamma = 2.5
   m1dtest = (/ 1.,11., 20., 30., 40., 100. /)
   m2dtest = (/ 0.2,10., 15., 3., 33., 80. /)
   dtest = (/ 459.9190751959335, 2165.352153582382, 86.95879617595057, &
         18249.0848891852, 32310.127331891996, 45016.503681422204 /)
   ztest = (/ 0.1, 0.4, 0.02, 2.3, 3.7, 4.9 /)
   ! real(kind=prec), dimension(6) :: m1dtest, m2dtest, m1stest, m2stest, z, d
-  call redshift_planck(m1dtest, m2dtest, m1stest, m2stest, ztest, dtest, p)
+  call redshift_planck(m1dtest, m2dtest, m1stest, m2stest, ztest, dtest, p, ans)
   print*, 'm1D -> m1S', sum(abs(m1stest / (/ 0.909091, 7.85714, 19.6078, 9.09091, 8.51064, 16.9492 /) - 1)) / 6.
   print*, 'm2D -> m2S', sum(abs(m2stest / (/ 0.181818, 7.14286, 14.7059, 0.909091, 7.02128, 13.5593 /) - 1)) / 6.
-  print*, abs(m2stest / (/ 0.181818, 7.14286, 14.7059, 0.909091, 7.02128, 13.5593 /) - 1)
+  print*, 'prob', sum(abs(ans / (/ 2743.38, 45580., 105.958, 760190., 1.19771e6, 1.48307e6 /)-1))/6
 
   END SUBROUTINE TEST
 

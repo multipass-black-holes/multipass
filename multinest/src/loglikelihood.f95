@@ -33,9 +33,10 @@ contains
   ! modify dat, hence the duplicated code
 
   if(associated(m%redshift)) then
-    call m%redshift(dat(:,3),dat(:,4), m1,m2, dat(:,5), dat(:,6), p)
+    call m%redshift(dat(:,3),dat(:,4), m1,m2, dat(:,5), dat(:,6), p, av_likelihood)
 
-    av_likelihood = m%primary(m1, p)  &
+    av_likelihood = av_likelihood &
+                  * m%primary(m1, p)  &
                   * m%secondary(m1,m2, p) &
                   * m%spin(1,1)%f(dat(:,7), dat(:,8), p)
 
