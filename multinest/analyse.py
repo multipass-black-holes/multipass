@@ -23,7 +23,17 @@ parameters = {
         ("\\mu_{m}\\ [M_{\\odot}]", "mu"),
         ("\\sigma_{m}\\ [M_{\\odot}]", "sigma"),
         ("\\alpha", "alpha"),
-        ("\\lambda_{p}", "lp")
+        ("\\lambda_{p}", "lp"),
+    ],
+    "plp+plp+trivial+trivial": [
+        ("m_{min}\\ [M_{\\odot}]", "mmin"),
+        ("\\delta_{m}\\ [M_{\\odot}]", "dm"),
+        ("m_{max}\\ [M_{\\odot}]", "mmax"),
+        ("\\mu_{m}\\ [M_{\\odot}]", "mu"),
+        ("\\sigma_{m}\\ [M_{\\odot}]", "sigma"),
+        ("\\alpha", "alpha"),
+        ("\\lambda_{p}", "lp"),
+        ("\\beta_{q}", "k")
     ],
     "plp+pow+trivial+trivial": [
         ("m_{min}\\ [M_{\\odot}]", "mmin"),

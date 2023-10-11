@@ -329,7 +329,8 @@ contains
   where ((p%mmin < m2) .and. (m2 < p%mmax)) &
     plp_m2f = ( (1-p%lp) * powerlaw(m2, -p%alpha, p%mmin, p%mmax) &
               +   p%lp  * gauss(m2, p%mum, p%sm) ) &
-            * p%sf(m2, p%mmin, p%dm)
+            * p%sf(m2, p%mmin, p%dm) &
+            * (m2/m1) ** p%k
 
   plp_m2f = plp_m2f / plp_int(p)
 
@@ -798,7 +799,7 @@ contains
       m%smooth_c = "tan"
       m%norms = .false.
     case('plp+plp+trivial+trivial')
-      m%ndim = 7
+      m%ndim = 8
       m%primary => plp_mf
       m%secondary => plp_m2f
       m%redshift => null()
@@ -806,7 +807,7 @@ contains
       m%spin(1,2)%f => trivial_spin
       m%spin(2,1)%f => trivial_spin
       m%spin(2,2)%f => trivial_spin
-      m%r2p => r2p_plp_flat
+      m%r2p => r2p_plp_pow
       m%smooth => smooth_tanh
       m%smoothint => smooth_expint
       m%smooth_c = "tan"
