@@ -719,6 +719,7 @@ contains
   N = ppisn_nint(p)
 
   ppisn_norms = D11 * N(0) + p%lam21 * D21 * N(1) + p%lam12 * D12 * N(2)
+  ppisn_norms = ppisn_norms * (m2/m1)**p%k
   where(isnan(ppisn_norms)) &
     ppisn_norms = 0.
 
@@ -736,6 +737,7 @@ contains
   p%d    = v(6)
   p%lam21= 10**v(7)
   p%lam12= 10**v(8)
+  p%k    = v(9)
   END FUNCTION R2P_PPISN
 
 
@@ -902,7 +904,7 @@ contains
       m%smooth_c = "tan"
       m%norms = .true.
     case("ppisn+trivial+trivial")
-      m%ndim = 8
+      m%ndim = 9
       m%primary => ppisn_mf1g
       m%primaryM2 => ppisn_mf2g
       m%secondary => ppisn_m2_phys

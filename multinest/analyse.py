@@ -108,6 +108,7 @@ parameters = {
         ("d", "d"),
         ("\\log_{10}\\lambda_{21}", "lam21"),
         ("\\log_{10}\\lambda_{12}", "lam12"),
+        ("\\beta_{q}", "k")
     ],
     "ppisn+planck+trivial": [
         ("m_{min}\\ [M_{\\odot}]", "mmin"),
