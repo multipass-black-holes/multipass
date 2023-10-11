@@ -112,6 +112,10 @@ def load_gw(veto, base='../tmp/', v=2):
                 m1i = d['m1_detector_frame_Msun']
                 m2i = d['m2_detector_frame_Msun']
 
+                if np.mean(m2i) < 2.5 or np.mean(m1i) < 2.5:
+                    print("Skipping", fn)
+                    continue
+
                 m1 = np.concatenate((m1, m1i / (1+rsi)))
                 m2 = np.concatenate((m2, m2i / (1+rsi)))
                 m1D = np.concatenate((m1D, m1i))
@@ -131,6 +135,10 @@ def load_gw(veto, base='../tmp/', v=2):
             elif v == 2:
                 d = f['PublicationSamples/posterior_samples']
                 # chi_eff = (spin1 * m1 * cos1 + spin2 * m2 * cos2)/(m1+m2)
+                if np.mean(d['mass_1_source']) < 2.5 or np.mean(d['mass_2_source']) < 2.5:
+                    print("Skipping", fn)
+                    continue
+
                 m1 = np.concatenate((m1, d['mass_1_source']))
                 m2 = np.concatenate((m2, d['mass_2_source']))
                 m1D = np.concatenate((m1D, d['mass_1']))
@@ -141,6 +149,9 @@ def load_gw(veto, base='../tmp/', v=2):
                 s2 = np.concatenate((s2, np.sqrt(d['spin_2x']**2 + d['spin_2y']**2 + d['spin_2z']**2)))
             elif v == 21:
                 d = f['PrecessingSpinIMRHM/posterior_samples']
+                if np.mean(d['mass_1_source']) < 2.5 or np.mean(d['mass_2_source']) < 2.5:
+                    print("Skipping", fn)
+                    continue
                 m1 = np.concatenate((m1, d['mass_1_source']))
                 m2 = np.concatenate((m2, d['mass_2_source']))
                 m1D = np.concatenate((m1D, d['mass_1']))
@@ -151,6 +162,9 @@ def load_gw(veto, base='../tmp/', v=2):
                 s2 = np.concatenate((s2, np.sqrt(d['spin_2x']**2 + d['spin_2y']**2 + d['spin_2z']**2)))
             elif v == 3:
                 d = f['C01:Mixed/posterior_samples']
+                if np.mean(d['mass_1_source']) < 2.5 or np.mean(d['mass_2_source']) < 2.5:
+                    print("Skipping", fn)
+                    continue
                 m1 = np.concatenate((m1, d['mass_1_source']))
                 m2 = np.concatenate((m2, d['mass_2_source']))
                 m1D = np.concatenate((m1D, d['mass_1']))
@@ -160,6 +174,7 @@ def load_gw(veto, base='../tmp/', v=2):
                 s1 = np.concatenate((s1, np.sqrt(d['spin_1x']**2 + d['spin_1y']**2 + d['spin_1z']**2)))
                 s2 = np.concatenate((s2, np.sqrt(d['spin_2x']**2 + d['spin_2y']**2 + d['spin_2z']**2)))
 
+            # print(fn, min(m2))
             offsets.append(len(m1))
 
     return np.column_stack((m1, m2, m1D, m2D, rs, ld, s1, s2)), np.array(offsets)
@@ -216,9 +231,42 @@ def get_veto():
 
     return veto
 
+def get_far_veto():
+    # far veto
+    veto = set([
+        '200322_091133', # 140.0
+        '200308_173609', # 2.4
+        '200306_093714', # 24.0
+        '200220_124850', # 30.0
+        '200220_061928', # 6.8
+        '200210_092254', # 1.2
+        '200208_222617', # 4.8
+        '191219_163120', # 4.0
+        '191204_110529', # 3.3
+        '191126_115259', # 3.2
+        '191113_071753', # 26.0
+        '190926_050336', # 1.1
+        '190916_200658', # 4.7
+        '190909_114149', # 26.1830194416
+        '190514_065416', # 2.8
+        '190426_190642', # 4.1
+        '190424_180648', # 9.038785546924121
+        '190403_051519', # 7.7
+    ])
+    veto.update([
+            '170817', #weird, binary neutron star
+        ])
+    veto.update([
+            '190814', #EMRI
+            '190917', # remove explicitly
+            '190426_152155'
+        ])
+
+    return veto
+
 
 def convert_gw(fo='data.rec', base='../tmp/'):
-    veto = get_veto()
+    veto = get_far_veto()
     d1, o1 = load_gw(veto, base, v=1)
 
     d2, o2 = load_gw(veto, base, v=2)
