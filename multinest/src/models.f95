@@ -320,6 +320,21 @@ contains
 
   END FUNCTION PLP_MF
 
+  PURE FUNCTION PLP_M2F(m1,m2, p)
+  real(kind=prec), intent(in) :: m1(:),m2(:)
+  type(para), intent(in) :: p
+  real(kind=prec) :: plp_m2f(size(m2))
+
+  plp_m2f = 0.
+  where ((p%mmin < m2) .and. (m2 < p%mmax)) &
+    plp_m2f = ( (1-p%lp) * powerlaw(m2, -p%alpha, p%mmin, p%mmax) &
+              +   p%lp  * gauss(m2, p%mum, p%sm) ) &
+            * p%sf(m2, p%mmin, p%dm)
+
+  plp_m2f = plp_m2f / plp_int(p)
+
+  END FUNCTION PLP_M2F
+
 
   PURE FUNCTION R2P_PLP_FLAT(V) result(p)
   real(kind=prec), intent(in) :: v(:)
@@ -772,6 +787,20 @@ contains
       m%ndim = 7
       m%primary => plp_mf
       m%secondary => flatm
+      m%redshift => null()
+      m%spin(1,1)%f => trivial_spin
+      m%spin(1,2)%f => trivial_spin
+      m%spin(2,1)%f => trivial_spin
+      m%spin(2,2)%f => trivial_spin
+      m%r2p => r2p_plp_flat
+      m%smooth => smooth_tanh
+      m%smoothint => smooth_expint
+      m%smooth_c = "tan"
+      m%norms = .false.
+    case('plp+plp+trivial+trivial')
+      m%ndim = 7
+      m%primary => plp_mf
+      m%secondary => plp_m2f
       m%redshift => null()
       m%spin(1,1)%f => trivial_spin
       m%spin(1,2)%f => trivial_spin
