@@ -464,89 +464,12 @@ contains
   END FUNCTION PPISN_MF2G
 
 
-  ! returns the integral from mmin to m1 of mf_1g for all m1 in lm1;
-  ! this is the denominator of the conditional probability for m2
-  ! given the assumption that m1 is in 1g, i.e. (1.12)
-  !
-  !                      (1g)
-  !   /\ m            dN
-  !   |      dm      -----
-  !  \/ mmin   1      dm
-  !                     1
-  !
-  PURE FUNCTION PPISN_PM2M1DEN_M11G(M, P)
-  real(kind=prec), intent(in) :: m(:)
-  type(para), intent(in) :: p
-  real(kind=prec) :: ppisn_pm2m1den_m11g(size(m))
-
-  integer, parameter :: Nsamples = 100
-  real(kind=prec) :: BT(0:size(m))
-  real(kind=prec) :: sLVC(2)
-  integer i, cut
-  real(kind=prec), parameter :: linspace(0:Nsamples) = [(i / real(Nsamples), i=0,Nsamples)]
-  real(kind=prec), dimension(0:Nsamples) :: Msample, int
-  real(kind=prec), parameter :: erf2 = erf(2._prec)
-  real(kind=prec), parameter :: ep = 1e-8
-
-  Msample = p%mmin + linspace * p%dm
-  int = ppisn_mf1g(Msample, p) * p%dm / Nsamples
-
-  do i=1, size(m)
-    if(m(i) > p%mgap) cycle
-    cut = findloc(Msample > m(i), .false., dim=1, back=.true.)
-    ppisn_pm2m1den_m11g(i) =  sum(int(0:cut))
-  enddo
-
-  ! the part from Mmin + dm -- m1
-  BT = Btilde(1.5_prec+p%b, p%a, [p%mmin+p%dm, m]/p%mgap)
-
-  where((p%mgap > m) .and. (m > p%mmin + p%dm)) &
-    ppisn_pm2m1den_m11g = ppisn_pm2m1den_m11g + &
-        (m**(1+p%b) - (p%mmin+p%dm)**(1+p%b)) / (1+p%b) &
-        + 2*p%a**2*p%mgap**(1+p%b) * (BT(1:size(m)) - BT(0))
-
-  END FUNCTION PPISN_PM2M1DEN_M11G
-
-  ! returns the integral from mmin to m1 of mf_2g for all m1 in lm1;
-  ! this is the denominator of the conditional probability for m2
-  ! given the assumption that m1 is in 2g
-  !
-  !                      (2g)
-  !   /\ m            dN
-  !   |      dm      -----
-  !  \/ mmin   2      dm
-  !                     2
-  !
-  PURE FUNCTION PPISN_PM2M1DEN_M12G(M, P)
-  real(kind=prec), intent(in) :: m(:)
-  type(para), intent(in) :: p
-  real(kind=prec) :: ppisn_pm2m1den_m12g(size(m))
-  real(kind=prec) :: mmax
-
-  mmax = p%mgap + p%mmin + p%dm/2
-
-  ppisn_pm2m1den_m12g = 0._prec
-
-  where( (p%mmin < m).and.(m < p%mmin+p%dm) ) &
-    ppisn_pm2m1den_m12g = p%sfInt(m, p%mmin, p%dm)
-  where( (p%mmin+p%dm < m).and.(m < mmax) ) &
-    ppisn_pm2m1den_m12g = -0.5*p%dm - p%mmin + m
-  where( (mmax < m) ) &
-    ppisn_pm2m1den_m12g = -0.5*p%dm - p%mmin + mmax + &
-        ((m/mmax)**(1+p%d) - 1)*mmax/(1+p%d)
-
-
-  ppisn_pm2m1den_m12g = ppisn_pm2m1den_m12g * mpiv**p%b
-
-  END FUNCTION PPISN_PM2M1DEN_M12G
-
-
   PURE FUNCTION PPISN_M2_PHYS(M1, M2, P)
   real(kind=prec), intent(in) :: m1(:), m2(:)
   type(para), intent(in) :: p
   real(kind=prec) :: ppisn_m2_phys(size(m1))
 
-  ppisn_m2_phys = ppisn_mf1g(m2, p) / ppisn_pm2m1den_m11g(m1, p)
+  ppisn_m2_phys = ppisn_mf1g(m2, p)
 
   ! if m1 < mmin, pm2m1den_m11g = 0 and hence ppisn_m2_phys = nan
   where(isnan(ppisn_m2_phys)) &
@@ -1069,27 +992,13 @@ contains
   diff = sum(abs(ans-ppisn_mf1g(mtest, p))) / 6.
   print*, "ppisn_mf1g", diff
 
-  ans = (/ 0._prec, 0.0008369386215617741_prec, &
-        0.028895302280797192_prec, 0.05158740716028034_prec, &
-        0.0557564000458822_prec, 0.0_prec /)
-  diff = sum((ppisn_pm2m1den_m11g(mtest, p) - ans) / (ans + 1e-15))/ 6.
-  print*, "ppisn_pm2m1den_m11g", diff
-
   mtest = (/ 3., 30., 35., 37., 40., 45. /)
   ans = (/ 0.017562827691927917e-4_prec, 3.4957169791193885e-4_prec, &
           3.4957169791193885e-4_prec, 3.4957169791193885e-4_prec, &
           3.4957169791193885e-4_prec, 1.6828265142804126e-4_prec /)
 
   diff = sum(abs(ans-ppisn_mf2g(mtest, p))) / 6.
-  print*, "ppisn_mf2g", diff
-
-  mtest = (/ 2._prec, 4._prec, 10._prec, 20._prec, 25._prec, 35._prec /)
-  ans = (/0._prec, 5.290164443318091e-6_prec, &
-          0.0010911514507551488_prec, 0.004583419804323329_prec, &
-          0.006331278293883026_prec, 0.009826995273002417_prec/)
-
-  diff = sum(abs((ppisn_pm2m1den_m12g(mtest, p)+1e-15) / (ans+1e-15) - 1)) / 6.
-  print*, "ppisn_pm2m1den_m12g", diff
+  print*, "ppisn_mf2g", diff !FIXME
 
   print*, "Comparison with python code"
   mtest = (/ 2., 4., 10., 20., 25., 35. /)
