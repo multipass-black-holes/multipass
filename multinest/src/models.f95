@@ -22,7 +22,7 @@
     ! Needed for PLP_POW
     real(kind=prec) :: k=0
     ! Needed for PPISN
-    real(kind=prec) :: mgap=0, a=0, b=0, d=0
+    real(kind=prec) :: mgap=0, a=0, b=0, d=0, bq0=0, bq1=0
 
     ! Needed for spin
     real(kind=prec) :: alpha1=0, alpha2=0, beta1=0, beta2=0
@@ -481,18 +481,18 @@ contains
   ! We have
   !
   !        (1g)                  (1g)
-  !      dN      +-       -+   dN      +-          -+
-  ! P ~ -------- | M  | th |  -------- | M  | th,M  |
+  !      dN      +-       -+   dN      +-          -+    bq0
+  ! P ~ -------- | M  | th |  -------- | M  | th,M  |   q
   !        dM    +- 1     -+     dM    +- 2       1-+
   !
   !                     (1g)                  (2g)
-  !                   dN      +-       -+   dN      +-       -+
-  !    + lam    N    -------- | M  | th |  -------- | M  | th |
+  !                   dN      +-       -+   dN      +-       -+   bq1
+  !    + lam    N    -------- | M  | th |  -------- | M  | th |  q
   !         12   1      dM    +- 1     -+     dM    +- 2     -+
   !
   !                     (2g)                  (1g)
-  !                   dN      +-       -+   dN      +-       -+
-  !    + lam    N    -------- | M  | th |  -------- | M  | th |
+  !                   dN      +-       -+   dN      +-       -+   bq1
+  !    + lam    N    -------- | M  | th |  -------- | M  | th |  q
   !         21   2      dM    +- 1     -+     dM    +- 2     -+
   !
   ! This function calculates the sum of the second and third term. We
@@ -504,22 +504,22 @@ contains
   ! and now need to solve for N_1(2)
   !
   !                            inf            (1g)    (2g)
-  !                            /\           dN      dN
-  ! N( M   in 2g) = lam   N    |  dM  dM   -----   -----     theta(M  > M )
+  !                            /\           dN      dN                        bq1
+  ! N( M   in 2g) = lam   N    |  dM  dM   -----   -----     theta(M  > M )  q
   !     2              21  1  \/    1   2   dM      dM              1    2
   !                            0              1       2
   !
   !                            inf            (2g)    (1g)
-  !                            /\           dN      dN
-  ! N( M   in 2g) = lam   N    |  dM  dM   -----   -----     theta(M  > M )
+  !                            /\           dN      dN                        bq1
+  ! N( M   in 2g) = lam   N    |  dM  dM   -----   -----     theta(M  > M )  q
   !     1              12  2  \/    1   2   dM      dM              1    2
   !                            0              1       2
   !
   ! We also need an N_0 for normalisation purposes
   !
   !       inf            (1g)    (1g)
-  !       /\           dN      dN
-  !  N    |  dM  dM   -----   -----     theta(M  > M )
+  !       /\           dN      dN                        bq0
+  !  N    |  dM  dM   -----   -----     theta(M  > M )  q
   !   0  \/    1   2   dM      dM              1    2
   !       0              1       2
   !
@@ -554,23 +554,28 @@ contains
   real(kind=prec), parameter :: linspace(1:Nsamples) = [(i / real(Nsamples), i=1,Nsamples)]
   real(kind=prec), dimension(1:NSamples) :: M1, M2, mf1g, subInt
   real(kind=prec) :: ppisn_nint(0:2)
-  real(kind=prec) :: bt3,btt3(1),i1,i2,i3,i4,i5
+  real(kind=prec) :: bt3,bt3m0,bt3p0,bt3m1,bt3p1,bt5,btt(1)
+  real(kind=prec) :: i1,i2,i3,i4,i5
 
   real(kind=prec) :: gammaFrac, gamma1ma
 
-  btt3 = btilde(1.5 + p%b, p%a, (/(p%mmin+p%dm)/p%mgap/))
-  bt3 = btt3(1)
+  btt = btilde(1.5 + p%b, p%a, (/(p%mmin+p%dm)/p%mgap/)) ; bt3 = btt(1)
+  btt = btilde(2.5 + 2*p%b, p%a, (/(p%mmin+p%dm)/p%mgap/)) ; bt5 = btt(1)
+  btt = btilde(1.5 + p%b - p%bq0, p%a, (/(p%mmin+p%dm)/p%mgap/)) ; bt3m0 = btt(1)
+  btt = btilde(1.5 + p%b - p%bq1, p%a, (/(p%mmin+p%dm)/p%mgap/)) ; bt3m1 = btt(1)
+  btt = btilde(1.5 + p%b + p%bq0, p%a, (/(p%mmin+p%dm)/p%mgap/)) ; bt3p0 = btt(1)
+  btt = btilde(1.5 + p%b + p%bq1, p%a, (/(p%mmin+p%dm)/p%mgap/)) ; bt3p1 = btt(1)
 
   i1 = 0.
   gamma1ma = gamma(1-p%a)
   gammaFrac = gamma1ma
   do i=0,Nit
-    btt3 = Btilde(3+2*p%b+i, p%a, (/(p%mmin+p%dm)/p%mgap/))
-    if(isnan(btt3(1))) exit
-    i1 = i1 + btt3(1) / (3+2*p%b+2*i) * gammaFrac
+    btt = Btilde(3+2*p%b+i, p%a, (/(p%mmin+p%dm)/p%mgap/))
+    if(isnan(btt(1))) exit
+    i1 = i1 + btt(1) / (3+2*p%b+2*i+2*p%bq0) * gammaFrac
     gammaFrac = (1. - p%a/(1. + i)) * gammaFrac
   enddo
-  i1 = -2*p%mgap/gamma1ma * i1 + p%mgap * bt3 * gamma(p%a) * gamma(1.5+p%b) / gamma(1.5+p%a+p%b)
+  i1 = -2*p%mgap/gamma1ma * i1 + p%mgap * bt3m0 * gamma(p%a) * gamma(1.5+p%b+p%bq0) / gamma(1.5+p%a+p%b+p%bq0)
 
   M1 = linspace * p%dm + p%mmin
   mf1g = ppisn_mf1g(m1, p)
@@ -584,25 +589,49 @@ contains
   i5 = sum(subInt * smooth_exp(M1, p%mmin, p%dm)) * p%dm / Nsamples
 
 
-  ppisn_nint(0) = (p%mgap**(1 + p%b) - (p%dm + p%mmin)**(1 + p%b))**2/(2.*(1 + p%b)**2) &
-    + 4*p%a**4*p%mgap**(2 + 2*p%b)*bt3**2 + 4*p%a**4*p%mgap**(1 + 2*p%b)*i1 &
-    + ((p%mgap**(1 + p%b) - (p%dm + p%mmin)**(1 + p%b))*i2)/(1 + p%b) &
-    + bt3*( - 2*p%a**2*p%mgap**(1 + p%b)*i2 &
-      + (-2*p%a**2*p%mgap**(1 + p%b)*(p%mgap**(1 + p%b) - (p%dm + p%mmin)**(1 + p%b))&
-        )/(1 + p%b)) &
+  ppisn_nint(0) = ((1 + p%b - p%bq0)*p%mgap**(2 + 2*p%b) &
+      + (1 + p%b + p%bq0)*p%mgap**(2 + 2*p%b)*((p%dm + p%mmin)/p%mgap)**(2 + 2*p%b) &
+      - 2*(1 + p%b)*p%mgap**(2 + 2*p%b)*((p%dm + p%mmin)/p%mgap)**(1 + p%b + p%bq0)&
+      )/(2.*(1 + p%b)*(1 + p%b - p%bq0)*(1 + p%b + p%bq0)) &
+    - (2*p%a**2*p%mgap**(2 + 2*p%b)*bt3p0)/(1 + p%b - p%bq0) &
+    + bt3m0*((2*p%a**2*p%mgap**(2 + 2*p%b)*((p%dm + p%mmin)/p%mgap)**(1 + p%b + p%bq0))&
+      /(1 + p%b + p%bq0) + 4*p%a**4*p%mgap**(2 + 2*p%b)*bt3p0) &
+    + (4*p%a**2*p%bq0*p%mgap**(2 + 2*p%b)*bt5)/(1 + 2*p%b + p%b**2 - p%bq0**2) &
+    + 4*p%a**4*p%mgap**(1 + 2*p%b)*i1 &
+    + ((p%mgap**(1 + p%b) - p%mgap**(1 + p%b)*((p%dm + p%mmin)/p%mgap)**(1 + p%b))/(1 + p%b) &
+      - 2*p%a**2*p%mgap**(1 + p%b)*bt3)*i2 &
     + i3
 
-  ppisn_nint(1) = + (p%mgap**(2 + p%b) - (p%dm + p%mmin)**(2 + p%b))/(2 + p%b) + p%dm*i4 &
-    + (4*p%a**2*Sqrt(p%mgap)*(p%dm + p%mmin)**(1.5 + p%b)*(1 - (p%dm + p%mmin)/p%mgap)**p%a)/(3 + 2*p%a + 2*p%b) &
-    + ((p%dm + 2*p%mmin)*(-p%mgap**(1 + p%b) + (p%dm + p%mmin)**(1 + p%b)))/(2.*(1 + p%b)) &
-    + p%a**2*p%mgap**(1 + p%b)*(p%dm - (2*(3 + 2*p%b)*p%mgap)/(3 + 2*p%a + 2*p%b) + 2*p%mmin)*bt3
+  ppisn_nint(1) = (4*p%a**2*p%mgap**(2 + p%b)*((p%dm + p%mmin)/p%mgap)**(1.5 + p%b) &
+      *(1 - (p%dm + p%mmin)/p%mgap)**p%a)/((3 + 2*p%a + 2*p%b)*(1 + p%bq1)) &
+    + (p%dm*(p%mgap**(1 + p%b) - p%mgap**(1 + p%b)*((p%dm + p%mmin)/p%mgap)**(1 + p%b)))/(2.*(1 + p%b)) &
+    + (p%mgap**(2 + p%b) - p%mgap**(2 + p%b)*((p%dm + p%mmin)/p%mgap)**(2 + p%b))/((2 + p%b)*(1 + p%bq1)) &
+    - (p%mgap**(1 + p%bq1)*((p%dm + p%mmin)/p%mgap)**(1 + p%bq1) &
+      *(p%mgap**(1 + p%b - p%bq1) - p%mgap**(1 + p%b - p%bq1)*((p%dm + p%mmin)/p%mgap)**(1 + p%b - p%bq1))&
+      )/((1 + p%b - p%bq1)*(1 + p%bq1)) &
+    + p%a**2*p%mgap**(1 + p%b)*(-p%dm - (2*(3 + 2*p%b)*p%mgap)/((3 + 2*p%a + 2*p%b)*(1 + p%bq1)))*bt3 &
+    + (2*p%a**2*p%mgap**(2 + p%b)*((p%dm + p%mmin)/p%mgap)**(1 + p%bq1)*bt3m1)/(1 + p%bq1) &
+    + p%dm*i4
 
-  ppisn_nint(2) = ((p%dm + p%mmin)**(1 + p%b)*(p%dm - p%mgap + p%mmin))/(1 + p%b) &
-    - (4*p%a**2*Sqrt(p%mgap)*(p%dm + p%mmin)**(1.5 + p%b)*(1 - (p%dm + p%mmin)/p%mgap)**p%a)/(3 + 2*p%a + 2*p%b) &
-    + (p%mgap**(2 + p%b) - (p%dm + p%mmin)**(2 + p%b))/((1 + p%b)*(2 + p%b)) &
-    + ((p%mgap**(1 + p%b) - (p%dm + p%mmin)**(1 + p%b))*(-2*p%mgap + p%d*(p%dm + 2*p%mmin)))/(2.*(1 + p%b)*(1 + p%d)) &
-    + p%a**2*p%mgap**(1 + p%b)*((-2*p%a*p%mgap)/(1.5 + p%a + p%b) + (2*p%mgap - p%d*(p%dm + 2*p%mmin))/(1 + p%d))*bt3 &
-    + ((-2*p%dm - p%d*p%dm + 2*p%d*p%mgap - 2*p%mmin)*i2)/(2 + 2*p%d) + i5
+  ppisn_nint(2) = (4*p%a**2*p%mgap**(2 + p%b)*((p%dm + p%mmin)/p%mgap)**(1.5 + p%b) &
+      *(1 - (p%dm + p%mmin)/p%mgap)**p%a)/((3 + 2*p%a + 2*p%b)*(-1 + p%bq1)) &
+    + ((2*(p%mgap**(2 + p%b) - p%mgap**(2 + p%b)*((p%dm + p%mmin)/p%mgap)**(2 + p%b)))/(2 + p%b) &
+      + 2*(-p%mgap**(2 + p%b + p%bq1)*((p%dm + p%mmin)/p%mgap)**(2 + p%b) &
+        + p%mgap**(2 + p%b + p%bq1)*((p%dm + p%mmin)/p%mgap)**(1 + p%b + p%bq1)) &
+      /((-1 + p%bq1)*p%mgap**p%bq1) &
+      + ((p%mgap**(1 + p%b + p%bq1) &
+          - p%mgap**(1 + p%b + p%bq1)*((p%dm + p%mmin)/p%mgap)**(1 + p%b + p%bq1))&
+        *(2**(2*p%bq1)*p%d*p%mgap**(2*p%bq1)*(p%dm + 2*p%mmin)*(1 + (p%dm + 2*p%mmin)/(2.*p%mgap))**p%bq1 &
+          + 2*p%mgap*(2**(2*p%bq1)*p%d*p%mgap**(2*p%bq1)*(1 + (p%dm + 2*p%mmin)/(2.*p%mgap))**p%bq1 &
+          + 2**(2*p%bq1)*(-1 + p%bq1)*p%mgap**(2*p%bq1)*(1 + (p%dm + 2*p%mmin)/(2.*p%mgap))**(2*p%bq1) &
+          - 2**(2*p%bq1)*p%d*p%mgap**(2*p%bq1)*(1 + (p%dm + 2*p%mmin)/(2.*p%mgap))**(2*p%bq1)))&
+        )/(4**p%bq1*(-1 + p%bq1)*(-1 + p%bq1 - p%d)*p%mgap**(3*p%bq1)*(1 + (p%dm + 2*p%mmin)/(2.*p%mgap))**(2*p%bq1))&
+      )/(2.*(1 + p%b + p%bq1)) &
+    - (2*p%a**2*(3 + 2*p%b)*p%mgap**(2 + p%b)*bt3)/((3 + 2*p%a + 2*p%b)*(-1 + p%bq1)) &
+    - (2*p%a**2*p%d*p%mgap**(2 + p%b)*(1 + (p%dm + 2*p%mmin)/(2.*p%mgap))**(1 - p%bq1)*bt3p1)&
+      /(1 - 2*p%bq1 + p%bq1**2 + p%d - p%bq1*p%d) &
+    + ((-2*p%dm - p%d*p%dm + 2*p%d*p%mgap - 2*p%mmin)*i2)/(2 + 2*p%d) &
+    + i5
 
   END FUNCTION PPISN_NINT
 
@@ -1027,6 +1056,11 @@ contains
   p%sf => smooth_exp
   ans(1:3) = ppisn_nint(p)
   diff = sum(ans(1:3) / (/0.0018863614613710922,0.4113173426155685,2.05585086404557/) - 1.) / 3
+  print*, 'norm int', diff
+
+  p%bq0 = 5 ; p%bq1 = 4
+  ans(1:3) = ppisn_nint(p)
+  diff = sum(ans(1:3) / (/0.0015955885789676152, 0.26672702783952185, 1.424327104942902/) - 1.) / 3
   print*, 'norm int', diff
 
 #if 0
