@@ -108,7 +108,19 @@ parameters = {
         ("d", "d"),
         ("\\log_{10}\\lambda_{21}", "lam21"),
         ("\\log_{10}\\lambda_{12}", "lam12"),
-        ("\\beta_{q}", "k")
+        ("\\beta_{q}", "bq0"),
+    ],
+    "ppisn2P+trivial+trivial": [
+        ("m_{min}\\ [M_{\\odot}]", "mmin"),
+        ("\\delta_{m}\\ [M_{\\odot}]", "dm"),
+        ("m_{gap}\\ [M_{\\odot}]", "mgap"),
+        ("a", "a"),
+        ("b", "b"),
+        ("d", "d"),
+        ("\\log_{10}\\lambda_{21}", "lam21"),
+        ("\\log_{10}\\lambda_{12}", "lam12"),
+        ("\\beta_{q}^{(0)}", "bq0"),
+        ("\\beta_{q}^{(1)}", "bq1"),
     ],
     "ppisn+planck+trivial": [
         ("m_{min}\\ [M_{\\odot}]", "mmin"),

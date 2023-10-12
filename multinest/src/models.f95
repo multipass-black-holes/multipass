@@ -670,8 +670,8 @@ contains
 
   N = ppisn_nint(p)
 
-  ppisn_norms = D11 * N(0) + p%lam21 * D21 * N(1) + p%lam12 * D12 * N(2)
-  ppisn_norms = ppisn_norms * (m2/m1)**p%k
+  ppisn_norms = D11 * N(0) * (m2/m1)**p%bq0 &
+    + (p%lam21 * D21 * N(1) + p%lam12 * D12 * N(2)) * (m2/m1)**p%bq1
   where(isnan(ppisn_norms)) &
     ppisn_norms = 0.
 
@@ -689,8 +689,24 @@ contains
   p%d    = v(6)
   p%lam21= 10**v(7)
   p%lam12= 10**v(8)
-  p%k    = v(9)
+  p%bq0  = v(9)
+  p%bq1  = v(9)
   END FUNCTION R2P_PPISN
+
+  PURE FUNCTION R2P_PPISN_TWOPAIR(V) result(p)
+  real(kind=prec), intent(in) :: v(:)
+  type(para) :: p
+  p%mmin = v(1)
+  p%dm   = v(2)
+  p%mgap = v(3)
+  p%a    = v(4)
+  p%b    = v(5)
+  p%d    = v(6)
+  p%lam21= 10**v(7)
+  p%lam12= 10**v(8)
+  p%bq0  = v(9)
+  p%bq1  = v(10)
+  END FUNCTION R2P_PPISN_TWOPAIR
 
 
   PURE FUNCTION R2P_PPISN_BETA(V) result(p)
@@ -704,12 +720,14 @@ contains
   p%d    = v(6)
   p%lam21= 10**v(7)
   p%lam12= 10**v(8)
+  p%bq0  = v(9)
+  p%bq1  = v(9)
 
   ! Spin
-  p%alpha1 = v(9)
-  p%beta1 = v(10)
-  p%alpha2 = v(11)
-  p%beta2 = v(12)
+  p%alpha1 = v(10)
+  p%beta1 = v(11)
+  p%alpha2 = v(12)
+  p%beta2 = v(13)
   END FUNCTION R2P_PPISN_BETA
 
   PURE FUNCTION R2P_PPISN_PLANCK(V) result(p)
@@ -723,7 +741,10 @@ contains
   p%d    = v(6)
   p%lam21= 10**v(7)
   p%lam12= 10**v(8)
-  p%h0   = v(9)
+  p%bq0  = v(9)
+  p%bq1  = v(9)
+
+  p%h0   = v(10)
   END FUNCTION R2P_PPISN_PLANCK
 
                    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -867,6 +888,22 @@ contains
       m%spin(2,1)%f => trivial_spin
       m%spin(2,2)%f => trivial_spin
       m%r2p => r2p_ppisn
+      m%smooth => smooth_exp
+      m%smoothint => smooth_expint
+      m%smooth_c = "tan"
+      m%norms = .true.
+    case("ppisn2P+trivial+trivial")
+      m%ndim = 9
+      m%primary => ppisn_mf1g
+      m%primaryM2 => ppisn_mf2g
+      m%secondary => ppisn_m2_phys
+      m%secondary_c = "phys"
+      m%redshift => null()
+      m%spin(1,1)%f => trivial_spin
+      m%spin(1,2)%f => trivial_spin
+      m%spin(2,1)%f => trivial_spin
+      m%spin(2,2)%f => trivial_spin
+      m%r2p => r2p_ppisn_twopair
       m%smooth => smooth_exp
       m%smoothint => smooth_expint
       m%smooth_c = "tan"
