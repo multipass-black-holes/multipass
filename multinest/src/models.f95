@@ -893,7 +893,7 @@ contains
       m%smooth_c = "tan"
       m%norms = .true.
     case("ppisn2P+trivial+trivial")
-      m%ndim = 9
+      m%ndim = 10
       m%primary => ppisn_mf1g
       m%primaryM2 => ppisn_mf2g
       m%secondary => ppisn_m2_phys

@@ -131,6 +131,7 @@ parameters = {
         ("d", "d"),
         ("\\log_{10}\\lambda_{21}", "lam21"),
         ("\\log_{10}\\lambda_{12}", "lam12"),
+        ("\\beta_{q}", "bq0"),
         ("H_0", "h0"),
     ],
     "ppisn+trivial+beta": [
@@ -142,6 +143,7 @@ parameters = {
         ("d", "d"),
         ("\\log_{10}\\lambda_{21}", "lam21"),
         ("\\log_{10}\\lambda_{12}", "lam12"),
+        ("\\beta_{q}", "bq0"),
         ("\\alpha_1", "alpha1"),
         ("\\beta_1", "beta1"),
         ("\\alpha_2", "alpha2"),
