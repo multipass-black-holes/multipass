@@ -861,7 +861,7 @@ contains
       m%norms = .false.
 
     case("ppisn+flat+trivial+trivial")
-      m%ndim = 8
+      m%ndim = 9
       m%primary => ppisn_mf1g
       m%primaryM2 => ppisn_mf2g
       m%secondary => flatm
@@ -909,7 +909,7 @@ contains
       m%smooth_c = "tan"
       m%norms = .true.
     case("ppisn+planck+trivial")
-      m%ndim = 9
+      m%ndim = 10
       m%primary => ppisn_mf1g
       m%primaryM2 => ppisn_mf2g
       m%secondary => ppisn_m2_phys
@@ -926,7 +926,7 @@ contains
       m%norms = .true.
 
     case("ppisn+trivial+beta")
-      m%ndim = 8
+      m%ndim = 13
       m%primary => ppisn_mf1g
       m%primaryM2 => ppisn_mf2g
       m%secondary => ppisn_m2_phys
