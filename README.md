@@ -74,151 +74,151 @@ $ python analyse.py /path/to/output
  * `plp+flat+trivial+trivial`:
     powerlaw+peak for the primary, flat for the secondary, no redshift or spin.
     Parameters:
-        * $m_{\rm min}$
-        * $\delta m$
-        * $m_{\rm max}$
-        * $\mu$
-        * $\sigma$
-        * $\alpha$
-        * $\lambda_p$
+          $m_{\rm min}$,
+          $\delta m$,
+          $m_{\rm max}$,
+          $\mu$,
+          $\sigma$,
+          $\alpha$,
+          $\lambda_p$
  * `plp+plp+trivial+trivial`:
     powerlaw+peak for the primary and secondary, no redshift or spin.
     Primary and secondary are coupled through $q^\beta_q$.
     Parameters:
-        * $m_{\rm min}$
-        * $\delta m$
-        * $m_{\rm max}$
-        * $\mu$
-        * $\sigma$
-        * $\alpha$
-        * $\lambda_p$
-        * $\beta_q$
+          $m_{\rm min}$,
+          $\delta m$,
+          $m_{\rm max}$,
+          $\mu$,
+          $\sigma$,
+          $\alpha$,
+          $\lambda_p$,
+          $\beta_q$
  * `plp+pow+trivial+trivial`:
     powerlaw+peak for the primary, power law for the secondary, no redshift or spin.
     Parameters:
-        * $m_{\rm min}$
-        * $\delta m$
-        * $m_{\rm max}$
-        * $\mu$
-        * $\sigma$
-        * $\alpha$
-        * $\lambda_p$
-        * $k$
+          $m_{\rm min}$,
+          $\delta m$,
+          $m_{\rm max}$,
+          $\mu$,
+          $\sigma$,
+          $\alpha$,
+          $\lambda_p$,
+          $k$
  * `plp+flat+planck+trivial`:
     powerlaw+peak for the primary, flat for the secondary, fitting for $H_0$ but no spin.
     Parameters:
-        * $m_{\rm min}$
-        * $\delta m$
-        * $m_{\rm max}$
-        * $\mu$
-        * $\sigma$
-        * $\alpha$
-        * $\lambda_p$
-        * $H_0$
+          $m_{\rm min}$,
+          $\delta m$,
+          $m_{\rm max}$,
+          $\mu$,
+          $\sigma$,
+          $\alpha$,
+          $\lambda_p$,
+          $H_0$
  * `plp+pow+trivial+trivial`:
     powerlaw+peak for the primary, power law for the secondary, fitting for $H_0$ but no spin.
     Parameters:
-        * $m_{\rm min}$
-        * $\delta m$
-        * $m_{\rm max}$
-        * $\mu$
-        * $\sigma$
-        * $\alpha$
-        * $\lambda_p$
-        * $k$
-        * $H_0$
+          $m_{\rm min}$,
+          $\delta m$,
+          $m_{\rm max}$,
+          $\mu$,
+          $\sigma$,
+          $\alpha$,
+          $\lambda_p$,
+          $k$,
+          $H_0$
  * `plp+flat+trivial+beta`:
     powerlaw+peak for the primary, flat for the secondary, no redshift and $\beta$ distribution for spin.
     Parameters:
-        * $m_{\rm min}$
-        * $\delta m$
-        * $m_{\rm max}$
-        * $\mu$
-        * $\sigma$
-        * $\alpha$
-        * $\lambda_p$
-        * $\alpha$
-        * $\beta$
+          $m_{\rm min}$,
+          $\delta m$,
+          $m_{\rm max}$,
+          $\mu$,
+          $\sigma$,
+          $\alpha$,
+          $\lambda_p$,
+          $\alpha$,
+          $\beta$
  * `plp+pow+trivial+beta`:
     powerlaw+peak for the primary, power law for the secondary, no redshift and $\beta$ distribution for spin.
     Parameters:
-        * $m_{\rm min}$
-        * $\delta m$
-        * $m_{\rm max}$
-        * $\mu$
-        * $\sigma$
-        * $\alpha$
-        * $\lambda_p$
-        * $k$
-        * $\alpha$
-        * $\beta$
+          $m_{\rm min}$,
+          $\delta m$,
+          $m_{\rm max}$,
+          $\mu$,
+          $\sigma$,
+          $\alpha$,
+          $\lambda_p$,
+          $k$,
+          $\alpha$,
+          $\beta$
 
  * `ppisn+flat+trivial+trivial`:
     PPISN for the primary, flat for the secondary, no spin or redshift
     Parameters:
-        * $m_{\rm min}$
-        * $\delta m$
-        * $m_{\rm BHMG}$
-        * $a$
-        * $b$
-        * $d$
-        * $\log_{10}\lambda_{21}$
-        * $\log_{10}\lambda_{12}$
+          $m_{\rm min}$,
+          $\delta m$,
+          $m_{\rm BHMG}$,
+          $a$,
+          $b$,
+          $d$,
+          $\log_{10}\lambda_{21}$,
+          $\log_{10}\lambda_{12}$
  * `ppisn+trivial+trivial`:
     PPISN for the primary, physical for the secondary, no spin or redshift.
-    Primary and secondary are coupled using $q^\beta_q$
+    Primary and secondary are coupled using $q^\beta_q$,
     Parameters:
-        * $m_{\rm min}$
-        * $\delta m$
-        * $m_{\rm BHMG}$
-        * $a$
-        * $b$
-        * $d$
-        * $\log_{10}\lambda_{21}$
-        * $\log_{10}\lambda_{12}$
-        * $\beta_q$
+          $m_{\rm min}$,
+          $\delta m$,
+          $m_{\rm BHMG}$,
+          $a$,
+          $b$,
+          $d$,
+          $\log_{10}\lambda_{21}$,
+          $\log_{10}\lambda_{12}$,
+          $\beta_q$
  * `ppisn2P+trivial+trivial`:
     PPISN for the primary, physical for the secondary, no spin or redshift.
-    Primary and secondary are coupled using $q^\beta_q$ with two different $\beta$
+    Primary and secondary are coupled using $q^\beta_q$ with two different $\beta$,
     Parameters:
-        * $m_{\rm min}$
-        * $\delta m$
-        * $m_{\rm BHMG}$
-        * $a$
-        * $b$
-        * $d$
-        * $\log_{10}\lambda_{21}$
-        * $\log_{10}\lambda_{12}$
-        * $\beta_q^{(0)}$
-        * $\beta_q^{(1)}$
+          $m_{\rm min}$,
+          $\delta m$,
+          $m_{\rm BHMG}$,
+          $a$,
+          $b$,
+          $d$,
+          $\log_{10}\lambda_{21}$,
+          $\log_{10}\lambda_{12}$,
+          $\beta_q^{(0)}$,
+          $\beta_q^{(1)}$
  * `ppisn+planck+trivial`:
     PPISN for the primary, physical for the secondary, fitting for $H_0$ but not for spin.
-    Primary and secondary are coupled using $q^\beta_q$ with two different $\beta$
+    Primary and secondary are coupled using $q^\beta_q$ with two different $\beta$,
     Parameters:
-        * $m_{\rm min}$
-        * $\delta m$
-        * $m_{\rm BHMG}$
-        * $a$
-        * $b$
-        * $d$
-        * $\log_{10}\lambda_{21}$
-        * $\log_{10}\lambda_{12}$
-        * $\beta_q$
-        * $H_0$
+          $m_{\rm min}$,
+          $\delta m$,
+          $m_{\rm BHMG}$,
+          $a$,
+          $b$,
+          $d$,
+          $\log_{10}\lambda_{21}$,
+          $\log_{10}\lambda_{12}$,
+          $\beta_q$,
+          $H_0$
  * `ppisn+trivial+beta`:
     PPISN for the primary, physical for the secondary, no redshift and $\beta$ distributions for spin.
-    Primary and secondary are coupled using $q^\beta_q$ with two different $\beta$
+    Primary and secondary are coupled using $q^\beta_q$ with two different $\beta$,
     Parameters:
-        * $m_{\rm min}$
-        * $\delta m$
-        * $m_{\rm BHMG}$
-        * $a$
-        * $b$
-        * $d$
-        * $\log_{10}\lambda_{21}$
-        * $\log_{10}\lambda_{12}$
-        * $\beta_q$
-        * $\alpha_1$
-        * $\beta_1$
-        * $\alpha_2$
-        * $\beta_2$
+          $m_{\rm min}$,
+          $\delta m$,
+          $m_{\rm BHMG}$,
+          $a$,
+          $b$,
+          $d$,
+          $\log_{10}\lambda_{21}$,
+          $\log_{10}\lambda_{12}$,
+          $\beta_q$,
+          $\alpha_1$,
+          $\beta_1$,
+          $\alpha_2$,
+          $\beta_2$
