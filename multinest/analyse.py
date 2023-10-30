@@ -66,6 +66,17 @@ parameters = {
         ("k", "k"),
         ("H_0", "h0"),
     ],
+    "plp+plp+planck+trivial": [
+        ("m_{min}\\ [M_{\\odot}]", "mmin"),
+        ("\\delta_{m}\\ [M_{\\odot}]", "dm"),
+        ("m_{max}\\ [M_{\\odot}]", "mmax"),
+        ("\\mu_{m}\\ [M_{\\odot}]", "mu"),
+        ("\\sigma_{m}\\ [M_{\\odot}]", "sigma"),
+        ("\\alpha", "alpha"),
+        ("\\lambda_{p}", "lp"),
+        ("\\beta_q", "betaq"),
+        ("H_0", "h0"),
+    ],
     "plp+flat+trivial+beta": [
         ("m_{min}\\ [M_{\\odot}]", "mmin"),
         ("\\delta_{m}\\ [M_{\\odot}]", "dm"),

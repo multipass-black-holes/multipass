@@ -115,7 +115,7 @@ $ python analyse.py /path/to/output
           $\alpha$,
           $\lambda_p$,
           $H_0$
- * `plp+pow+trivial+trivial`:
+ * `plp+pow+planck+trivial`:
     powerlaw+peak for the primary, power law for the secondary, fitting for $H_0$ but no spin.
     Parameters:
           $m_{\rm min}$,
@@ -126,6 +126,19 @@ $ python analyse.py /path/to/output
           $\alpha$,
           $\lambda_p$,
           $k$,
+          $H_0$
+ * `plp+plp+plank+trivial`:
+    powerlaw+peak for the primary and secondary, fitting for $H_0$ but no spin.
+    Primary and secondary are coupled through $q^\beta_q$.
+    Parameters:
+          $m_{\rm min}$,
+          $\delta m$,
+          $m_{\rm max}$,
+          $\mu$,
+          $\sigma$,
+          $\alpha$,
+          $\lambda_p$,
+          $\beta_q$,
           $H_0$
  * `plp+flat+trivial+beta`:
     powerlaw+peak for the primary, flat for the secondary, no redshift and $\beta$ distribution for spin.
