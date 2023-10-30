@@ -873,6 +873,20 @@ contains
       m%smoothint => smooth_expint
       m%smooth_c = "tan"
       m%norms = .false.
+    case('plp+plp+trivial+beta')
+      m%ndim = 10
+      m%primary => plp_mf
+      m%secondary => plp_m2f
+      m%redshift => null()
+      m%spin(1,1)%f => beta_spin_11
+      m%spin(1,2)%f => trivial_spin
+      m%spin(2,1)%f => trivial_spin
+      m%spin(2,2)%f => trivial_spin
+      m%r2p => r2p_plp_pow_beta
+      m%smooth => smooth_tanh
+      m%smoothint => smooth_expint
+      m%smooth_c = "tan"
+      m%norms = .false.
 
     case("ppisn+flat+trivial+trivial")
       m%ndim = 9

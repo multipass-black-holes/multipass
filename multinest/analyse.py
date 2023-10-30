@@ -88,6 +88,18 @@ parameters = {
         ("\\alpha", "alpha1"),
         ("\\beta", "beta1"),
     ],
+    "plp+plp+trivial+beta": [
+        ("m_{min}\\ [M_{\\odot}]", "mmin"),
+        ("\\delta_{m}\\ [M_{\\odot}]", "dm"),
+        ("m_{max}\\ [M_{\\odot}]", "mmax"),
+        ("\\mu_{m}\\ [M_{\\odot}]", "mu"),
+        ("\\sigma_{m}\\ [M_{\\odot}]", "sigma"),
+        ("\\alpha", "alpha"),
+        ("\\lambda_{p}", "lp"),
+        ("\\alpha", "alpha1"),
+        ("\\beta_q", "betaq"),
+        ("\\beta", "beta1"),
+    ],
     "plp+pow+trivial+beta": [
         ("m_{min}\\ [M_{\\odot}]", "mmin"),
         ("\\delta_{m}\\ [M_{\\odot}]", "dm"),

@@ -165,6 +165,20 @@ $ python analyse.py /path/to/output
           $k$,
           $\alpha$,
           $\beta$
+ * `plp+plp+trivial+beta`:
+    powerlaw+peak for the primary and secondary, no redshift and $\beta$ distribution for spin.
+    Primary and secondary are coupled through $q^\beta_q$.
+    Parameters:
+          $m_{\rm min}$,
+          $\delta m$,
+          $m_{\rm max}$,
+          $\mu$,
+          $\sigma$,
+          $\alpha$,
+          $\lambda_p$,
+          $\beta_q$,
+          $\alpha$,
+          $\beta$
 
  * `ppisn+flat+trivial+trivial`:
     PPISN for the primary, flat for the secondary, no spin or redshift
