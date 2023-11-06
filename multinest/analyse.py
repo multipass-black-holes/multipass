@@ -220,10 +220,13 @@ def triangle_plot(samples, lim, model="plp+pow+trivial+trivial"):
 
 
 def best_fit(samples):
-    return samples.dat[samples.dat[:, 1].argmin(), 2:]
+    return np.array([
+        name.mean
+        for name in samples.getMargeStats().names
+    ])
 
 
-def plot_bestfit_m1(samples, model="plp+pow+trivial+trivial", fig=None, prescale=1, col=None):
+def plot_bestfit_m1(samples, model="plp+pow+trivial+trivial", fig=None, prescale=1, col=None, label=None):
     h = 1e-6
     n = 1000
 
@@ -246,12 +249,14 @@ def plot_bestfit_m1(samples, model="plp+pow+trivial+trivial", fig=None, prescale
 
     if fig == None:
         fig = figure()
+    if label == None:
+        label = model
 
     if col:
-        plot(x, y, color=col)
+        plot(x, y, color=col, label=label)
         fill_between(x, y-err/2, y+err/2, color=col, alpha=0.2)
     else:
-        plot(x, y)
+        plot(x, y, label=label)
         fill_between(x, y-err/2, y+err/2, alpha=0.2)
     yscale('log')
 
@@ -262,14 +267,9 @@ def plot_bestfit_m1(samples, model="plp+pow+trivial+trivial", fig=None, prescale
     return fig
 
 
-def central_values(root, model):
-    mod = parameters[model]
-    with open(root + 'stats.dat') as fp:
-        for line in fp.readlines():
-            if m := re.match(" *(\d) +([\d.E+-]+) +([\d.E+-]+) *", line):
-                ind, y, e = m.groups()
-                _, para = mod[int(ind)-1]
-                print(f"{para:8s} {float(y):7.2f} +- {float(e):7.2f}")
+def central_values(samples):
+    for name in samples.getMargeStats().names:
+        print(f"{name.name:8s} {float(name.mean):7.2f} +- {float(name.err):7.2f}")
 
 
 def multiintersect(lists):
@@ -304,7 +304,7 @@ def main(roots):
         l.append(model)
         l.append('$1\sigma$')
 
-        central_values(root, model)
+        central_values(samples, model)
         with open(root+'stats.dat') as fp:
             s = fp.read()
         model = root
