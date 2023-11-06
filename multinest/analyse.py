@@ -272,16 +272,27 @@ def central_values(root, model):
                 print(f"{para:8s} {float(y):7.2f} +- {float(e):7.2f}")
 
 
+def multiintersect(lists):
+    if len(lists) == 0:
+        return []
+    inter = set(lists[0])
+    for i in lists[1:]:
+        inter = inter.intersection(set(i))
+    return list(inter)
+
+
 def main(roots):
     figc = figure()
     l = []
     logz = {}
+    all_samples = {}
 
     for root in roots:
         print(root)
         model, lim = parseInfo(root)
 
         samples = loadMC(root, model)
+        all_samples[model] = samples
 
         fig = triangle_plot(samples, lim, model)
         fig.savefig(root + model + "triangle.pdf")
@@ -316,6 +327,16 @@ def main(roots):
                 else:
                     kf = ki
                 print(f"BF {ki} and {kj} = {bf[0]} +- {bf[1]} favours {kf}")
+
+    for param in multiintersect([i.paramNames.list() for i in all_samples.values()]):
+        fig = figure()
+        for m, samples in all_samples.items():
+            density = samples.get1DDensityGridData(param)
+            density.normalize()
+            plot(density.x, density.P, label=m)
+            xlabel("$" + {j:i for i,j in parameters[m]}[param] + "$")
+        legend()
+        fig.savefig(f"cmp-{param}.pdf")
 
     return figc
 
