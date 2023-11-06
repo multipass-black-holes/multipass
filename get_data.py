@@ -22,6 +22,8 @@ def list_catalog(name):
     for k, v in catalog.items():
         p = re.match(r"(GW[\d_]*)-v\d*", k)
         if p:
+            if v['far'] > 1:
+                print(p.group(1), v['far'])
             yield (p.group(1), v['jsonurl'])
 
 
