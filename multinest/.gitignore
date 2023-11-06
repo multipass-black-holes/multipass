@@ -2,3 +2,12 @@
 test
 main
 *run*
+*.pdf
+*.tar.gz
+*.pyf
+plp-h0/
+plp-spin/
+plp/
+ppisn-h0/
+ppisn-spin/
+ppisn/
