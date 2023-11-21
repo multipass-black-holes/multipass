@@ -27,7 +27,7 @@ $ python -m venv bhmf
 $ source bhmf/bin/activate
 (bhmf) $ pip install -r requirements.txt
 ```
-Next, you need to obtain the data from LVC.
+Next, you need to obtain the data from LVK.
 We use the [GW Open Science](https://www.gw-openscience.org/) API for this:
 ```shell
 (bhmf) $ python get_data.py
@@ -42,13 +42,13 @@ $ make
 This should produce the multinest executable `main`.
 
 ### Preparing the data
-Before you can run our code, you need convert the data from the LVC format into our own.
+Before you can run our code, you need convert the data from the LVK format into our own.
 To do this, run
 ```shell
 (bhmf) $ python prepare.py
 ```
 This will load and merge all event files as well as the injection and create `data.rec` and `inj.rec`.
-These files are sufficient for inference and the full dataset from LVC is no longer required
+These files are sufficient for inference and the full dataset from LVK is no longer required
 
 ### Running the code
 To set up a job, you need to prepare a run card describing the model, the priors, and the MCMC parameters.
@@ -238,6 +238,22 @@ $ python analyse.py /path/to/output
     Parameters:
           $m_{\rm min}$,
           $\delta m$,
+          $m_{\rm BHMG}$,
+          $a$,
+          $b$,
+          $d$,
+          $\log_{10}\lambda_{21}$,
+          $\log_{10}\lambda_{12}$,
+          $\beta_q$,
+          $\alpha_1$,
+          $\beta_1$,
+          $\alpha_2$,
+          $\beta_2$
+ * `ppisn+trivial+beta-turnon`:
+    PPISN for the primary, physical for the secondary, no redshift and $\beta$ distributions for spin.
+    Primary and secondary are coupled using $q^\beta_q$ with two different $\beta$.
+    The turnon parameters are fixed to their best fit of `ppisn+trivial+trivial`, i.e. $m_{\rm min}=4.09M_{\\odot}$, $\delta m = 5.33M_{\\odot}$
+    Parameters:
           $m_{\rm BHMG}$,
           $a$,
           $b$,

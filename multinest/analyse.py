@@ -171,7 +171,20 @@ parameters = {
         ("\\beta_1", "beta1"),
         ("\\alpha_2", "alpha2"),
         ("\\beta_2", "beta2"),
-    ]
+    ],
+    "ppisn+trivial+beta-turnon": [
+        ("m_{gap}\\ [M_{\\odot}]", "mgap"),
+        ("a", "a"),
+        ("b", "b"),
+        ("d", "d"),
+        ("\\log_{10}\\lambda_{21}", "lam21"),
+        ("\\log_{10}\\lambda_{12}", "lam12"),
+        ("\\beta_{q}", "bq0"),
+        ("\\alpha_1", "alpha1"),
+        ("\\beta_1", "beta1"),
+        ("\\alpha_2", "alpha2"),
+        ("\\beta_2", "beta2"),
+    ],
 }
 
 def parseInfo(root):
