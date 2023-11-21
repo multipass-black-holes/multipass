@@ -1,3 +1,4 @@
+*.sys
 tmp
 o3a_bbhpop_inj_info.hdf
 all_posterior_samples

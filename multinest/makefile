@@ -1,25 +1,12 @@
-FC=gfortran
-FFLAGS=-g -fPIC -cpp -J .obj -I .obj
-LD=gfortran
-LFLAGS=
+include makefile.sys
 
-HOST=$(shell hostname)
-ifneq (,$(filter %.phyip3.dur.ac.uk,$(HOST)))
-MPI=/usr/lib64/openmpi3
-LFLAGS+=-L/scratch/yulrich/usr10/
-else
-MPI=
-endif
-
-CMAKE=cmake3
-F2PY=f2py
+FFLAGS += -g -fPIC -cpp -J .obj -I .obj
 
 EXT_SUFFIX := $(shell python3-config --extension-suffix)
 
 OBJ=.obj/models.o .obj/functions.o .obj/loglikelihood.o
 
 FFLAGS+=-IMultiNest/modules/
-LFLAGS+=-llapack -lblas
 
 ifeq ($(MPI),)
 MPISUFFIX=
