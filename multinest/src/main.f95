@@ -82,9 +82,9 @@ contains
   real(kind=prec), pointer, dimension(:) :: paramConstr
   real(kind=prec) :: maxLogLike, logZ, INSLogZ, logZerr
 
-  print*, "nSamples = ",nSamples, " time = ", finish - start, "s"
   call cpu_time(finish)
-  write(9, *) "nSamples = ",nSamples, " time = ", finish - start, "s"
+  print*,     "nSamples = ",nSamples, "nlive = ", nlive, "logZ = ", logZ, "+-", logZerr, " time = ", finish - start, "s"
+  write(9, *) "nSamples = ",nSamples, "nlive = ", nlive, "logZ = ", logZ, "+-", logZerr, " time = ", finish - start, "s"
   call flush(9)
 
   END SUBROUTINE DUMPER
