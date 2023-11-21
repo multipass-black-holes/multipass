@@ -991,7 +991,7 @@ contains
       m%smooth_c = "tan"
       m%norms = .true.
     case("ppisn+trivial+beta-turnon")
-      m%ndim = 13
+      m%ndim = 11
       m%primary => ppisn_mf1g
       m%primaryM2 => ppisn_mf2g
       m%secondary => ppisn_m2_phys
