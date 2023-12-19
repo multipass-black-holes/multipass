@@ -1057,6 +1057,23 @@ contains
       m%smoothint => smooth_expint
       m%smooth_c = "tan"
       m%norms = .true.
+
+    case("ppisn+trivial+gauss-turnon")
+      m%ndim = 11
+      m%primary => ppisn_mf1g
+      m%primaryM2 => ppisn_mf2g
+      m%secondary => ppisn_m2_phys
+      m%secondary_c = "phys"
+      m%redshift => null()
+      m%spin(1,1)%f => gauss_spin_11
+      m%spin(1,2)%f => gauss_spin_12
+      m%spin(2,1)%f => gauss_spin_21
+      m%spin(2,2)%f => trivial_spin
+      m%r2p => r2p_ppisn_beta_no_turn_on
+      m%smooth => smooth_exp
+      m%smoothint => smooth_expint
+      m%smooth_c = "tan"
+      m%norms = .true.
     case default
       stop 9
   end select
