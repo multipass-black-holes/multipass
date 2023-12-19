@@ -78,6 +78,13 @@
       real(kind=prec), intent(in) :: v(:)
       type(para) :: parafn
     END FUNCTION PARAFN
+
+    PURE FUNCTION CUTSFN(P)
+      use functions, only: prec
+      import para
+      type(para), intent(in) :: p
+      logical cutsfn
+    END FUNCTION CUTSFN
   END INTERFACE
 
   TYPE SPINFNS
@@ -93,6 +100,7 @@
     procedure(redshiftFn), pointer, nopass :: redshift
     type(spinFns), dimension(2,2) :: spin
     procedure(paraFn), pointer, nopass :: r2p
+    procedure(cutsFn), pointer, nopass :: cuts
     procedure(smoothFn), pointer, nopass :: smooth, smoothInt
     character(len=3) :: smooth_c
     character(len=4) :: secondary_c
@@ -100,6 +108,12 @@
   END TYPE MODEL
 
 contains
+
+  PURE FUNCTION NOCUTS(P)
+  type(para), intent(in) :: p
+  logical nocuts
+  nocuts = .true.
+  END FUNCTION NOCUTS
 
   PURE FUNCTION TRIVIAL(M, P)
   real(kind=prec), intent(in) :: m(:)
@@ -815,6 +829,7 @@ contains
   type(model) :: m
 
   m%model_name = trim(mods)
+  m%cuts => nocuts
   select case(mods)
     case('plp+flat+trivial+trivial')
       m%ndim = 7

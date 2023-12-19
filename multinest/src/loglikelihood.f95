@@ -66,6 +66,11 @@ contains
   real(kind=prec) :: tmp, acc, Nlxi
   integer i
 
+  if(.not.m%cuts(p)) then
+    ll = -1e10
+    return
+  endif
+
   avg = av_likelihood(dat, m, p)
 
   inj = av_likelihood(injections, m, p)
