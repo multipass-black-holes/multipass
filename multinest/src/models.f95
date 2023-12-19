@@ -151,6 +151,42 @@ contains
   END FUNCTION BETA_SPIN_21
 
 
+
+  PURE FUNCTION GAUSS_SPIN(chi, alpha, beta)
+  real(kind=prec), intent(in) :: chi(:), alpha, beta
+  real(kind=prec) :: gauss_spin(size(chi))
+
+  gauss_spin = 0.
+  where ((chi > 0.) .and. (chi < 1.)) &
+    gauss_spin = gauss(chi, alpha, beta)
+
+  END FUNCTION GAUSS_SPIN
+
+  PURE FUNCTION GAUSS_SPIN_11(chi1, chi2, P)
+  real(kind=prec), intent(in) :: chi1(:), chi2(:)
+  type(para), intent(in) :: p
+  real(kind=prec) :: gauss_spin_11(size(chi1))
+  gauss_spin_11 = gauss_spin(chi1, p%alpha1, p%beta1) &
+               * gauss_spin(chi2, p%alpha1, p%beta1)
+  END FUNCTION GAUSS_SPIN_11
+
+  PURE FUNCTION GAUSS_SPIN_12(chi1, chi2, P)
+  real(kind=prec), intent(in) :: chi1(:), chi2(:)
+  type(para), intent(in) :: p
+  real(kind=prec) :: gauss_spin_12(size(chi1))
+  gauss_spin_12 = gauss_spin(chi1, p%alpha1, p%beta1) &
+               * gauss_spin(chi2, p%alpha2, p%beta2)
+  END FUNCTION GAUSS_SPIN_12
+
+  PURE FUNCTION GAUSS_SPIN_21(chi1, chi2, P)
+  real(kind=prec), intent(in) :: chi1(:), chi2(:)
+  type(para), intent(in) :: p
+  real(kind=prec) :: gauss_spin_21(size(chi1))
+  gauss_spin_21 = gauss_spin(chi1, p%alpha2, p%beta2) &
+               * gauss_spin(chi2, p%alpha1, p%beta1)
+  END FUNCTION GAUSS_SPIN_21
+
+
                    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                    !!                             !!
                    !!          RED SHIFT          !!
