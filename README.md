@@ -268,7 +268,8 @@ $ python analyse.py /path/to/output
  * `ppisn+trivial+gauss-turnon`:
     PPISN for the primary, physical for the secondary, no redshift and normal distributions for spin.
     Primary and secondary are coupled using $q^\beta_q$ with two different $\beta$.
-    The turnon parameters are fixed to their best fit of `ppisn+trivial+trivial`, i.e. $m_{\rm min}=4.09M_{\\odot}$, $\delta m = 5.33M_{\\odot}$
+    The turnon parameters are fixed to their best fit of `ppisn+trivial+trivial`, i.e. $m_{\rm min}=4.09M_{\\odot}$, $\delta m = 5.33M_{\\odot}$.
+    We require $d < b$.
     Parameters:
           $m_{\rm BHMG}$,
           $a$,

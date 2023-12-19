@@ -471,11 +471,18 @@ contains
   p%k    = v(8)
   p%h0   = v(9)
   END FUNCTION R2P_PLP_POW_PLANCK
+
                    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                    !!                             !!
                    !!     PULS. PAIR. INST. SN    !!
                    !!                             !!
                    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  PURE FUNCTION BD_CUT(P)
+  type(para), intent(in) :: p
+  logical bd_cut
+  bd_cut = p%d < p%b
+  END FUNCTION BD_CUT
 
   ! This implements (3) of [2104.02685]
   PURE FUNCTION PPISN_MF1G(M, P)
@@ -1070,6 +1077,7 @@ contains
       m%spin(2,1)%f => gauss_spin_21
       m%spin(2,2)%f => trivial_spin
       m%r2p => r2p_ppisn_beta_no_turn_on
+      m%cuts => bd_cut
       m%smooth => smooth_exp
       m%smoothint => smooth_expint
       m%smooth_c = "tan"
