@@ -1,3 +1,3 @@
 [submodule "multinest/MultiNest"]
 	path = multinest/MultiNest
-	url = https://github.com/JohannesBuchner/MultiNest
+	url = https://github.com/farhanferoz/MultiNest
