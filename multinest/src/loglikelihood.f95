@@ -196,6 +196,22 @@ contains
   ans = ll(the_model, p)
   print*, 'x',ans
 
+  the_model = getmodel('ppisn+trivial+gauss-turnon')
+  p = the_model%r2p((/4.76023054e+01_prec,& ! mgap
+                      4.35632844e-01_prec,& ! a
+                      3.22931846e-02_prec,& ! b
+                      4.09565979e+00_prec,& ! d
+                     -5.39496671e+00_prec,&
+                     -5.33128390e-01_prec,&
+                     -5.02651228e+00_prec,&
+                     0.1_prec,            &
+                     0.2_prec, 0.15_prec, &
+                     0.9_prec, 0.07_prec/))
+  p%sf => the_model%smooth
+  p%sfint => the_model%smoothint
+  ans = ll(the_model, p)
+  print*,'y', ans
+
   END SUBROUTINE TEST
 
                           !!!!!!!!!!!!!!!!!!!!!!
