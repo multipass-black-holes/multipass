@@ -185,6 +185,41 @@ parameters = {
         ("\\alpha_2", "alpha2"),
         ("\\beta_2", "beta2"),
     ],
+    "ppisn+trivial+1beta-turnon": [
+        ("m_{gap}\\ [M_{\\odot}]", "mgap"),
+        ("a", "a"),
+        ("b", "b"),
+        ("d", "d"),
+        ("\\log_{10}\\lambda_{21}", "lam21"),
+        ("\\log_{10}\\lambda_{12}", "lam12"),
+        ("\\beta_{q}", "bq0"),
+        ("\\alpha", "alpha1"),
+        ("\\beta", "beta1"),
+    ],
+    "ppisn+trivial+gauss-turnon": [
+        ("m_{gap}\\ [M_{\\odot}]", "mgap"),
+        ("a", "a"),
+        ("b", "b"),
+        ("d", "d"),
+        ("\\log_{10}\\lambda_{21}", "lam21"),
+        ("\\log_{10}\\lambda_{12}", "lam12"),
+        ("\\beta_{q}", "bq0"),
+        ("\\mu_1", "alpha1"),
+        ("\\sigma_1", "beta1"),
+        ("\\mu_2", "alpha2"),
+        ("\\sigma_2", "beta2"),
+    ],
+    "ppisn+trivial+1gauss-turnon": [
+        ("m_{gap}\\ [M_{\\odot}]", "mgap"),
+        ("a", "a"),
+        ("b", "b"),
+        ("d", "d"),
+        ("\\log_{10}\\lambda_{21}", "lam21"),
+        ("\\log_{10}\\lambda_{12}", "lam12"),
+        ("\\beta_{q}", "bq0"),
+        ("\\mu", "alpha1"),
+        ("\\sigma", "beta1"),
+    ],
 }
 
 def parseInfo(root):
@@ -279,7 +314,7 @@ def central_values(root, model):
     mod = parameters[model]
     with open(root + 'stats.dat') as fp:
         for line in fp.readlines():
-            if m := re.match(" *(\d) +([\d.E+-]+) +([\d.E+-]+) *", line):
+            if m := re.match(" *(\d+) +([\d.E+-]+) +([\d.E+-]+) *", line):
                 ind, y, e = m.groups()
                 _, para = mod[int(ind)-1]
                 print(f"{para:8s} {float(y):7.2f} +- {float(e):7.2f}")
