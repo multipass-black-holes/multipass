@@ -311,3 +311,21 @@ $ python analyse.py /path/to/output
           $\beta_q$,
           $\alpha$,
           $\beta$,
+ * `ppisn+trivial+beta-mass`:
+    PPISN for the primary, physical for the secondary, no redshift and $\beta$ distributions for spin.
+    Primary and secondary are coupled using $q^\beta_q$ with two different $\beta$.
+    The mass function parameters are fixed to their best fit of `ppisn+trivial+trivial`
+    Parameters:
+          $\alpha_1$,
+          $\beta_1$,
+          $\alpha_2$,
+          $\beta_2$
+ * `ppisn+trivial+gauss-turnon`:
+    PPISN for the primary, physical for the secondary, no redshift and normal distributions for spin.
+    Primary and secondary are coupled using $q^\beta_q$ with two different $\beta$.
+    The mass function parameters are fixed to their best fit of `ppisn+trivial+trivial`
+    Parameters:
+          $\alpha_1$,
+          $\beta_1$,
+          $\alpha_2$,
+          $\beta_2$

@@ -120,6 +120,8 @@ contains
       print*, "    - ppisn+trivial+1beta-turnon"
       print*, "    - ppisn+trivial+gauss-turnon"
       print*, "    - ppisn+trivial+1gauss-turnon"
+      print*, "    - ppisn+trivial+beta-mass"
+      print*, "    - ppisn+trivial+gauss-mass"
       print*, " * [n]umber of live points: ", np
       print*, " * [t]olerance (defines stopping)", tol
       print*, " * [e]fr, require efficency", efr

@@ -808,6 +808,26 @@ contains
   p%beta2 =  v(11)
   END FUNCTION R2P_PPISN_BETA_NO_TURN_ON
 
+  PURE FUNCTION R2P_PPISN_BETA_NO_MASS(V) result(p)
+  real(kind=prec), intent(in) :: v(:)
+  type(para) :: p
+  p%mmin = 4.09_prec
+  p%dm   = 5.33_prec
+  p%mgap = 68.83
+  p%a    =  0.17
+  p%b    = -2.42
+  p%d    = -4.23
+  p%lam21= 10**(-2.48)
+  p%lam12= 10**(-3.35)
+  p%bq0  =  6.33
+  p%bq1  =  6.33
+  ! Spin
+  p%alpha1 = v(1)
+  p%beta1 =  v(2)
+  p%alpha2 = v(3)
+  p%beta2 =  v(4)
+  END FUNCTION R2P_PPISN_BETA_NO_MASS
+
   PURE FUNCTION R2P_PPISN_1BETA_NO_TURN_ON(V) result(p)
   real(kind=prec), intent(in) :: v(:)
   type(para) :: p
@@ -1131,6 +1151,39 @@ contains
       m%spin(2,2)%f => trivial_spin
       m%r2p => r2p_ppisn_1beta_no_turn_on
       m%cuts => bd_cut
+      m%smooth => smooth_exp
+      m%smoothint => smooth_expint
+      m%smooth_c = "tan"
+      m%norms = .true.
+
+    case("ppisn+trivial+gauss-mass")
+      m%ndim = 4
+      m%primary => ppisn_mf1g
+      m%primaryM2 => ppisn_mf2g
+      m%secondary => ppisn_m2_phys
+      m%secondary_c = "phys"
+      m%redshift => null()
+      m%spin(1,1)%f => gauss_spin_11
+      m%spin(1,2)%f => gauss_spin_12
+      m%spin(2,1)%f => gauss_spin_21
+      m%spin(2,2)%f => trivial_spin
+      m%r2p => r2p_ppisn_beta_no_mass
+      m%cuts => bd_cut
+      m%smooth => smooth_exp
+      m%smoothint => smooth_expint
+      m%smooth_c = "tan"
+    case("ppisn+trivial+beta-mass")
+      m%ndim = 4
+      m%primary => ppisn_mf1g
+      m%primaryM2 => ppisn_mf2g
+      m%secondary => ppisn_m2_phys
+      m%secondary_c = "phys"
+      m%redshift => null()
+      m%spin(1,1)%f => beta_spin_11
+      m%spin(1,2)%f => beta_spin_12
+      m%spin(2,1)%f => beta_spin_21
+      m%spin(2,2)%f => trivial_spin
+      m%r2p => r2p_ppisn_beta_no_mass
       m%smooth => smooth_exp
       m%smoothint => smooth_expint
       m%smooth_c = "tan"
