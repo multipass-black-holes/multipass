@@ -220,6 +220,19 @@ parameters = {
         ("\\mu", "alpha1"),
         ("\\sigma", "beta1"),
     ],
+
+    "ppisn+trivial+beta-mass": [
+        ("\\alpha_1", "alpha1"),
+        ("\\beta_1", "beta1"),
+        ("\\alpha_2", "alpha2"),
+        ("\\beta_2", "beta2"),
+    ],
+    "ppisn+trivial+gauss-mass": [
+        ("\\mu_1", "alpha1"),
+        ("\\sigma_1", "beta1"),
+        ("\\mu_2", "alpha2"),
+        ("\\sigma_2", "beta2"),
+    ],
 }
 
 def parseInfo(root):
