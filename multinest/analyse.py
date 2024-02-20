@@ -226,6 +226,19 @@ def best_fit(samples):
     ])
 
 
+def best_fit_band(samples, model, n=500, CL=.95, prescale=1):
+    dcl = 100 * (1-CL)/2
+    paras = np.random.multivariate_normal(best_fit(samples), samples.cov(), size=n)
+    x = np.linspace(0, 100, n)
+    y = np.array([interface.pyinterface(model, 'm1', i,x) for i in paras])
+    y = y[~np.any(y<0,axis=1)]
+
+    print(np.sqrt(np.diag(samples.cov())))
+    print(best_fit(samples))
+
+    return x, *np.percentile(prescale * y, [dcl, 100-dcl],axis=0)
+
+
 def plot_bestfit_m1(samples, model="plp+pow+trivial+trivial", fig=None, prescale=1, col=None, label=None):
     h = 1e-6
     n = 1000
