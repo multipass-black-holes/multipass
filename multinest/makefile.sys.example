@@ -1,0 +1,21 @@
+# path to your fortran compiler and linker
+FC=/usr/local/bin/gfortran
+LD=/usr/local/bin/gfortran
+
+# should your compiler require extra flags, please give them here
+#FFLAGS=-I/path/to/some/include/folder
+# you need to be able to link with LAPACK and BLAS. The default for
+# this is -llapack -lblas but some systems use FlexiBLAS
+#LFLAGS=-lflexiblas
+LFLAGS=-llapack -lblas
+
+# path to your OpenMPI installation, defaults to not using MPI
+#MPI=/usr/lib64/openmpi3
+#MPI=/opt/apps/software/mpi/OpenMPI/4.1.4-GCC-12.2.0/
+MPI=
+
+# name of your CMake program, might be called cmake3
+CMAKE=cmake
+
+# your f2py executable
+F2PY=f2py

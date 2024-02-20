@@ -171,7 +171,68 @@ parameters = {
         ("\\beta_1", "beta1"),
         ("\\alpha_2", "alpha2"),
         ("\\beta_2", "beta2"),
-    ]
+    ],
+    "ppisn+trivial+beta-turnon": [
+        ("m_{gap}\\ [M_{\\odot}]", "mgap"),
+        ("a", "a"),
+        ("b", "b"),
+        ("d", "d"),
+        ("\\log_{10}\\lambda_{21}", "lam21"),
+        ("\\log_{10}\\lambda_{12}", "lam12"),
+        ("\\beta_{q}", "bq0"),
+        ("\\alpha_1", "alpha1"),
+        ("\\beta_1", "beta1"),
+        ("\\alpha_2", "alpha2"),
+        ("\\beta_2", "beta2"),
+    ],
+    "ppisn+trivial+1beta-turnon": [
+        ("m_{gap}\\ [M_{\\odot}]", "mgap"),
+        ("a", "a"),
+        ("b", "b"),
+        ("d", "d"),
+        ("\\log_{10}\\lambda_{21}", "lam21"),
+        ("\\log_{10}\\lambda_{12}", "lam12"),
+        ("\\beta_{q}", "bq0"),
+        ("\\alpha", "alpha1"),
+        ("\\beta", "beta1"),
+    ],
+    "ppisn+trivial+gauss-turnon": [
+        ("m_{gap}\\ [M_{\\odot}]", "mgap"),
+        ("a", "a"),
+        ("b", "b"),
+        ("d", "d"),
+        ("\\log_{10}\\lambda_{21}", "lam21"),
+        ("\\log_{10}\\lambda_{12}", "lam12"),
+        ("\\beta_{q}", "bq0"),
+        ("\\mu_1", "alpha1"),
+        ("\\sigma_1", "beta1"),
+        ("\\mu_2", "alpha2"),
+        ("\\sigma_2", "beta2"),
+    ],
+    "ppisn+trivial+1gauss-turnon": [
+        ("m_{gap}\\ [M_{\\odot}]", "mgap"),
+        ("a", "a"),
+        ("b", "b"),
+        ("d", "d"),
+        ("\\log_{10}\\lambda_{21}", "lam21"),
+        ("\\log_{10}\\lambda_{12}", "lam12"),
+        ("\\beta_{q}", "bq0"),
+        ("\\mu", "alpha1"),
+        ("\\sigma", "beta1"),
+    ],
+
+    "ppisn+trivial+beta-mass": [
+        ("\\alpha_1", "alpha1"),
+        ("\\beta_1", "beta1"),
+        ("\\alpha_2", "alpha2"),
+        ("\\beta_2", "beta2"),
+    ],
+    "ppisn+trivial+gauss-mass": [
+        ("\\mu_1", "alpha1"),
+        ("\\sigma_1", "beta1"),
+        ("\\mu_2", "alpha2"),
+        ("\\sigma_2", "beta2"),
+    ],
 }
 
 def parseInfo(root):
@@ -280,9 +341,14 @@ def plot_bestfit_m1(samples, model="plp+pow+trivial+trivial", fig=None, prescale
     return fig
 
 
-def central_values(samples):
-    for name in samples.getMargeStats().names:
-        print(f"{name.name:8s} {float(name.mean):7.2f} +- {float(name.err):7.2f}")
+def central_values(root, model):
+    mod = parameters[model]
+    with open(root + 'stats.dat') as fp:
+        for line in fp.readlines():
+            if m := re.match(" *(\d+) +([\d.E+-]+) +([\d.E+-]+) *", line):
+                ind, y, e = m.groups()
+                _, para = mod[int(ind)-1]
+                print(f"{para:8s} {float(y):7.2f} +- {float(e):7.2f}")
 
 
 def multiintersect(lists):

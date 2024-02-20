@@ -82,9 +82,9 @@ contains
   real(kind=prec), pointer, dimension(:) :: paramConstr
   real(kind=prec) :: maxLogLike, logZ, INSLogZ, logZerr
 
-  print*, "nSamples = ",nSamples, " time = ", finish - start, "s"
   call cpu_time(finish)
-  write(9, *) "nSamples = ",nSamples, " time = ", finish - start, "s"
+  print*,     "nSamples = ",nSamples, "nlive = ", nlive, "logZ = ", logZ, "+-", logZerr, " time = ", finish - start, "s"
+  write(9, *) "nSamples = ",nSamples, "nlive = ", nlive, "logZ = ", logZ, "+-", logZerr, " time = ", finish - start, "s"
   call flush(9)
 
   END SUBROUTINE DUMPER
@@ -103,16 +103,25 @@ contains
       ! generate using
       ! cat models.f95| perl -ne 'print if s/ *case\(.(.*\+.*).\)/      print*, "    - \1"/g'
       print*, "    - plp+flat+trivial+trivial"
+      print*, "    - plp+plp+trivial+trivial"
       print*, "    - plp+pow+trivial+trivial"
       print*, "    - plp+flat+planck+trivial"
       print*, "    - plp+pow+planck+trivial"
+      print*, "    - plp+plp+planck+trivial"
       print*, "    - plp+flat+trivial+beta"
       print*, "    - plp+pow+trivial+beta"
       print*, "    - plp+plp+trivial+beta"
       print*, "    - ppisn+flat+trivial+trivial"
       print*, "    - ppisn+trivial+trivial"
+      print*, "    - ppisn2P+trivial+trivial"
       print*, "    - ppisn+planck+trivial"
       print*, "    - ppisn+trivial+beta"
+      print*, "    - ppisn+trivial+beta-turnon"
+      print*, "    - ppisn+trivial+1beta-turnon"
+      print*, "    - ppisn+trivial+gauss-turnon"
+      print*, "    - ppisn+trivial+1gauss-turnon"
+      print*, "    - ppisn+trivial+beta-mass"
+      print*, "    - ppisn+trivial+gauss-mass"
       print*, " * [n]umber of live points: ", np
       print*, " * [t]olerance (defines stopping)", tol
       print*, " * [e]fr, require efficency", efr
