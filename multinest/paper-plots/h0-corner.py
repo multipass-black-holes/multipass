@@ -2,6 +2,8 @@ import sys
 sys.path.append("..")
 from analyse import *
 
+matplotlib.rcParams.update({'font.size': 14})
+
 samples_ppisn = loadMC('../ppisn-h0/long', 'ppisn+planck+trivial')
 
 # corner plot, H0-mgap
