@@ -484,6 +484,12 @@ contains
   bd_cut = p%d < p%b
   END FUNCTION BD_CUT
 
+  PURE FUNCTION BD_LAM_CUT(P)
+  type(para), intent(in) :: p
+  logical bd_lam_cut
+  bd_lam_cut = (p%d < p%b) .and. (p%lam21 > p%lam12)
+  END FUNCTION BD_LAM_CUT
+
   ! This implements (3) of [2104.02685]
   PURE FUNCTION PPISN_MF1G(M, P)
   real(kind=prec), intent(in) :: m(:)
@@ -1024,6 +1030,7 @@ contains
       m%smoothint => smooth_expint
       m%smooth_c = "tan"
       m%norms = .true.
+      m%cuts => bd_lam_cut
     case("ppisn+trivial+trivial")
       m%ndim = 9
       m%primary => ppisn_mf1g
@@ -1040,6 +1047,7 @@ contains
       m%smoothint => smooth_expint
       m%smooth_c = "tan"
       m%norms = .true.
+      m%cuts => bd_lam_cut
     case("ppisn2P+trivial+trivial")
       m%ndim = 10
       m%primary => ppisn_mf1g
@@ -1056,6 +1064,7 @@ contains
       m%smoothint => smooth_expint
       m%smooth_c = "tan"
       m%norms = .true.
+      m%cuts => bd_lam_cut
     case("ppisn+planck+trivial")
       m%ndim = 10
       m%primary => ppisn_mf1g
@@ -1072,6 +1081,7 @@ contains
       m%smoothint => smooth_expint
       m%smooth_c = "tan"
       m%norms = .true.
+      m%cuts => bd_lam_cut
 
     case("ppisn+trivial+beta")
       m%ndim = 13
@@ -1089,6 +1099,7 @@ contains
       m%smoothint => smooth_expint
       m%smooth_c = "tan"
       m%norms = .true.
+      m%cuts => bd_lam_cut
     case("ppisn+trivial+beta-turnon")
       m%ndim = 11
       m%primary => ppisn_mf1g
@@ -1105,6 +1116,7 @@ contains
       m%smoothint => smooth_expint
       m%smooth_c = "tan"
       m%norms = .true.
+      m%cuts => bd_lam_cut
     case("ppisn+trivial+1beta-turnon")
       m%ndim = 9
       m%primary => ppisn_mf1g
@@ -1121,6 +1133,7 @@ contains
       m%smoothint => smooth_expint
       m%smooth_c = "tan"
       m%norms = .true.
+      m%cuts => bd_lam_cut
     case("ppisn+trivial+gauss-turnon")
       m%ndim = 11
       m%primary => ppisn_mf1g
@@ -1133,7 +1146,8 @@ contains
       m%spin(2,1)%f => gauss_spin_21
       m%spin(2,2)%f => trivial_spin
       m%r2p => r2p_ppisn_beta_no_turn_on
-      m%cuts => bd_cut
+      ! m%cuts => bd_cut
+      m%cuts => bd_lam_cut
       m%smooth => smooth_exp
       m%smoothint => smooth_expint
       m%smooth_c = "tan"
@@ -1150,7 +1164,8 @@ contains
       m%spin(2,1)%f => gauss_spin_21
       m%spin(2,2)%f => trivial_spin
       m%r2p => r2p_ppisn_1beta_no_turn_on
-      m%cuts => bd_cut
+      m%cuts => bd_lam_cut
+      ! m%cuts => bd_cut
       m%smooth => smooth_exp
       m%smoothint => smooth_expint
       m%smooth_c = "tan"
@@ -1168,7 +1183,6 @@ contains
       m%spin(2,1)%f => gauss_spin_21
       m%spin(2,2)%f => trivial_spin
       m%r2p => r2p_ppisn_beta_no_mass
-      m%cuts => bd_cut
       m%smooth => smooth_exp
       m%smoothint => smooth_expint
       m%smooth_c = "tan"
