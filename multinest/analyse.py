@@ -383,7 +383,7 @@ def main(roots):
         l.append(model)
         l.append('$1\sigma$')
 
-        central_values(samples, model)
+        central_values(root, model)
         with open(root+'stats.dat') as fp:
             s = fp.read()
         model = root

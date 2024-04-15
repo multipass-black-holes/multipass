@@ -3,6 +3,8 @@ import sys
 sys.path.append("..")
 from analyse import *
 
+samples_ppisn = loadMC("../ppisn-cut/long", "ppisn+trivial+trivial")
+
 fig, axs = subplots(
     7,
     7,
