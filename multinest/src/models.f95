@@ -741,6 +741,21 @@ contains
   END FUNCTION PPISN_NORMS
 
 
+  PURE FUNCTION R2P_PPISN_NOLAM(V) result(p)
+  real(kind=prec), intent(in) :: v(:)
+  type(para) :: p
+  p%mmin = v(1)
+  p%dm   = v(2)
+  p%mgap = v(3)
+  p%a    = v(4)
+  p%b    = v(5)
+  p%d    = v(6)
+  p%lam21= 0
+  p%lam12= 0
+  p%bq0  = v(7)
+  p%bq1  = v(7)
+  END FUNCTION R2P_PPISN_NOLAM
+
   PURE FUNCTION R2P_PPISN(V) result(p)
   real(kind=prec), intent(in) :: v(:)
   type(para) :: p
@@ -1026,6 +1041,23 @@ contains
       m%spin(2,1)%f => trivial_spin
       m%spin(2,2)%f => trivial_spin
       m%r2p => r2p_ppisn
+      m%smooth => smooth_exp
+      m%smoothint => smooth_expint
+      m%smooth_c = "tan"
+      m%norms = .true.
+      m%cuts => bd_lam_cut
+    case("ppisn-lam+trivial+trivial")
+      m%ndim = 7
+      m%primary => ppisn_mf1g
+      m%primaryM2 => ppisn_mf2g
+      m%secondary => ppisn_m2_phys
+      m%secondary_c = "phys"
+      m%redshift => null()
+      m%spin(1,1)%f => trivial_spin
+      m%spin(1,2)%f => trivial_spin
+      m%spin(2,1)%f => trivial_spin
+      m%spin(2,2)%f => trivial_spin
+      m%r2p => r2p_ppisn_nolam
       m%smooth => smooth_exp
       m%smoothint => smooth_expint
       m%smooth_c = "tan"
