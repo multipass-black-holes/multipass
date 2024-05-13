@@ -733,8 +733,8 @@ contains
 
   N = ppisn_nint(p)
 
-  ppisn_norms = D11 * N(0) * (m2/m1)**p%bq0 &
-    + (p%lam21 * D21 * N(1) + p%lam12 * D12 * N(2)) * (m2/m1)**p%bq1
+  ppisn_norms = D11 / N(0) * (m2/m1)**p%bq0 &
+    + (p%lam21 * D21 / N(1) + p%lam12 * D12 / N(2)) * (m2/m1)**p%bq1
   where(isnan(ppisn_norms)) &
     ppisn_norms = 0.
 
