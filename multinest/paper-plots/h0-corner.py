@@ -16,6 +16,8 @@ axs[1,1].plot(densityH0.P, densityH0.x)
 axs[0,0].plot(densityMG.x, densityMG.P)
 axs[1,0].contourf(*np.meshgrid(density.x,density.y),density.P, levels=density.getContourLevels((0.95,0.68,1e-10)))
 
+print(np.sqrt(np.diag(samples_ppisn.cov())))
+
 axs[1,0].axhspan(73.04-1.04, 73.04+1.04, color='C1')
 axs[1,0].axhspan(67.4-0.5, 67.4+0.5, color='C2')
 
