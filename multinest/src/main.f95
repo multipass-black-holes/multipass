@@ -113,6 +113,7 @@ contains
       print*, "    - plp+plp+trivial+beta"
       print*, "    - ppisn+flat+trivial+trivial"
       print*, "    - ppisn+trivial+trivial"
+      print*, "    - ppisn-lam+trivial+trivial"
       print*, "    - ppisn2P+trivial+trivial"
       print*, "    - ppisn+planck+trivial"
       print*, "    - ppisn+trivial+beta"
