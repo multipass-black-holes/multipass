@@ -300,6 +300,27 @@ def best_fit_band(samples, model, n=500, CL=.95, prescale=1):
     return x, *np.percentile(prescale * y, [dcl, 100-dcl],axis=0)
 
 
+def best_fit_band_norms(samples, model, n=500, npara=200, CL=.95, prescale=1):
+    m1 = np.linspace(0, 120, n)
+    m2 = np.linspace(0, 120, n)
+    A, B = np.meshgrid(m1,m2)
+    x=np.concatenate((A,B)).flatten()
+
+    def avg(para):
+        yy = interface.pyinterface(model, 'm1m2', para,x)
+        return np.mean(np.reshape(yy[:n*n],(n,n)), axis=0)
+
+    dcl = 100 * (1-CL)/2
+    paras = np.random.multivariate_normal(best_fit(samples), samples.cov(), size=npara)
+
+    y = np.array([avg(i) for i in paras])
+    y = y[~np.any(y<0,axis=1)]
+
+    ybf = avg(best_fit(samples))
+
+    return m1, *np.percentile(prescale * y, [dcl, 100-dcl],axis=0), prescale * ybf
+
+
 def plot_bestfit_m1(samples, model="plp+pow+trivial+trivial", fig=None, prescale=1, col=None, label=None):
     h = 1e-6
     n = 1000
