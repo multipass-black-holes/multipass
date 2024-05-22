@@ -1,10 +1,10 @@
 import sys
 
-sys.path.append("..")
+sys.path.append("../")
 from analyse import *
 
-samples_plp = loadMC("../plp/long.card", "plp+plp+trivial+trivial")
-samples_ppisn = loadMC("../ppisn-fixed-norms-cut/long", "ppisn+trivial+trivial")
+samples_plp = loadMC("../../multinest/old/plp/long.card", "plp+plp+trivial+trivial")
+samples_ppisn = loadMC("../ppisn/long", "ppisn+trivial+trivial")
 
 m1, yaplp, ybplp, ycplp = best_fit_band_norms(samples_plp, "plp+plp+trivial+trivial", CL=0.68)
 m1, yappisn, ybppisn, ycppisn = best_fit_band_norms(samples_ppisn, "ppisn+trivial+trivial", CL=0.68)
@@ -26,4 +26,4 @@ legend()
 # axvline(mmin+dm, color='black', linewidth=0.4, zorder=1)
 # axvline(mgap, color='black', linewidth=0.4, zorder=1)
 
-# fig.savefig("mass-function-best-fit.pdf")
+fig.savefig("mass-function-best-fit.pdf")
