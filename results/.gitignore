@@ -1,0 +1,9 @@
+*.err
+*.out
+*.dat
+*.iterinfo
+*.points
+*.ptprob
+*.txt
+*.pdf
+*.timing
