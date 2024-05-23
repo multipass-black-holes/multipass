@@ -811,8 +811,8 @@ contains
   PURE FUNCTION R2P_PPISN_BETA_NO_TURN_ON(V) result(p)
   real(kind=prec), intent(in) :: v(:)
   type(para) :: p
-  p%mmin = 4.09_prec
-  p%dm   = 5.33_prec
+  p%mmin = 4.02_prec
+  p%dm   = 5.27_prec
 
   p%mgap =     v(1)
   p%a    =     v(2)
@@ -832,16 +832,16 @@ contains
   PURE FUNCTION R2P_PPISN_BETA_NO_MASS(V) result(p)
   real(kind=prec), intent(in) :: v(:)
   type(para) :: p
-  p%mmin = 4.09_prec
-  p%dm   = 5.33_prec
-  p%mgap = 68.83
-  p%a    =  0.17
-  p%b    = -2.42
-  p%d    = -4.23
-  p%lam21= 10**(-2.48)
-  p%lam12= 10**(-3.35)
-  p%bq0  =  6.33
-  p%bq1  =  6.33
+  p%mmin = 4.02_prec
+  p%dm   = 5.27_prec
+  p%mgap = 84.09
+  p%a    =  0.12
+  p%b    = -1.53
+  p%d    = -5.86
+  p%lam21= 10**(-2.49)
+  p%lam12= 10**(-4.74)
+  p%bq0  =  6.78
+  p%bq1  =  6.78
   ! Spin
   p%alpha1 = v(1)
   p%beta1 =  v(2)
@@ -852,8 +852,8 @@ contains
   PURE FUNCTION R2P_PPISN_1BETA_NO_TURN_ON(V) result(p)
   real(kind=prec), intent(in) :: v(:)
   type(para) :: p
-  p%mmin = 4.09_prec
-  p%dm   = 5.33_prec
+  p%mmin = 4.02_prec
+  p%dm   = 5.27_prec
 
   p%mgap =     v(1)
   p%a    =     v(2)
