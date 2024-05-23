@@ -3,7 +3,7 @@ import sys
 sys.path.append("../")
 from analyse import *
 
-samples_plp = loadMC("../../multinest/old/plp/long.card", "plp+plp+trivial+trivial")
+samples_plp = loadMC("../plp/long", "plp+plp+trivial+trivial")
 samples_ppisn = loadMC("../ppisn/long", "ppisn+trivial+trivial")
 
 m1, yaplp, ybplp, ycplp = best_fit_band_norms(samples_plp, "plp+plp+trivial+trivial", CL=0.68)
