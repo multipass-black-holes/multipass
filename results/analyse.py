@@ -13,6 +13,9 @@ except ImportError:
 import numpy as np
 from matplotlib.pyplot import *
 import interface
+import scipy
+import warnings
+warnings.filterwarnings("ignore")
 
 rc('text', usetex=True)
 
@@ -282,13 +285,6 @@ def triangle_plot(samples, lim, model="plp+pow+trivial+trivial"):
     return gcf()
 
 
-def best_fit(samples):
-    return np.array([
-        name.mean
-        for name in samples.getMargeStats().names
-    ])
-
-
 def best_fit_band(samples, model, n=500, CL=.95, prescale=1):
     dcl = 100 * (1-CL)/2
     paras = np.random.multivariate_normal(best_fit(samples), samples.cov(), size=n)
@@ -364,14 +360,44 @@ def plot_bestfit_m1(samples, model="plp+pow+trivial+trivial", fig=None, prescale
     return fig
 
 
-def central_values(root, model):
-    mod = parameters[model]
-    with open(root + 'stats.dat') as fp:
-        for line in fp.readlines():
-            if m := re.match(" *(\d+) +([\d.E+-]+) +([\d.E+-]+) *", line):
-                ind, y, e = m.groups()
-                _, para = mod[int(ind)-1]
-                print(f"{para:8s} {float(y):7.2f} +- {float(e):7.2f}")
+def best_fit(samples):
+    def best_fit1(para):
+        dens = samples.get1DDensity(para).normalize()
+
+        lower, upper = dens.bounds()
+        avg, _ = scipy.integrate.quad(
+            lambda x: x * dens.Prob(x),
+            lower, upper
+        )
+        return avg
+
+    return np.array([
+        best_fit1(name)
+        for name in samples.getMargeStats().names
+    ])
+
+
+def central_value(dens):
+    lower, upper = dens.bounds()
+    avg, _ = scipy.integrate.quad(
+        lambda x: x * dens.Prob(x),
+        lower, upper
+    )
+    lvar, _ = scipy.integrate.quad(
+        lambda x: (x-avg)**2 * dens.Prob(x),
+        lower, avg
+    )
+    uvar, _ = scipy.integrate.quad(
+        lambda x: (x-avg)**2 * dens.Prob(x),
+        avg, upper
+    )
+    return avg, lvar, uvar
+
+
+def central_values(samples, model):
+    for _, para in parameters[model]:
+        avg, lvar, uvar = central_value(samples.get1DDensity(para).normalize())
+        print(f"{para:8s} {avg:7.2f} +- {np.sqrt(lvar+uvar):7.2f}   -{np.sqrt(2*lvar):7.2f}+{np.sqrt(2*uvar):7.2f}")
 
 
 def multiintersect(lists):
@@ -406,7 +432,7 @@ def main(roots):
         l.append(model)
         l.append('$1\sigma$')
 
-        central_values(root, model)
+        central_values(samples, model)
         with open(root+'stats.dat') as fp:
             s = fp.read()
         model = root
