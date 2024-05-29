@@ -240,6 +240,11 @@ parameters = {
     ],
 }
 
+def mergenumbers(values):
+    weight = sum(1 / values[:, 1] ** 2)
+    value = sum(values[:, 0] / values[:, 1] ** 2 / weight)
+    return np.array([value, np.sqrt(1 / weight)])
+
 def parseInfo(root):
     with open(root + ".timing") as fp:
         txt = fp.read()
