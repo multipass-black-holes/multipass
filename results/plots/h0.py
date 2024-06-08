@@ -14,17 +14,6 @@ densityMG = samples_ppisn.get1DDensityGridData('mgap').normalize()
 density=samples_ppisn.get2DDensityGridData('h0','mgap').normalize()
 
 
-fig = figure(figsize=(4,3))
-plot(densityH0_PLP.x, densityH0_PLP.P, label=r'${\rm PLP}$')
-plot(densityH0.x, densityH0.P, label=r'${\rm PPISN}$')
-legend()
-
-gca().set_xlabel(r"$H_0\,/\,{\rm km}\,{\rm s}^{-1}\,{\rm Mpc}^{-1}$")
-fig.tight_layout()
-
-fig.savefig("h0.pdf")
-
-
 fig, axs = subplots(2,2, sharex='col', sharey='row', gridspec_kw={"hspace": 0, "wspace": 0}, figsize=(4,4))
 axs[0,0].plot(densityH0.x, densityH0.P)
 axs[0,0].plot(densityH0_PLP.x, densityH0_PLP.P, label=r'${\rm PLP}$', color='C3')
