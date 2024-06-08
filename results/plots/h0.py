@@ -27,6 +27,7 @@ fig.savefig("h0.pdf")
 
 fig, axs = subplots(2,2, sharex='col', sharey='row', gridspec_kw={"hspace": 0, "wspace": 0}, figsize=(4,4))
 axs[0,0].plot(densityH0.x, densityH0.P)
+axs[0,0].plot(densityH0_PLP.x, densityH0_PLP.P, label=r'${\rm PLP}$', color='C3')
 axs[1,1].plot(densityMG.P, densityMG.x)
 axs[1,0].contourf(*np.meshgrid(density.x,density.y),density.P, levels=density.getContourLevels((0.95,0.68,1e-10)))
 
@@ -36,8 +37,8 @@ axs[1,0].axvspan(planck[0]-planck[1], planck[0]+planck[1], color='C2')
 axs[0,0].axvspan(sh0es[0]-sh0es[1], sh0es[0]+sh0es[1], color='C1')
 axs[0,0].axvspan(planck[0]-planck[1], planck[0]+planck[1], color='C2')
 axs[0,1].legend(
-    [matplotlib.lines.Line2D([0], [0], color=f'C{i}') for i in range(3)],
-    [r'${\rm This work}$', r'${\rm SH0ES}$', r'${\rm Planck\ 2018}$'],
+    [matplotlib.lines.Line2D([0], [0], color=f'C{i}') for i in range(4)],
+    [r'${\rm This\ work}$', r'${\rm SH0ES}$', r'${\rm Planck\ 2018}$', r'{\rm PLP}'],
     loc='center'
 )
 
