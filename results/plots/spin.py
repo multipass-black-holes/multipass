@@ -47,8 +47,12 @@ plot(
 )
 legend()
 
+gca().xaxis.set_minor_locator(MultipleLocator(0.1))
+gca().xaxis.set_major_locator(MultipleLocator(0.2))
+
 xlabel(r"$\chi_{\rm eff}$")
 ylabel(r"${\rm d}R/{\rm d}\chi_{\rm eff}$")
+xlim(0,1)
 
 fig.savefig("spin.pdf")
 

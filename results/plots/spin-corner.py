@@ -119,6 +119,13 @@ for i in range(11):
         if i < j:
             axs[j,i].set_ylim(l)
 
+axs[0,5].legend(
+    [matplotlib.lines.Line2D([0], [0], color=f'C{i}') for i in range(2)],
+    [r'${\rm with\ spin}$', r'${\rm without\ spin}$'],
+    loc='center',
+    fontsize=20
+)
+
 
 fig.tight_layout()
 fig.savefig("full-corner.pdf")
