@@ -112,8 +112,8 @@ contains
       print*, "    - plp+pow+trivial+beta"
       print*, "    - plp+plp+trivial+beta"
       print*, "    - ppisn+flat+trivial+trivial"
-      print*, "    - ppisn+trivial+trivial"
       print*, "    - ppisn-lam+trivial+trivial"
+      print*, "    - ppisn+trivial+trivial"
       print*, "    - ppisn2P+trivial+trivial"
       print*, "    - ppisn+planck+trivial"
       print*, "    - ppisn+trivial+beta"
@@ -121,8 +121,8 @@ contains
       print*, "    - ppisn+trivial+1beta-turnon"
       print*, "    - ppisn+trivial+gauss-turnon"
       print*, "    - ppisn+trivial+1gauss-turnon"
-      print*, "    - ppisn+trivial+beta-mass"
       print*, "    - ppisn+trivial+gauss-mass"
+      print*, "    - ppisn+trivial+beta-mass"
       print*, " * [n]umber of live points: ", np
       print*, " * [t]olerance (defines stopping)", tol
       print*, " * [e]fr, require efficency", efr
