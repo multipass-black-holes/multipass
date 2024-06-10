@@ -6,9 +6,11 @@
   integer, intent(in) :: np, ndat
   real(kind=8), intent(in) :: r(np), dat(ndat)
   real(kind=8), intent(out) :: outp(ndat)
+  real(kind=8) :: zero(ndat)
 
   type(model) :: the_model
   type(para) :: p
+  zero = 0.
 
   the_model = getmodel(mods)
   p = the_model%r2p(r)
@@ -18,6 +20,15 @@
   select case(what)
     case('m1')
       outp = the_model%primary(dat, p)
+      ! include norms here..
+
+    case('m1m2')
+      outp(1:ndat/2) = the_model%primary(dat(1:ndat/2), p) &
+           * the_model%secondary(dat(1:ndat/2), dat(ndat/2+1:ndat), p)
+      if(the_model%norms) then
+        outp(1:ndat/2) = &
+            ppisn_norms(outp(1:ndat/2), dat(1:ndat/2), dat(ndat/2+1:ndat), zero(1:ndat/2), zero(ndat/2+1:ndat), the_model, p)
+      endif
   end select
   end subroutine
 

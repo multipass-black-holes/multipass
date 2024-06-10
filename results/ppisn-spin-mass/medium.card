@@ -1,0 +1,8 @@
+m ppisn+trivial+beta-mass
+p  1., 1., 1., 1.
+P 10.,10.,10.,10.
+n 500
+t 0.5
+e 0.3
+o ppisn-spin-mass/medium-mass
+s
