@@ -2,11 +2,11 @@
 
 This is the code to the paper
 
-> Population analysis with split mass functions
+> Multi-Generational Black Hole Population Analysis with an Astrophysically Informed Mass Function
 >
-> Yannick Ulrich, Djuna Croon, Jeremy Sakstein, ...
+> Yannick Ulrich, Djuna Croon, Jeremy Sakstein, Samuel McDermott
 >
-> arXiv:23xx.xxxxx
+> arXiv:2406.06109
 
 ## Usage
 
