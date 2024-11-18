@@ -472,6 +472,21 @@ contains
   p%h0   = v(9)
   END FUNCTION R2P_PLP_POW_PLANCK
 
+  PURE FUNCTION R2P_PLP_POW_PLANCKGAMMA(V) result(p)
+  real(kind=prec), intent(in) :: v(:)
+  type(para) :: p
+  p%mmin = v(1)
+  p%dm   = v(2)
+  p%mmax = v(3)
+  p%mum  = v(4)
+  p%sm   = v(5)
+  p%alpha= v(6)
+  p%lp   = v(7)
+  p%k    = v(8)
+  p%h0   = v(9)
+  p%gamma= v(10)
+  END FUNCTION R2P_PLP_POW_PLANCKGAMMA
+
                    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                    !!                             !!
                    !!     PULS. PAIR. INST. SN    !!
@@ -887,6 +902,47 @@ contains
   p%h0   = v(10)
   END FUNCTION R2P_PPISN_PLANCK
 
+  PURE FUNCTION R2P_PPISN_PLANCKGAMMA(V) result(p)
+  real(kind=prec), intent(in) :: v(:)
+  type(para) :: p
+  p%mmin = v(1)
+  p%dm   = v(2)
+  p%mgap = v(3)
+  p%a    = v(4)
+  p%b    = v(5)
+  p%d    = v(6)
+  p%lam21= 10**v(7)
+  p%lam12= 10**v(8)
+  p%bq0  = v(9)
+  p%bq1  = v(9)
+
+  p%h0   = v(10)
+  p%gamma= v(11)
+  END FUNCTION R2P_PPISN_PLANCKGAMMA
+
+  PURE FUNCTION R2P_PPISN_PLANCK_BETA_NO_TURN_ON(V) result(p)
+  real(kind=prec), intent(in) :: v(:)
+  type(para) :: p
+  p%mmin = 4.02_prec
+  p%dm   = 5.27_prec
+
+  p%mgap =     v(1)
+  p%a    =     v(2)
+  p%b    =     v(3)
+  p%d    =     v(4)
+  p%lam21= 10**v(5)
+  p%lam12= 10**v(6)
+  p%bq0  =     v(7)
+  p%bq1  =     v(7)
+  ! Spin
+  p%alpha1 = v(8)
+  p%beta1  = v(9)
+  p%alpha2 = v(10)
+  p%beta2  = v(11)
+  ! H0
+  p%h0     = v(12)
+  END FUNCTION R2P_PPISN_PLANCK_BETA_NO_TURN_ON
+
                    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                    !!                             !!
                    !!            TOOLS            !!
@@ -981,6 +1037,20 @@ contains
       m%spin(2,1)%f => trivial_spin
       m%spin(2,2)%f => trivial_spin
       m%r2p => r2p_plp_pow_planck
+      m%smooth => smooth_tanh
+      m%smoothint => smooth_expint
+      m%smooth_c = "tan"
+      m%norms = .false.
+    case('plp+plp+planckGamma+trivial')
+      m%ndim = 10
+      m%primary => plp_mf
+      m%secondary => plp_m2f
+      m%redshift => redshift_planck
+      m%spin(1,1)%f => trivial_spin
+      m%spin(1,2)%f => trivial_spin
+      m%spin(2,1)%f => trivial_spin
+      m%spin(2,2)%f => trivial_spin
+      m%r2p => r2p_plp_pow_planckGamma
       m%smooth => smooth_tanh
       m%smoothint => smooth_expint
       m%smooth_c = "tan"
@@ -1114,6 +1184,23 @@ contains
       m%smooth_c = "tan"
       m%norms = .true.
       m%cuts => bd_lam_cut
+    case("ppisn+planckGamma+trivial")
+      m%ndim = 11
+      m%primary => ppisn_mf1g
+      m%primaryM2 => ppisn_mf2g
+      m%secondary => ppisn_m2_phys
+      m%secondary_c = "phys"
+      m%redshift => redshift_planck
+      m%spin(1,1)%f => trivial_spin
+      m%spin(1,2)%f => trivial_spin
+      m%spin(2,1)%f => trivial_spin
+      m%spin(2,2)%f => trivial_spin
+      m%r2p => r2p_ppisn_planckGamma
+      m%smooth => smooth_exp
+      m%smoothint => smooth_expint
+      m%smooth_c = "tan"
+      m%norms = .true.
+      m%cuts => bd_lam_cut
 
     case("ppisn+trivial+beta")
       m%ndim = 13
@@ -1135,7 +1222,7 @@ contains
     case("ppisn+trivial+beta-turnon")
       m%ndim = 11
       m%primary => ppisn_mf1g
-      m%primaryM2 => ppisn_mf2g
+      m%primarym2 => ppisn_mf2g
       m%secondary => ppisn_m2_phys
       m%secondary_c = "phys"
       m%redshift => null()
@@ -1234,6 +1321,25 @@ contains
       m%smoothint => smooth_expint
       m%smooth_c = "tan"
       m%norms = .true.
+
+    case("ppisn+planck+beta-turnon")
+      m%ndim = 12
+      m%primary => ppisn_mf1g
+      m%primarym2 => ppisn_mf2g
+      m%secondary => ppisn_m2_phys
+      m%secondary_c = "phys"
+      m%redshift => redshift_planck
+      m%spin(1,1)%f => beta_spin_11
+      m%spin(1,2)%f => beta_spin_12
+      m%spin(2,1)%f => beta_spin_21
+      m%spin(2,2)%f => trivial_spin
+      m%r2p => r2p_ppisn_planck_beta_no_turn_on
+      m%smooth => smooth_exp
+      m%smoothint => smooth_expint
+      m%smooth_c = "tan"
+      m%norms = .true.
+      m%cuts => bd_lam_cut
+
     case default
       stop 9
   end select
