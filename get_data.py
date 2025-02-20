@@ -46,8 +46,20 @@ def get_download(url):
     return m['parameters'][k]['data_url']
 
 
-def download_file(url):
-    subprocess.Popen(['wget', url], cwd='tmp/').wait()
+def download_file(url, cwd="tmp/"):
+    if url.endswith("/content"):
+        filename = url.split("/")[-2]
+    elif url.endswith("?download=1"):
+        filename = url.split("/")[-2][:-11]
+    elif url.endswith(".h5") or url.endswith(".hdf5") or url.endswith(".hdf"):
+        filename = url.split("/")[-1]
+    else:
+        print(url)
+
+    if not os.path.exists(f"{cwd}{filename}"):
+        args = ['wget', url, '-O', filename]
+        print(args)
+        # subprocess.Popen(args, cwd=cwd).wait()
 
 
 def untar(fn):
@@ -64,6 +76,7 @@ def untar(fn):
 
 if __name__ == "__main__":
     urls = []
+    failed_downloads = []
     for k, url in list_catalog('all'):
         try:
             print(f"Getting metadata for {k}...", end="")
@@ -71,14 +84,21 @@ if __name__ == "__main__":
             print(f" done")
             urls.append(url)
             download_file(url)
+        except KeyboardInterrupt:
+            break
         except:
-            print(" failed!")
+            import traceback
+            failed_downloads.append(k)
+            print("fail in",k)
+            traceback.print_exc()
 
-    download_file("https://dcc.ligo.org/public/0169/P2000223/007/GW190424_180648.tar")
-    download_file("https://dcc.ligo.org/public/0169/P2000223/007/GW190909_114149.tar")
+    print(failed_downloads)
 
-    for i in os.listdir("tmp/"):
-        if i.endswith(".tar"):
-            print(f"Untarring {i}...", end="")
-            untar("tmp/" + i)
-            print(" done")
+    # for i in os.listdir("tmp/"):
+    #     if i.endswith(".tar"):
+    #         print(f"Untarring {i}...", end="")
+    #         untar("tmp/" + i)
+    #         print(" done")
+
+    download_file("https://zenodo.org/records/5546676/files/endo3_mixture-LIGO-T2100113-v12.hdf5?download=1", cwd=".")
+    download_file("https://dcc-llo.ligo.org/public/0168/P2000217/002/o3a_bbhpop_inj_info.hdf", cwd=".")
