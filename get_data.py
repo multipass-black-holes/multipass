@@ -42,8 +42,11 @@ def get_download(url):
         if 'pe' in k
     ]
     assert len(parameters) > 0
-    k = sorted(parameters, key=lambda a: a[1], reverse=True)[0][0]
-    return m['parameters'][k]['data_url']
+    parameters = sorted(parameters, key=lambda a: a[1], reverse=True)
+    return [
+        m['parameters'][k[0]]['data_url']
+        for k in parameters
+    ]
 
 
 def download_file(url, cwd="tmp/"):
@@ -51,7 +54,7 @@ def download_file(url, cwd="tmp/"):
         filename = url.split("/")[-2]
     elif url.endswith("?download=1"):
         filename = url.split("/")[-2][:-11]
-    elif url.endswith(".h5") or url.endswith(".hdf5") or url.endswith(".hdf"):
+    elif url.endswith(".h5") or url.endswith(".hdf5") or url.endswith(".hdf") or url.endswith('.tar'):
         filename = url.split("/")[-1]
     else:
         print(url)
@@ -74,16 +77,20 @@ def untar(fn):
     raise KeyError
 
 
+def list_catalogs(lst):
+    for name in lst:
+        yield from list_catalog(name)
+
+
 if __name__ == "__main__":
-    urls = []
     failed_downloads = []
-    for k, url in list_catalog('all'):
+    for k, url in list_catalogs(['all', 'gwtc-2']):
         try:
             print(f"Getting metadata for {k}...", end="")
-            url = get_download(url)
+            urls = get_download(url)
             print(f" done")
-            urls.append(url)
-            download_file(url)
+            for url in urls:
+                download_file(url)
         except KeyboardInterrupt:
             break
         except:
