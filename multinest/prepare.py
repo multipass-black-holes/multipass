@@ -82,7 +82,7 @@ def load_gw(veto, base='../tmp/', v=2):
     elif v == 21:
         pat = re.compile(r'IGWN-GWTC2p1-v\d*-GW([\d_]*)_PEDataRelease.h5')
     elif v == 3:
-        pat = re.compile(r'IGWN-GWTC3p0-v\d*-GW([\d_]*)_PEDataRelease_mixed_cosmo.h5')
+        pat = re.compile(r'IGWN-GWTC.p.-v\d*-GW([\d_]*)_PEDataRelease_mixed_cosmo.h5')
 
     files = [pat.match(i) for i in os.listdir(base)]
     files = [
@@ -161,9 +161,12 @@ def load_gw(veto, base='../tmp/', v=2):
                 s1 = np.concatenate((s1, np.sqrt(d['spin_1x']**2 + d['spin_1y']**2 + d['spin_1z']**2)))
                 s2 = np.concatenate((s2, np.sqrt(d['spin_2x']**2 + d['spin_2y']**2 + d['spin_2z']**2)))
             elif v == 3:
+                if 'C01:Mixed/posterior_samples' not in f:
+                    print("Skipping", fn, "missing field")
+                    continue
                 d = f['C01:Mixed/posterior_samples']
                 if np.mean(d['mass_1_source']) < 2.5 or np.mean(d['mass_2_source']) < 2.5:
-                    print("Skipping", fn)
+                    print("Skipping", fn, "bad mass")
                     continue
                 m1 = np.concatenate((m1, d['mass_1_source']))
                 m2 = np.concatenate((m2, d['mass_2_source']))
@@ -177,7 +180,7 @@ def load_gw(veto, base='../tmp/', v=2):
             # print(fn, min(m2))
             offsets.append(len(m1))
 
-    return np.column_stack((m1, m2, m1D, m2D, rs, ld, s1, s2)), np.array(offsets)
+    return np.column_stack((m1, m2, m1D, m2D, rs, ld, s1, s2)), np.array(offsets, dtype=int)
 
 
 def get_veto():
@@ -266,7 +269,7 @@ def get_far_veto():
 
 
 def convert_gw(fo='data.rec', base='../tmp/'):
-    veto = get_far_veto()
+    veto = get_veto()
     d1, o1 = load_gw(veto, base, v=1)
 
     d2, o2 = load_gw(veto, base, v=2)
