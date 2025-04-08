@@ -324,6 +324,7 @@ def convert_injection(
     fi: str = "../o1+o2+o3_mixture_real+semianalytic-LIGO-T2100377-v2.hdf5",
     fo: str = "inj.rec",
     version: int = 4,
+    auto_sampling_pdf: bool = True,
 ):
     with h5py.File(fi, "r") as f:
         if version == 2:
@@ -344,6 +345,10 @@ def convert_injection(
             )
             ld = f["injections/distance"][mask]
 
+            if auto_sampling_pdf:
+                raise ValueError("not supported")
+            else:
+                pdf = m1D**-4.35 * m2D**2
         elif version == 3:
             mask = [
                 np.array(f["injections/ifar_gstlal"]) > ifar_find,
@@ -367,6 +372,11 @@ def convert_injection(
             m1D = f["injections/mass1"][mask]
             m2D = f["injections/mass2"][mask]
             ld = f["injections/distance"][mask]
+
+            if auto_sampling_pdf:
+                pdf = f["injections/sampling_pdf"][mask]
+            else:
+                pdf = m1D**-4.35 * m2D**2
 
         elif version == 4:
             mask = [
@@ -394,11 +404,13 @@ def convert_injection(
             )
             ld = invzfunc(f["injections/redshift"][mask])
 
+            pdf = f["injections/sampling_pdf"][mask]
+
         m1 = f["injections/mass1_source"][mask]
         m2 = f["injections/mass2_source"][mask]
         rs = f["injections/redshift"][mask]
 
-        dat = np.column_stack((m1, m2, m1D, m2D, rs, ld, s1, s2))
+        dat = np.column_stack((m1, m2, m1D, m2D, rs, ld, s1, s2, pdf))
 
     with open(fo, "wb") as fp:
         write_record(fp, "i", [len(dat)])

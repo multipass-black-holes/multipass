@@ -73,9 +73,7 @@ contains
 
   avg = av_likelihood(dat, m, p)
 
-  inj = av_likelihood(injections, m, p)
-  inj = inj / injections(:,1)**(-4.35)
-  inj = inj / injections(:,2)**2
+  inj = av_likelihood(injections, m, p) * injections(:,9)
 
   ! We need to average the avg for each event file as delimited by offsets
   acc = 0.
@@ -102,7 +100,7 @@ contains
   open(unit=8, action='read', form='unformatted', file=trim(fn))
 
   read(8) n
-  allocate(injections(n,8))
+  allocate(injections(n,9))
   read(8) injections
 
   close(unit=8)
