@@ -13,6 +13,7 @@ nda = numpy.typing.NDArray[np.float64]
 z_table = np.linspace(0, 15, 3000)
 d_L_table = cosmo.luminosity_distance(z_table)
 zfunc = scipy.interpolate.interp1d(d_L_table, z_table)
+invzfunc = scipy.interpolate.interp1d(z_table, d_L_table)
 
 
 def write_record(
@@ -320,9 +321,9 @@ def convert_events(
 
 def convert_injection(
     ifar_find: float = 1,
-    fi: str = "../endo3_mixture-LIGO-T2100113-v12.hdf5",
+    fi: str = "../o1+o2+o3_mixture_real+semianalytic-LIGO-T2100377-v2.hdf5",
     fo: str = "inj.rec",
-    version: int = 3,
+    version: int = 4,
 ):
     with h5py.File(fi, "r") as f:
         if version == 2:
@@ -341,6 +342,8 @@ def convert_injection(
             m2D = f["injections/mass2_source"][mask] * (
                 1 + f["injections/redshift"][mask]
             )
+            ld = f["injections/distance"][mask]
+
         elif version == 3:
             mask = [
                 np.array(f["injections/ifar_gstlal"]) > ifar_find,
@@ -363,15 +366,45 @@ def convert_injection(
 
             m1D = f["injections/mass1"][mask]
             m2D = f["injections/mass2"][mask]
+            ld = f["injections/distance"][mask]
+
+        elif version == 4:
+            mask = [
+                np.array(f["injections/ifar_gstlal"]) > ifar_find,
+                np.array(f["injections/ifar_pycbc_bbh"]) > ifar_find,
+            ]
+            mask = np.all(mask, axis=0)
+
+            s1 = np.sqrt(
+                f["injections/spin1x"][mask] ** 2
+                + f["injections/spin1y"][mask] ** 2
+                + f["injections/spin1z"][mask] ** 2
+            )
+            s2 = np.sqrt(
+                f["injections/spin2x"][mask] ** 2
+                + f["injections/spin2y"][mask] ** 2
+                + f["injections/spin2z"][mask] ** 2
+            )
+
+            m1D = f["injections/mass1_source"][mask] * (
+                1 + f["injections/redshift"][mask]
+            )
+            m2D = f["injections/mass2_source"][mask] * (
+                1 + f["injections/redshift"][mask]
+            )
+            ld = invzfunc(f["injections/redshift"][mask])
+
         m1 = f["injections/mass1_source"][mask]
         m2 = f["injections/mass2_source"][mask]
         rs = f["injections/redshift"][mask]
-        ld = f["injections/distance"][mask]
-        s1z = f["injections/spin1z"][mask]
-        s2z = f["injections/spin2z"][mask]
 
         dat = np.column_stack((m1, m2, m1D, m2D, rs, ld, s1, s2))
 
     with open(fo, "wb") as fp:
         write_record(fp, "i", [len(dat)])
         write_record(fp, "d", dat)
+
+
+if __name__ == "__main__":
+    convert_injection()
+    o, d = convert_events("data.rec", all_events=load_all_files())

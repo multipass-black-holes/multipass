@@ -108,4 +108,5 @@ if __name__ == "__main__":
     #         print(" done")
 
     download_file("https://zenodo.org/records/5546676/files/endo3_mixture-LIGO-T2100113-v12.hdf5?download=1", cwd=".")
+    download_file("https://zenodo.org/records/7890398/files/o1+o2+o3_mixture_real+semianalytic-LIGO-T2100377-v2.hdf5?download=1", cwd=".")
     download_file("https://dcc-llo.ligo.org/public/0168/P2000217/002/o3a_bbhpop_inj_info.hdf", cwd=".")
