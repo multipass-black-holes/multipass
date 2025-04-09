@@ -73,7 +73,7 @@ contains
 
   avg = av_likelihood(dat, m, p)
 
-  inj = av_likelihood(injections, m, p) * injections(:,9)
+  inj = av_likelihood(injections, m, p) / injections(:,9)
 
   ! We need to average the avg for each event file as delimited by offsets
   acc = 0.
