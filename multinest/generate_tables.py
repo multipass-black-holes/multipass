@@ -66,6 +66,19 @@ def build_H0_Planck(n: int = 100, Om: float = 0.3111) -> nda:
     return build_H0(lambda zz: 1 / sqrt(Om * (1 + zz) ** 3 + (1 - Om)), n)
 
 
+def build_H0_DESI(
+    n: int = 100, Om: float = 0.3191, w0: float = -0.752, wa: float = -0.86
+) -> nda:
+    return build_H0(
+        lambda zz: 1
+        / sqrt(
+            Om * (1 + zz) ** 3
+            + (1 - Om) * (1 + zz) ** (3 * (1 + w0 + wa)) * exp(-3 * wa * zz / (1 + zz))
+        ),
+        n,
+    )
+
+
 def to_fortran(dat: nda, n: int = 3) -> str:
     body = ", &\n".join(
         "      "
@@ -82,5 +95,7 @@ if __name__ == "__main__":
         dat = build_lvc_int()
     elif sys.argv[1] == "Planck":
         dat = build_H0_Planck()
+    elif sys.argv[1] == "DESI":
+        dat = build_H0_DESI()
 
     print(to_fortran(dat))

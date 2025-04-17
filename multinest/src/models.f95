@@ -297,6 +297,78 @@ contains
   END SUBROUTINE REDSHIFT_PLANCK
 
 
+  PURE SUBROUTINE REDSHIFT_DESI(M1D, M2D, M1S, M2S, Z, D, P, LL)
+   ! This hard-codes the best-fit values of Om, w0, wa
+  use functions, only: prec
+  real(kind=prec), intent(in) :: m1d(:), m2d(:), Z(:), D(:)
+  real(kind=prec), intent(out) :: m1s(:), m2s(:), LL(:)
+  real(kind=prec) :: zz(size(d))
+  type(para), intent(in) :: p
+  real(kind=prec), parameter :: Om = 0.3191
+  real(kind=prec), parameter :: w0 = -0.752
+  real(kind=prec), parameter :: wa = -0.86
+  real(kind=prec), parameter :: conv = 299792.458 ! speed of light in km/s
+
+  integer, parameter :: n = 101
+  real(kind=prec), parameter :: tab(n) =  (/&
+      +4.581268005310654e+00_prec, +4.195823610760440e+00_prec, -1.963471998016926e-01_prec, &
+      +7.932723021108265e-02_prec, -4.174869624028918e-02_prec, +2.459309795215395e-02_prec, &
+      -1.524742709614249e-02_prec, +9.692216051605442e-03_prec, -6.248220295184405e-03_prec, &
+      +4.067933055242823e-03_prec, -2.671172941589790e-03_prec, +1.768660733957988e-03_prec, &
+      -1.180921858317188e-03_prec, +7.950787127926227e-04_prec, -5.396301772332840e-04_prec, &
+      +3.690400258771652e-04_prec, -2.541393692292110e-04_prec, +1.761126758928284e-04_prec, &
+      -1.227229837606527e-04_prec, +8.593932716408119e-05_prec, -6.044106085347620e-05_prec, &
+      +4.267005394812031e-05_prec, -3.022562165021408e-05_prec, +2.147474146583815e-05_prec, &
+      -1.529841089542154e-05_prec, +1.092486616609792e-05_prec, -7.818793099222871e-06_prec, &
+      +5.607027270309288e-06_prec, -4.028292843329578e-06_prec, +2.898940830412286e-06_prec, &
+      -2.089436078613512e-06_prec, +1.508125664692908e-06_prec, -1.089975948450212e-06_prec, &
+      +7.887216907895930e-07_prec, -5.713713552357331e-07_prec, +4.143474046001083e-07_prec, &
+      -3.007661215997471e-07_prec, +2.185146979219595e-07_prec, -1.588881592827003e-07_prec, &
+      +1.156206411840479e-07_prec, -8.419531104725156e-08_prec, +6.135169290774789e-08_prec, &
+      -4.473323257693722e-08_prec, +3.263468424253365e-08_prec, -2.382075527134044e-08_prec, &
+      +1.739567456204906e-08_prec, -1.270926333961098e-08_prec, +9.289179746169758e-09_prec, &
+      -6.791999302171857e-09_prec, +4.967836183126837e-09_prec, -3.634737070745707e-09_prec, &
+      +2.660125578767188e-09_prec, -1.947344229307878e-09_prec, +1.425880422571238e-09_prec, &
+      -1.044268337139433e-09_prec, +7.649247305964411e-10_prec, -5.603928859200634e-10_prec, &
+      +4.106035621138612e-10_prec, -3.008845816303503e-10_prec, +2.205028307615263e-10_prec, &
+      -1.616059138151241e-10_prec, +1.184458060866278e-10_prec, -8.681405988921935e-11_prec, &
+      +6.362957723685725e-11_prec, -4.663551244294209e-11_prec, +3.417857115203597e-11_prec, &
+      -2.504779557957385e-11_prec, +1.835460507341412e-11_prec, -1.344900497497097e-11_prec, &
+      +9.853009116993681e-12_prec, -7.217411499644684e-12_prec, +5.285438335533982e-12_prec, &
+      -3.870193945831565e-12_prec, +2.832794411134073e-12_prec, -2.073987414472837e-12_prec, &
+      +1.517727832856517e-12_prec, -1.110103162686856e-12_prec, +8.114874349335376e-13_prec, &
+      -5.933220986053958e-13_prec, +4.330378371560301e-13_prec, -3.167986435247822e-13_prec, &
+      +2.312538283425185e-13_prec, -1.692961905646467e-13_prec, +1.234659076365663e-13_prec, &
+      -8.972377420028710e-14_prec, +6.534445835988667e-14_prec, -4.712395296029015e-14_prec, &
+      +3.450446308880806e-14_prec, -2.525280332066338e-14_prec, +1.853248457472922e-14_prec, &
+      -1.340388303822104e-14_prec, +9.397213909800861e-15_prec, -6.741569108514867e-15_prec, &
+      +4.641252659975947e-15_prec, -3.729655473350135e-15_prec, +2.647188024340608e-15_prec, &
+      -2.329733628236852e-15_prec, +1.543903893619358e-15_prec, -7.632783294297951e-16_prec, &
+      +1.804112415015879e-16_prec, +4.440892098500626e-16_prec /)
+
+  real(kind=prec) :: y(size(d)), dmat(size(d),n)
+  integer j
+
+  do j=1,size(d)
+    dmat(j, :) = tab
+  enddo
+  y = (p%H0 * d / conv) / 10 - 1
+
+  do j = n, 3, -1
+    dmat(:, j-1) = dmat(:, j-1) + 2*y(:)*dmat(:, j)
+    dmat(:, j-2) = dmat(:, j-2) - dmat(:, j)
+  end do
+  zz = dmat(:, 1)+y(:)*dmat(:, 2)
+
+  ll = d**2 * (1+zz)**(p%gamma-3) / p%H0 / sqrt((1+zz)**3*Om + (1-Om) * (1 + zz) ** (3 * (1 + w0 + wa)) * exp(-3 * wa * zz / (1 + zz)))
+
+  m1s = m1d / (1+zz)
+  m2s = m2d / (1+zz)
+
+  END SUBROUTINE REDSHIFT_DESI
+
+
+
                    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                    !!                             !!
                    !!     POWER LAW + PEAK        !!
@@ -1051,6 +1123,21 @@ contains
       m%spin(2,1)%f => trivial_spin
       m%spin(2,2)%f => trivial_spin
       m%r2p => r2p_plp_pow_planckGamma
+      m%smooth => smooth_tanh
+      m%smoothint => smooth_expint
+      m%smooth_c = "tan"
+      m%norms = .false.
+
+    case('plp+plp+desi+trivial')
+      m%ndim = 9
+      m%primary => plp_mf
+      m%secondary => plp_m2f
+      m%redshift => redshift_desi
+      m%spin(1,1)%f => trivial_spin
+      m%spin(1,2)%f => trivial_spin
+      m%spin(2,1)%f => trivial_spin
+      m%spin(2,2)%f => trivial_spin
+      m%r2p => r2p_plp_pow_planck
       m%smooth => smooth_tanh
       m%smoothint => smooth_expint
       m%smooth_c = "tan"
