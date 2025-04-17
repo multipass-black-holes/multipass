@@ -108,7 +108,7 @@ contains
   ! This returns
   !  /\ y                         /\ y                1
   !  |    dx  Slvc(mmin+x dm) =   |    dx -------------------------
-  ! \/  0                        \/  0     1 - exp((1-2x)/(x-x^2))
+  ! \/  0                        \/  0     1 + exp((1-2x)/(x-x^2))
   !
   real(kind=prec), intent(in) :: x(:)
   real(kind=prec) :: lvc_int(size(x))
