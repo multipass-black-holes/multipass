@@ -251,6 +251,17 @@ def parseInfo(root):
         txt = fp.read()
     model = re.findall("model: (.*)", txt)[0]
     np = len(parameters[model])
+    if np == 1:
+        lower = [float(re.findall(
+            r"prior range, lower bounds" + r" *([\d\.-]+)"*np,
+            txt
+        )[0])]
+        upper = [float(re.findall(
+            r"Prior range, upper bounds" + r" *([\d\.-]+)"*np,
+            txt
+        )[0])]
+        return model, list(zip(lower, upper))
+
     lower = [
         float(i)
         for i in re.findall(
