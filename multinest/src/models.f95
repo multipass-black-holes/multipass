@@ -360,7 +360,8 @@ contains
   end do
   zz = dmat(:, 1)+y(:)*dmat(:, 2)
 
-  ll = d**2 * (1+zz)**(p%gamma-3) / p%H0 / sqrt((1+zz)**3*Om + (1-Om) * (1 + zz) ** (3 * (1 + w0 + wa)) * exp(-3 * wa * zz / (1 + zz)))
+  ll = d**2 * (1+zz)**(p%gamma-3) / p%H0 / &
+        sqrt((1+zz)**3*Om + (1-Om) * (1 + zz) ** (3 * (1 + w0 + wa)) * exp(-3 * wa * zz / (1 + zz)))
 
   m1s = m1d / (1+zz)
   m2s = m2d / (1+zz)
