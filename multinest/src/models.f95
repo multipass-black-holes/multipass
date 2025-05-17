@@ -1145,7 +1145,7 @@ contains
       m%norms = .false.
 
     case('plp+plp+desiGamma+trivial')
-      m%ndim = 9
+      m%ndim = 10
       m%primary => plp_mf
       m%secondary => plp_m2f
       m%redshift => redshift_desi
