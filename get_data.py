@@ -49,20 +49,20 @@ def get_download(url):
     ]
 
 
-def download_file(url, cwd="tmp/"):
-    if url.endswith("/content"):
+def download_file(url, cwd="tmp/", filename=None):
+    if url.endswith("/content") and filename is None:
         filename = url.split("/")[-2]
-    elif url.endswith("?download=1"):
+    elif url.endswith("?download=1") and filename is None:
         filename = url.split("/")[-2][:-11]
-    elif url.endswith(".h5") or url.endswith(".hdf5") or url.endswith(".hdf") or url.endswith('.tar'):
+    elif url.endswith(".h5") or url.endswith(".hdf5") or url.endswith(".hdf") or url.endswith('.tar') and filename is None:
         filename = url.split("/")[-1]
     else:
         print(url)
 
-    if not os.path.exists(f"{cwd}{filename}"):
+    if not os.path.exists(f"{cwd}{filename}") or True:
         args = ['wget', url, '-O', filename]
         print(args)
-        # subprocess.Popen(args, cwd=cwd).wait()
+        subprocess.Popen(args, cwd=cwd).wait()
 
 
 def untar(fn):
@@ -101,12 +101,12 @@ if __name__ == "__main__":
 
     print(failed_downloads)
 
-    # for i in os.listdir("tmp/"):
-    #     if i.endswith(".tar"):
-    #         print(f"Untarring {i}...", end="")
-    #         untar("tmp/" + i)
-    #         print(" done")
+    for i in os.listdir("tmp/"):
+        if i.endswith(".tar"):
+            print(f"Untarring {i}...", end="")
+            untar("tmp/" + i)
+            print(" done")
 
-    download_file("https://zenodo.org/records/5546676/files/endo3_mixture-LIGO-T2100113-v12.hdf5?download=1", cwd=".")
-    download_file("https://zenodo.org/records/7890398/files/o1+o2+o3_mixture_real+semianalytic-LIGO-T2100377-v2.hdf5?download=1", cwd=".")
-    download_file("https://dcc-llo.ligo.org/public/0168/P2000217/002/o3a_bbhpop_inj_info.hdf", cwd=".")
+    download_file("https://zenodo.org/records/5546676/files/endo3_mixture-LIGO-T2100113-v12.hdf5?download=1", cwd="./", filename="endo3_mixture-LIGO-T2100113-v12.hdf5")
+    download_file("https://zenodo.org/records/7890398/files/o1+o2+o3_mixture_real+semianalytic-LIGO-T2100377-v2.hdf5?download=1", cwd="./", filename="o1+o2+o3_mixture_real+semianalytic-LIGO-T2100377-v2.hdf5")
+    download_file("https://dcc-llo.ligo.org/public/0168/P2000217/002/o3a_bbhpop_inj_info.hdf", cwd="./")
