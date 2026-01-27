@@ -419,7 +419,7 @@ def convert_injection(
         m1 = f["injections/mass1_source"][mask]
         m2 = f["injections/mass2_source"][mask]
         rs = f["injections/redshift"][mask]
-        pdf /= np.abs(invzfunc.derivative()(f["injections/redshift"]))
+        pdf /= np.abs(invzfunc.derivative()(rs))
         # pdf = m1**-4.35 * m2**2
 
         dat = np.column_stack((m1, m2, m1D, m2D, rs, ld, s1, s2, pdf))
