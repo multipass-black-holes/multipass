@@ -12,8 +12,8 @@ nda = numpy.typing.NDArray[np.float64]
 
 z_table = np.linspace(0, 15, 3000)
 d_L_table = cosmo.luminosity_distance(z_table)
-zfunc = scipy.interpolate.interp1d(d_L_table, z_table)
-invzfunc = scipy.interpolate.interp1d(z_table, d_L_table)
+zfunc = scipy.interpolate.make_interp_spline(d_L_table, z_table, k=1)
+invzfunc = scipy.interpolate.make_interp_spline(z_table, d_L_table, k=1)
 
 
 def write_record(
