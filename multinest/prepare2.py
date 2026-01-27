@@ -379,11 +379,21 @@ def convert_injection(
                 pdf = m1D**-4.35 * m2D**2
 
         elif version == 4:
-            mask = [
+            injO1 = np.array(f['injections/name']) == b'o1'
+            injO2 = np.array(f['injections/name']) == b'o2'
+            injO3 = np.array(f['injections/name']) == b'o3'
+            snr_cut = np.array(f['injections/optimal_snr_net'])>6
+            far_cut = np.any([
+                np.array(f["injections/ifar_cwb"]) > ifar_find,
                 np.array(f["injections/ifar_gstlal"]) > ifar_find,
+                np.array(f["injections/ifar_mbta"]) > ifar_find,
                 np.array(f["injections/ifar_pycbc_bbh"]) > ifar_find,
-            ]
-            mask = np.all(mask, axis=0)
+                np.array(f["injections/ifar_pycbc_hyperbank"]) > ifar_find,
+            ], axis=0)
+            mask = np.any([
+                np.all([np.any([injO1, injO2], axis=0), snr_cut, far_cut], axis=0),
+                np.all([injO3, far_cut], axis=0)
+            ], axis=0)
 
             s1 = np.sqrt(
                 f["injections/spin1x"][mask] ** 2
@@ -409,6 +419,8 @@ def convert_injection(
         m1 = f["injections/mass1_source"][mask]
         m2 = f["injections/mass2_source"][mask]
         rs = f["injections/redshift"][mask]
+        pdf /= np.abs(invzfunc.derivative()(f["injections/redshift"]))
+        # pdf = m1**-4.35 * m2**2
 
         dat = np.column_stack((m1, m2, m1D, m2D, rs, ld, s1, s2, pdf))
 
@@ -418,5 +430,5 @@ def convert_injection(
 
 
 if __name__ == "__main__":
-    convert_injection()
+    convert_injection(fi="../o1+o2+o3_bbhpop_real+semianalytic-LIGO-T2100377-v2.hdf5")
     o, d = convert_events("data.rec", all_events=load_all_files())
