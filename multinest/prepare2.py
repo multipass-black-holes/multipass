@@ -382,7 +382,7 @@ def convert_injection(
             injO1 = np.array(f['injections/name']) == b'o1'
             injO2 = np.array(f['injections/name']) == b'o2'
             injO3 = np.array(f['injections/name']) == b'o3'
-            snr_cut = np.array(f['injections/optimal_snr_net'])>6
+            snr_cut = np.array(f['injections/optimal_snr_net'])>8
             far_cut = np.any([
                 np.array(f["injections/ifar_cwb"]) > ifar_find,
                 np.array(f["injections/ifar_gstlal"]) > ifar_find,
@@ -392,7 +392,7 @@ def convert_injection(
             ], axis=0)
             mask = np.any([
                 np.all([np.any([injO1, injO2], axis=0), snr_cut, far_cut], axis=0),
-                np.all([injO3, far_cut], axis=0)
+                np.all([injO3, snr_cut, far_cut], axis=0)
             ], axis=0)
 
             s1 = np.sqrt(
