@@ -16,7 +16,7 @@ fill_between(m1, 1.5e-2*yappisn/5e3, 1.5e-2*ybppisn/5e3, alpha=0.2, label=r"${\r
 plot(m1, 1.5e-2*ycppisn/5e3, 'C1')
 
 yscale('log')
-ylim(4e-14,1)
+ylim(4e-16, 5e-3)
 ylabel(r"${\rm d}R/{\rm d}m_1$")
 xlabel("$m_1/M_\odot$")
 legend()

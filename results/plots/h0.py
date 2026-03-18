@@ -5,10 +5,10 @@ from analyse import *
 sh0es = [73.04, 1.04]
 planck = [67.4, 0.5]
 
-samples_plp = loadMC('../plp-h0/long.card', 'plp+plp+planck+trivial')
+samples_plp = loadMC('../plp-h0/medium', 'plp+plp+planckGamma+trivial')
 densityH0_PLP = samples_plp.get1DDensityGridData('h0').normalize()
 
-samples_ppisn = loadMC('../ppisn-h0/long', 'ppisn+planck+trivial')
+samples_ppisn = loadMC('../ppisn-h0/medium', 'ppisn+planckGamma+trivial')
 densityH0 = samples_ppisn.get1DDensityGridData('h0').normalize()
 densityMG = samples_ppisn.get1DDensityGridData('mgap').normalize()
 density=samples_ppisn.get2DDensityGridData('h0','mgap').normalize()
